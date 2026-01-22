@@ -27,13 +27,13 @@ const Sidebar = ({userEmail}) => {
         Home
       </a>
     </li>
-
+{/* 
     <li>
       <a href="#" className="nav-link link-dark">
         <i class="bi bi-journal-bookmark me-2"></i>
         My Projects
       </a>
-    </li>
+    </li> */}
 
     {/* <li>
       <a href="#" className="nav-link link-dark">
@@ -68,30 +68,30 @@ const Sidebar = ({userEmail}) => {
   <div className="dropdown">
     <a
       href="#"
-      className="d-flex align-items-center link-dark text-decoration-none dropdown-toggle"
+      className="d-flex align-items-center link-dark text-decoration-none dropdown-toggle text-center"
       id="dropdownUser2"
       data-bs-toggle="dropdown"
       aria-expanded="false"
     >
-      <img
+      {/* <img
         src="https://github.com/mdo.png"
         alt=""
         width="32"
         height="32"
         className="rounded-circle me-2"
-      />
-      <strong>{userEmail}</strong>
+      /> */}
+      <span className='small fw-semibold'>{userEmail}</span>
     </a>
 
     <ul
       className="dropdown-menu text-small shadow"
       aria-labelledby="dropdownUser2"
     >
-      <li><a className="dropdown-item" href="#">New project...</a></li>
-      <li><a className="dropdown-item" href="#">Settings</a></li>
-      <li><a className="dropdown-item" href="#">Profile</a></li>
+      <li><a className="dropdown-item" href="#">Profile 1</a></li>
+      <li><a className="dropdown-item" href="#">Profile 2</a></li>
+      <li><a className="dropdown-item" href="#">Profile 3</a></li>
       <li><hr className="dropdown-divider" /></li>
-      <li><a className="dropdown-item" href="#">Sign out</a></li>
+      <li><a className="dropdown-item" href="#">Current</a></li>
     </ul>
   </div>
 </div>

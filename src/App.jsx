@@ -5,13 +5,16 @@ import Sidebar from './components/Sidebar'
 function App() {
 
 
-  const APP_NAME = "zenfirm-old"
+  const APP_NAME = "zenfirm"
 
   const [userEmail, setUserEmail] = useState("")
   const [USERID, setUserID] = useState("")
   const[myTasks, setMyTasks] = useState([])
   const [myTodayTasks, setMyTodayTasks] = useState([])
   const[overDueTasks, setOverDueTasks] = useState([])
+  const[todayCompleted, setTodayCompleted] = useState([])
+  const[todayInprog, setTodayInprog] = useState([])
+  const[todayNotStarted, setTodayNotstarted] = useState([])
 
 
   const today = new Date();
@@ -61,6 +64,9 @@ function App() {
 
         setMyTasks(taskRes.filter(e => e.Assignee.ID === USERID))
         setMyTodayTasks(taskRes.filter(e => e.Assignee.ID === USERID && e.Task_Date === formattedDate))
+        setTodayCompleted(taskRes.filter(e => e.Assignee.ID === USERID && e.Task_Date === formattedDate && e.Task_Status === "Completed"))
+        setTodayInprog(taskRes.filter(e => e.Assignee.ID === USERID && e.Task_Date === formattedDate && e.Task_Status === "In Progress"))
+        setTodayNotstarted(taskRes.filter(e => e.Assignee.ID === USERID && e.Task_Date === formattedDate && e.Task_Status === "Not Started"))
 
         // console.log(myTasks)
       })
@@ -99,13 +105,13 @@ function App() {
   const getPriorityBorder = (priority) => {
   switch (priority?.toLowerCase()) {
     case "high":
-      return "border-danger bg-danger-subtle";
+      return "border-dange bg-red";
     case "medium":
-      return "border-warning bg-warning-subtle";
+      return "border-warnin bg-yellow";
     case "low":
-      return "border-success bg-success-subtle";
+      return "border-succes bg-green";
     default:
-      return "border-dark bg-secondary-subtle";
+      return "border-dar bg-secondary-subtl";
   }
 };
 
@@ -147,21 +153,21 @@ function App() {
       <div className="col-md-3 col-sm-6">
         <div className="stat-card text-center bg-white p-4 shadow-sm rounded">
           <i className="bi bi-check-circle-fill fs-3 text-success mb-3"></i>
-          <h3 className="fs-4 fw-bold">5</h3>
+          <h3 className="fs-4 fw-bold">{todayCompleted.length}</h3>
           <p className="text-muted mb-0">Completed</p>
         </div>
       </div>
       <div className="col-md-3 col-sm-6">
         <div className="stat-card text-center bg-white p-4 shadow-sm rounded">
           <i className="bi bi-hourglass-split fs-3 text-warning mb-3"></i>
-          <h3 className="fs-4 fw-bold">4</h3>
+          <h3 className="fs-4 fw-bold">{todayInprog.length}</h3>
           <p className="text-muted mb-0">Inprogress</p>
         </div>
       </div>
       <div className="col-md-3 col-sm-6">
         <div className="stat-card text-center bg-white p-4 shadow-sm rounded">
           <i className="bi bi-pause-circle fs-3 text-info mb-3"></i>
-          <h3 className="fs-4 fw-bold">1</h3>
+          <h3 className="fs-4 fw-bold">{todayNotStarted.length}</h3>
           <p className="text-muted mb-0">Not Started</p>
         </div>
       </div>
@@ -194,9 +200,9 @@ function App() {
                     })}
                 </table> */}
                 {overDueTasks.map((e,i) => {
-                  console.log(e)
+                  // console.log(e)
                       return(
-                        <div key={i} className={`card mb-3  ${getPriorityBorder(e.Task_Priority)}`}>
+                        <div key={i} className={`card mb-3 border-2  ${getPriorityBorder(e.Task_Priority)}`}>
 
                           
                          
@@ -206,7 +212,7 @@ function App() {
                                   <small className='text-muted text-uppercase' style={{fontSize:"12px"}}>{e.Project_Name?.Project_Name || "No Project"}</small>
                                 </div>
                                 <div className='col-3 '>
-                                  <div className='small border border-dark rounded-5 px-2 py-1 mt-2 text-center'>{e.Task_Status || "Unscheuled"}</div>
+                                  <span className={`bg-status ${e.Task_Status.toLowerCase().replace(" ", "-") || "not-started"}`}>{e.Task_Status || "Not Started"}</span>
                                 </div>
                             </div>
                          
@@ -223,6 +229,7 @@ function App() {
               <div class="card-body" style={{height: "800px",overflowY : "auto"}}>
                 
                     {myTodayTasks.map(e => {
+                      
                       return(
                         <div className={`card mb-3  ${getPriorityBorder(e.Task_Priority)}`}>
                          
@@ -232,7 +239,7 @@ function App() {
                                   <small className='text-muted text-uppercase' style={{fontSize:"12px"}}>{e.Project_Name?.Project_Name || "No Project"}</small>
                                 </div>
                                 <div className='col-3 '>
-                                  <div className='small border border-dark rounded-5 px-2 py-1 mt-2 text-center'>{e.Task_Status || "Unscheuled"}</div>
+                                  <span className={`bg-status ${e.Task_Status.toLowerCase().replace(" ", "-") || "not-started"}`}>{e.Task_Status || "Not Started"}</span>
                                 </div>
                             </div>
                          
@@ -260,7 +267,7 @@ function App() {
                                   <small className='text-muted text-uppercase' style={{fontSize:"12px"}}>{e.Project_Name?.Project_Name || "No Project"}</small>
                                 </div>
                                 <div className='col-3 '>
-                                  <div className='small border border-dark rounded-5 px-2 py-1 mt-2 text-center'>{e.Task_Status || "Unscheuled"}</div>
+                                 <span className={`bg-status ${e.Task_Status.toLowerCase().replace(" ", "-") || "not-started"}`}>{e.Task_Status || "Not Started"}</span>
                                 </div>
                             </div>
                          
@@ -287,7 +294,7 @@ function App() {
                                   <small className='text-muted text-uppercase' style={{fontSize:"12px"}}>{e.Project_Name?.Project_Name || "No Project"}</small>
                                 </div>
                                 <div className='col-3 '>
-                                  <div className='small border border-dark rounded-5 px-2 py-1 mt-2 text-center'>{e.Task_Status || "Unscheuled"}</div>
+                                  <span className={`bg-status ${e.Task_Status.toLowerCase().replace(" ", "-") || "not-started"}`}>{e.Task_Status || "Not Started"}</span>
                                 </div>
                             </div>
                          
@@ -301,6 +308,8 @@ function App() {
 
 
 </div>
+
+<br /><br />
 
 
 

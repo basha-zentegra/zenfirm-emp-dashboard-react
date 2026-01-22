@@ -1,0 +1,69 @@
+*{
+    font-family: "Poppins", sans-serif;
+}
+
+.bg-status{
+    font-size: 12px;
+    border-radius: 8px;
+    font-weight: 500;
+    padding: 4px 8px;
+}
+
+.not-started{
+    background-color: #CAD5E2;
+    color: #314158;
+}
+
+.in-progress{
+    background-color: #fff7bc;
+    color: #f0a400;
+}
+
+.approved{
+    background-color: #8EC5FF;
+    color: #155DFC;
+}
+
+.new-discussion{
+    background-color: #E9D4FF;
+    color: #a03bff;
+}
+.completed{
+    background-color: #baf8db;
+    color: #00BC7D;
+}
+
+.rejected{
+    background-color: #f8baba;
+    color: #a53333;
+}
+
+.high{
+    color: white;
+    background-color: #FF6467;
+    
+}
+.low{
+    color: white;
+    background-color: #00C951;
+    
+}
+.medium{
+    color: white;
+    background-color: #FE9A00;
+    
+}
+
+
+
+.bg-green{
+    background-color: #d1f5ea;
+}
+
+.bg-yellow{
+    background-color: #ffeeda;
+}
+
+.bg-red{
+    background-color: #fad9d8;
+}
