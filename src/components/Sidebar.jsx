@@ -59,6 +59,14 @@ const [activeId, setActiveId] = useState(1);
       </Link>
     </li>
 
+    <li>
+      <Link  to="/kanban" onClick={() => handleClick(3)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Kanban">
+
+        <i className={`bi bi-kanban fs-5 ${activeId === 3 ? "text-primary" : "text-dark"}`} ></i>
+          
+      </Link>
+    </li>
+
     {/* <li>
       <a href="#" className="nav-link link-dark">
         <svg className="bi me-2" width="16" height="16">

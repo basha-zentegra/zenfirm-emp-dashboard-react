@@ -6,6 +6,7 @@ import { APP_NAME } from './config'
 import Home from './pages/Home'
 import Calendar from './pages/Calendar'
 import { Routes, Route } from 'react-router-dom'
+import Kanban from './pages/Kanban'
 
 function App() {
 
@@ -33,6 +34,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/calendar" element={<Calendar />} />
+              <Route path="/kanban" element={<Kanban />} />
               {/* <Route path="/contact" element={<Contact />} />
               <Route path="*" element={<NotFound />} /> */}
             </Routes>

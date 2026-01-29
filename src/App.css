@@ -18,3 +18,73 @@
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
   background-color: #fafafa;
 }
+
+.scroll-karo {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #888 transparent;
+}
+
+.scroll-karo-x {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #888 transparent;
+  white-space: norap;
+  /* style={{ overflowX: 'auto', whiteSpace: 'nowrap' }} */
+}
+
+.w-100px{
+  width: 100px;
+}
+
+.w-200px{
+  width: 200px;
+}
+
+.w-300px{
+  width: 300px;
+}
+
+.w-350px{
+  width: 350px;
+}
+
+.w-400px{
+  width: 400px;
+}
+
+.w-500px{
+  width: 700px;
+}
+
+.cursor-pointer{
+  cursor: pointer;
+}
+
+.project-name {
+  display: inline-block;
+  max-width: 200px;   /* adjust width */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.headerColor0{
+  background-color: #b9967d;
+}
+
+.headerColor1{
+  background-color: #a36eee;
+}
+
+.headerColor2{
+  background-color: #11cc82;
+}
+
+.headerColor3{
+  background-color: #fe814d;
+}
+
+.headerColor4{
+  background-color: #f8488e;
+}
