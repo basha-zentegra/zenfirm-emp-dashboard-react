@@ -67,3 +67,26 @@
 .bg-red{
     background-color: #fad9d8;
 }
+
+.rbc-label{
+    font-size: 12px !important;
+    color: #5d5d5d !important;
+    font-weight: 500;
+}
+
+.rbc-header span{
+    color: #5d5d5d !important;
+    font-weight: 600 !important;
+}
+
+.rbc-time-view{
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+
+}
+
+.rbc-time-header{
+    background-color: #fafafa;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
