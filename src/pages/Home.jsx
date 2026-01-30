@@ -226,7 +226,7 @@ const getPriorityBorder = (priority) => {
                 
                     {myTodayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Individual Tax Filing").map(e => {
                       return(
-                        <div className={`card mb-3  ${getPriorityBorder(e.Task_Priority)}`}>
+                        <div key={e.ID} className={`card mb-3  ${getPriorityBorder(e.Task_Priority)}`}>
                          
                             <div className="row p-4 py-3">
                                 <div className='col-9'>
