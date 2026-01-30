@@ -7,6 +7,7 @@ export const UserProvider = ({ children }) => {
   const [userEmail, setUserEmail] = useState("");
   const [USERID, setUserID] = useState("");
   const [projects, setProjects] = useState("");
+  const [orgEmp, setOrgEmp] = useState([])
 
   useEffect(() => {
     ZOHO.CREATOR.UTIL.getInitParams()
@@ -52,8 +53,28 @@ export const UserProvider = ({ children }) => {
   
     }, [USERID])
 
+
+    useEffect(() => {
+      const config = {
+        app_name: APP_NAME,
+        report_name: "org_emp",
+      }
+  
+      ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
+        if(response.code === 3000){
+          console.log("All Organization Employees:", response.data)
+          setOrgEmp(response.data)
+        } else{
+          console.log(response)
+        }
+        
+      })
+      .catch((err) => console.error(err))
+  
+    }, [])
+
   return (
-    <UserContext.Provider value={{ userEmail, USERID, projects }}>
+    <UserContext.Provider value={{ userEmail, USERID, projects, orgEmp }}>
       {children}
     </UserContext.Provider>
   );

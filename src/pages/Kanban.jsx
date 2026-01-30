@@ -5,6 +5,7 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import React from 'react';
 import OffcanvasTaskDetails from '../components/cal/OffcanvasTaskDetails';
 import KanbanAddTask from '../components/kanban/KanbanAddTask';
+import AddKanbanLIst from '../components/kanban/AddKanbanLIst';
 
 
 
@@ -141,6 +142,14 @@ const Kanban = () => {
 
     } 
 
+    const handleAddKanbanList = () => {
+      // addkanbanlistoffcanvas
+        const element = document.getElementById("addkanbanlistoffcanvas");
+        if(!element) return;
+        const bsOffcanvas = new window.bootstrap.Offcanvas(element);
+        bsOffcanvas.show();
+    }
+
 
 
 
@@ -219,7 +228,7 @@ const Kanban = () => {
 </DragDropContext>
 
 
-{kanbanList.length === 0 && (
+{!hideList && kanbanList.length === 0 && (
     <div className='text-center w-100 align-content-center'>
         <img width="70px" className='mb-4' src="https://cdn-icons-png.flaticon.com/128/17952/17952229.png" alt="" />
         <h1 className='mb-5 lead'>Select the Project to Display the Kanban View</h1>
@@ -229,7 +238,8 @@ const Kanban = () => {
 {hideList && (
     <div className='text-center w-100 align-content-center'>
         <img width="70px" className='mb-4' src="https://cdn-icons-png.flaticon.com/128/17952/17952229.png" alt="" />
-        <h1 className='mb-5 lead'>Selected Project doesnot have Kanban View</h1>
+        <h1 className='mb-4 lead'>Selected Project doesnot have Kanban View</h1>
+        <button onClick={handleAddKanbanList} className='btn btn-outline-success mb-5'>Add Kanban List</button>
     </div>
 )}
 
@@ -240,16 +250,9 @@ const Kanban = () => {
 
 <OffcanvasTaskDetails selectedEvent={selectedTask} />
 
-<KanbanAddTask list={selectedList} selectedProject={selectedProject} />
+<KanbanAddTask list={selectedList} selectedProject={selectedProject} setKanbanTasks={setKanbanTasks} />
 
-{/* {selectedProject && selectedList && (
-  <KanbanAddTask
-    list={selectedList}
-    selectedProject={selectedProject}
-  />
-)} */}
-
-
+<AddKanbanLIst selectedProject={selectedProject} setKanbanList={setKanbanList} setHideList={setHideList} />
 
     </div>
   )

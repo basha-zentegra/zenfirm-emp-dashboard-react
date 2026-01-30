@@ -3,63 +3,44 @@ import { useUser } from '../../context/UserContext';
 import { formattedDate } from '../../config';
 import { APP_NAME } from '../../config';
 
-const KanbanAddTask = ({list,selectedProject}) => {
+const KanbanAddTask = ({list,selectedProject,setKanbanTasks}) => {
 
 
     if(!selectedProject || !list){
         return null;
     }
 
-   const {USERID, projects} = useUser();
-  
-
-  
+    const {USERID, projects, orgEmp} = useUser();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-  
-      function formatDateToMMDDYYYY(dateInput) {
-        if(!dateInput){
-          return;
-        }
-          const date = new Date(dateInput);
-  
-          const month = String(date.getMonth() + 1).padStart(2, "0");
-          const day = String(date.getDate()).padStart(2, "0");
-          const year = date.getFullYear();
-  
-          return `${month}-${day}-${year}`;
-      }
-    function formatTimeToHHMM(dateInput) {
-  
-        if(!dateInput){
-          return;
-        }
-          const date = new Date(dateInput);
-  
-          const hours = String(date.getHours()).padStart(2, "0");
-          const minutes = String(date.getMinutes()).padStart(2, "0");
-  
-          return `${hours}:${minutes}`;
-    }
-  
-    // const {USERID} = useUser();
+
+
   
     const [taskData, setTaskData] = useState({
       Task_Name: "",
       Task_Description: "",
       Task_Status: "Not Started",
       Task_Priority: "Low",
-      Project_Name: selectedProject.ID,
+      Project_Name: selectedProject?.ID,
       Task_Date: formattedDate,
       Assignee: USERID,
-      Kanban_Status: list
+      Kanban_Status: list,
+      Budgered_Time: "1h 0m"
     });
+
+    useEffect(()=>{
+      setTaskData((prev) => ({
+        ...prev,
+        Kanban_Status: list,
+        
+      }));
+      
+    },[list])
+
   
     console.log(taskData)
   
 
-  
-  
     const handleChange = (e) => {
       const { name, value } = e.target;
       setTaskData((prev) => ({
@@ -74,6 +55,16 @@ const KanbanAddTask = ({list,selectedProject}) => {
       bsOffcanvas?.hide();
   
     }
+
+    const closeButton = () =>{
+      setTaskData((prev) => ({
+                  ...prev,
+                  Task_Name: "",
+                  Task_Description: "",
+                  Kanban_Status: "",
+
+                }));
+    }
   
   
     function addEvent() {
@@ -86,23 +77,23 @@ const KanbanAddTask = ({list,selectedProject}) => {
         };
         ZOHO.CREATOR.DATA.addRecords(config).then(function (response) {
             if (response.code == 3000) {
-                console.log(response);
+                console.log(response.message);
                 console.log(taskData)
-                // const newEvent = {
-                //   id: response.data.ID,
-                //   title:taskData.Task_Name,
-                //   start:startEnd.start,
-                //   end:startEnd.end,
-                //   priority: taskData.Task_Priority.toLowerCase(),
-                //   projectName: projectName,
-                // };
-                // setEvents(prev => [...prev, newEvent]);
+                const newEvent = {
+                  ID: response.data.ID,
+                  Task_Name:taskData.Task_Name,
+                  Task_Description:taskData.Task_Description,
+                  Kanban_Status:taskData.Kanban_Status
+                };
+                setKanbanTasks(prev => [...prev, newEvent]);
                 setTaskData((prev) => ({
                   ...prev,
                   Task_Name: "",
                   Task_Description: "",
+                  Assignee: USERID
                 }));
                 closeOffCanvas()
+                setIsSubmitting(false)
   
             } else{
               console.log(response);
@@ -125,7 +116,7 @@ const KanbanAddTask = ({list,selectedProject}) => {
   <div className="offcanvas offcanvas-end" tabIndex="-1" id="addtaskoffcanvaskanban" aria-labelledby="taskOffcanvasLable" style={{width: "800px"}}>
     <div className="offcanvas-header">
       <h5 className="offcanvas-title" id="taskOffcanvasLable"></h5>
-      <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      <button type="button" onClick={closeButton} className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div className="offcanvas-body">
      
@@ -233,6 +224,25 @@ const KanbanAddTask = ({list,selectedProject}) => {
               />
             </td>
           </tr>
+
+          <tr>
+            <th style={{ width: "7%" }}>
+              <i className="bi bi-calendar-check"></i>
+            </th>
+            <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
+              Kanban Status
+            </th>
+            <td  style={{ width: "58%" }}>
+              <input 
+                type='text'
+                className='form-control' 
+                name="Kanban_Status"
+                value={taskData.Kanban_Status}
+                // onChange={handleChange}
+                readOnly
+              />
+            </td>
+          </tr>
   
           <tr>
             <th style={{ width: "7%" }}>
@@ -242,20 +252,16 @@ const KanbanAddTask = ({list,selectedProject}) => {
               Budgeted Time
             </th>
             <td id="endDate" style={{ width: "58%" }}>
-                <select class="form-control" >
+                <select class="form-control" name="Budgered_Time" onChange={handleChange} value={taskData.Budgered_Time} >
                     <option disabled value="">Select duration</option>
                     <option value="0h 30m">0h 30m</option>
-                    <option selected value="1h 0m">1h 0m</option>
+                    <option value="1h 0m">1h 0m</option>
                     <option value="2h 0m">2h 0m</option>
                     <option value="3h 0m">3h 0m</option>
                     <option value="4h 0m">4h 0m</option>
                 </select>
-
-
             </td>
           </tr>
-  
-  
   
   
           <tr>
@@ -286,7 +292,7 @@ const KanbanAddTask = ({list,selectedProject}) => {
             </td>
           </tr>
   
-          <tr className='d-none'>
+          <tr className=''>
             <th style={{ width: "7%" }}>
               <i className="bi bi-person"></i>
             </th>
@@ -294,14 +300,24 @@ const KanbanAddTask = ({list,selectedProject}) => {
               Assignee
             </th>
             <td style={{ width: "58%" }}> 
-               <input 
+               {/* <input 
                 type='text'
                 className='form-control' 
                 name="Assignee"
                 value={taskData.Assignee}
                 onChange={handleChange}
                 
-              />
+              /> */}
+              <select
+                  className="form-control"
+                  name="Assignee"
+                  value={taskData.Assignee}
+                  onChange={handleChange}
+                >
+                  {orgEmp.map(employee => (
+                    <option value={employee.ID}>{employee?.Name}</option>
+                  ))}
+              </select>
             </td>
           </tr>
   
