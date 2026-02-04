@@ -2,6 +2,9 @@ import { useState,useEffect } from 'react'
 import { useUser } from '../context/UserContext'
 import { APP_NAME } from '../config'
 import { formattedDate } from '../config'
+import Transactions from '../components/Transactions'
+import HomePunch from '../components/punch/HomePunch'
+import OffcanvasTaskDetails from '../components/cal/OffcanvasTaskDetails'
 
 const Home = () => {
 
@@ -13,6 +16,7 @@ const Home = () => {
   const[todayInprog, setTodayInprog] = useState([])
   const[todayNotStarted, setTodayNotstarted] = useState([])
 
+  const [selectedTask, setSelectedTask] = useState(null)
 
   useEffect(() => {
     if (!USERID) return
@@ -39,6 +43,8 @@ const Home = () => {
       .catch((err) => console.error(err))
 
   }, [USERID])
+
+
 
 
     // FETCHING OVERDUE TASKS
@@ -79,6 +85,27 @@ const getPriorityBorder = (priority) => {
 };
 
 
+    const handleSelectTask = (taskID) => {
+
+        const element = document.getElementById("offcanvasRight");
+        const bsOffcanvas = new window.bootstrap.Offcanvas(element);
+        bsOffcanvas.show();
+
+        var config = {
+            app_name: APP_NAME,
+            report_name: "Task_Report",
+            id : taskID
+        };
+        ZOHO.CREATOR.DATA.getRecordById(config).then(function (response) {
+            console.log(response,config);
+            if(response.code === 3000){
+              setSelectedTask(response.data)
+            }
+
+        }).catch(e => console.log(e))
+        
+    };
+
 
   return (
     <div className='container pt-4'>
@@ -114,7 +141,7 @@ const getPriorityBorder = (priority) => {
       </div>
       <div className="col-md-3 col-sm-6">
         <div className="stat-card text-center bg-white p-4 shadow-sm rounded">
-          <i className="bi bi-pause-circle fs-3 text-info mb-3"></i>
+          <i className="bi bi-pause-circle fs-3 text-secondary mb-3"></i>
           <h3 className="fs-4 fw-bold">{todayNotStarted.length}</h3>
           <p className="text-muted mb-0">Not Started</p>
         </div>
@@ -131,24 +158,37 @@ const getPriorityBorder = (priority) => {
 
 
 
+
 <div className='row g-4'>
 
 
         <div className="col-6">
             <div className="card" style={{height: "500px"}}>
-              <span className='h4 ms-3 mt-2'>My Overdue Tasks - {overDueTasks.length}</span>
-              <div className="card-body" style={{height: "800px",overflowY : "auto"}}>
+              <span className='cardsHeader ms-3 mt-2'>My Punch-in Report</span>
+              <div className="card-body scroll-karo">
+
+
+
+                    <HomePunch />
+
+                
+
+              </div>
+            </div>
+        </div>
+
+        <div className="col-6">
+            <div className="card" style={{height: "500px"}}>
+              <span className=' ms-3 mt-2 cardsHeader'>My Overdue Tasks - {overDueTasks.length}</span>
+              <div className="card-body scroll-karo" >
                 
                 {overDueTasks.map((e,i) => {
-                  
                       return(
                         <div key={i} className={`card mb-3  ${getPriorityBorder(e.Task_Priority)}`}>
-
-                          
                          
-                            <div className="row p-4 py-3">
+                            <div className="row p-3 py-2">
                                 <div className='col-9'>
-                                  <span className='d-block'>{e.Task_Name}</span>
+                                  <p onClick={() => handleSelectTask(e.ID)} className='d-block cursor-pointer'>{e.Task_Name}</p>
                                   <small className='text-muted text-uppercase' style={{fontSize:"12px"}}>{e.Project_Name?.Project_Name || "No Project"}</small>
                                 </div>
                                 <div className='col-3 '>
@@ -157,25 +197,27 @@ const getPriorityBorder = (priority) => {
                             </div>
                          
                         </div>
-                      ) 
-                    })}
+                      )
+                  })}
               </div>
             </div>
         </div>
 
+
+
         <div className="col-6">
             <div className="card" style={{height: "500px"}}>
-              <span className='h4 ms-3 mt-2'>Today's Tasks - {myTodayTasks.length}</span>
-              <div className="card-body" style={{height: "800px",overflowY : "auto"}}>
+              <span className='cardsHeader ms-3 mt-2'>Today's Tasks - {myTodayTasks.length}</span>
+              <div className="card-body scroll-karo" >
                 
                     {myTodayTasks.map(e => {
                       
                       return(
                         <div key={e.ID} className={`card mb-3  ${getPriorityBorder(e.Task_Priority)}`}>
                          
-                            <div className="row p-4 py-3">
+                            <div className="row p-3 py-2">
                                 <div className='col-9'>
-                                  <span className='d-block'>{e.Task_Name}</span>
+                                  <p onClick={() => handleSelectTask(e.ID)} className='d-block cursor-pointer'>{e.Task_Name}</p>
                                   <small className='text-muted text-uppercase' style={{fontSize:"12px"}}>{e.Project_Name?.Project_Name || "No Project"}</small>
                                 </div>
                                 <div className='col-3 '>
@@ -193,17 +235,17 @@ const getPriorityBorder = (priority) => {
 
 
         <div className="col-6">
-            <div className="card">
-              <span className='h4 ms-3 mt-2'>BTR Events - {myTodayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Business Tax Filing").length}</span>
-              <div className="card-body" style={{height: "500px",overflowY : "auto"}}>
+            <div className="card" style={{height: "500px"}}>
+              <span className='cardsHeader ms-3 mt-2'>BTR Events - {myTodayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Business Tax Filing").length}</span>
+              <div className="card-body scroll-karo" >
                 
                     {myTodayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Business Tax Filing").map(e => {
                       return(
                         <div className={`card mb-3  ${getPriorityBorder(e.Task_Priority)}`}>
                          
-                            <div className="row p-4 py-3">
+                            <div className="row p-3 py-2">
                                 <div className='col-9'>
-                                  <span className='d-block'>{e.Task_Name}</span>
+                                  <p onClick={() => handleSelectTask(e.ID)} className='d-block cursor-pointer'>{e.Task_Name}</p>
                                   <small className='text-muted text-uppercase' style={{fontSize:"12px"}}>{e.Project_Name?.Project_Name || "No Project"}</small>
                                 </div>
                                 <div className='col-3 '>
@@ -220,17 +262,17 @@ const getPriorityBorder = (priority) => {
         </div>
 
         <div className="col-6">
-            <div className="card">
-              <span className='h4 ms-3 mt-2'>ITR Events - {myTodayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Individual Tax Filing").length}</span>
-              <div className="card-body" style={{height: "500px",overflowY : "auto"}}>
+            <div className="card" style={{height: "500px"}}>
+              <span className='cardsHeader ms-3 mt-2'>ITR Events - {myTodayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Individual Tax Filing").length}</span>
+              <div className="card-body scroll-karo" >
                 
                     {myTodayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Individual Tax Filing").map(e => {
                       return(
                         <div key={e.ID} className={`card mb-3  ${getPriorityBorder(e.Task_Priority)}`}>
                          
-                            <div className="row p-4 py-3">
+                            <div className="row p-3 py-2">
                                 <div className='col-9'>
-                                  <span className='d-block'>{e.Task_Name}</span>
+                                  <p onClick={() => handleSelectTask(e.ID)} className='d-block cursor-pointer'>{e.Task_Name}</p>
                                   <small className='text-muted text-uppercase' style={{fontSize:"12px"}}>{e.Project_Name?.Project_Name || "No Project"}</small>
                                 </div>
                                 <div className='col-3 '>
@@ -256,7 +298,7 @@ const getPriorityBorder = (priority) => {
 
 
 
-
+<OffcanvasTaskDetails selectedEvent={selectedTask} />
 
 
 

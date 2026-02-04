@@ -1,0 +1,43 @@
+{
+    "service" : "CREATOR",
+    "cspDomains" : {
+        "connect-src" : ["https://zentegra.itimedev.minervaiot.com"]
+    },
+    "config":[]
+}
+
+
+Possible Use Cases: 
+
+1) Proper Data
+IN TIME	OUT TIME
+09:05	10:05
+10:10	11:00
+
+
+2) Still not checked out
+IN TIME	OUT TIME
+09:05	"-"
+
+
+3) Mistakenly Two times checked in
+IN TIME	OUT TIME
+09:05	"-"
+09:06	10:05
+10:10	11:00
+
+4) Mistakenly Two times checked out
+IN TIME	OUT TIME
+09:05	10:05
+"-" 	10:05
+
+
+Note: the checkin checkou data is single employee's records only, 
+and the data is provided in the proper order based on punch in time,
+
+Formula to arrange the double check in and check outs:
+If while looping the records e.Check Sholuld contains Alternate data like IN, OUT, IN, OUT (Correct order)
+if the order changes like IN, IN, OUT, IN, OUT, IN, OUT (or) IN, OUT, IN, OUT, OUT, IN, OUT --> double IN or OUT continuesly comes we need to keep the duplicated IN or OUT as seprate record as per the about mentioned usecase
+
+
+
