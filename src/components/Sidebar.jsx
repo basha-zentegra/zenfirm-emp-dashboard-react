@@ -95,6 +95,7 @@ const [activeId, setActiveId] = useState(1);
     </li> */}
   </ul>
 
+    <p>V 1.1.2</p>
   <hr />
 
   <div className="dropdown">
