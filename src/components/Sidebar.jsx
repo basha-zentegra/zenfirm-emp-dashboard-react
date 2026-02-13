@@ -99,7 +99,7 @@ const Sidebar = ({userEmail}) => {
 )}
 
     <li>
-      <Link  to="/charts" onClick={() => handleClick(5)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Manager">
+      <Link  to="/charts" onClick={() => handleClick(5)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="NMG Dashboards">
 
         <i className={`bi bi-clipboard2-data-fill fs-5 ${activeId === 5 ? "text-zen" : "text-secondary"}`} ></i>
           
@@ -109,7 +109,7 @@ const Sidebar = ({userEmail}) => {
     
   </ul>
 
-    <p>V 1.1.4</p>
+    <p>V 1.1.5</p>
   <hr />
 
   <div className="dropdown">
@@ -148,3 +148,4 @@ export default Sidebar
 
 // 1.1.3 - Un scheduled Tasks
 // 1.1.4 - Super admin dashboard
+// 1.1.5 - ITR & BTR dashboard

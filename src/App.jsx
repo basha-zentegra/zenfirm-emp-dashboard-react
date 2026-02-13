@@ -11,6 +11,8 @@ import Loading from './components/ui/Loading'
 import { use } from 'react'
 import SuperAdmin from './superadmin/SuperAdmin'
 import ChartsPage from './pages/ChartsPage'
+import ITRDashboard from './components/charts/ITRDashboard'
+import BTRDashboard from './components/charts/BTRDashboard'
 
 function App() {
 
@@ -45,16 +47,18 @@ function App() {
 
         <section className='' style={{  overflowY: "auto" }}>
 
-
-           
-
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/calendar" element={<Calendar />} />
               <Route path="/kanban" element={<Kanban />} />
               <Route path="/superadmin" element={<SuperAdmin/>} />
-              <Route path="/charts" element={<ChartsPage />} />
 
+              <Route path="/charts" element={<ChartsPage />} > 
+
+                <Route index element={<ITRDashboard />} />
+                <Route path="btrdashboard" element={<BTRDashboard />} />
+              
+              </Route>
 
               {/* <Route path="/contact" element={<Contact />} />
               <Route path="*" element={<NotFound />} /> */}
@@ -72,3 +76,6 @@ function App() {
 }
 
 export default App
+
+
+//path="itrdashboard"

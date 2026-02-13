@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import ITRChart from './ITRChart';
+import { useUser } from '../../context/UserContext';
 
 
 const ITRDashboard = () => {
+    
+    const {nmgEmp} = useUser()
 
     const [chartData, setChartData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -10,29 +13,31 @@ const ITRDashboard = () => {
 
     const [allDataWithCount, setAllDataWithCount] = useState([]);
 
-        const employees = [
-        "Abdul_portal",
-        "Vinay",
-        "Srinivasa",
-        "Sneha",
-        "Karthik",
-        "Disha",
-        "bash_portal",
-        "Tejas Prahalad",
-        "Arya P R",
-        "Abhinand CK",
-        "Rudresh NMG213",
-        "Lokesh E",
-        "Basha A",
-        "Roy Vargis CPA",
-        "Ajayan P S",
-        "Aneesh P",
-        "Nithish S",
-        "Pachiyappan C",
-        "Sunil Shivadev",
-        "Dayananda R",
-        "Praveen Paul"
-    ];
+    const employees = nmgEmp || [];
+
+    // const employees = [
+    //     "Abdul_portal",
+    //     "Vinay",
+    //     "Srinivasa",
+    //     "Sneha",
+    //     "Karthik",
+    //     "Disha",
+    //     "bash_portal",
+    //     "Tejas Prahalad",
+    //     "Arya P R",
+    //     "Abhinand CK",
+    //     "Rudresh NMG213",
+    //     "Lokesh E",
+    //     "Basha A",
+    //     "Roy Vargis CPA",
+    //     "Ajayan P S",
+    //     "Aneesh P",
+    //     "Nithish S",
+    //     "Pachiyappan C",
+    //     "Sunil Shivadev",
+    //     "Dayananda R",
+    //     "Praveen Paul"
+    // ];
 
     const itrStatuses = [
         { label: "ITR Organizer", key: "itrOrganizer" },
@@ -128,14 +133,14 @@ const ITRDashboard = () => {
             }
         };
 
+        console.log("nmgEmp",nmgEmp)
+
         fetchData();
     }, []);
 
       return (
-          <div className="me-3 mt-1" style={{marginLeft:"80px"}}>
-              <section className='p-3 mb-2'>
-                  <button>ITR</button>
-              </section>
+          <div >
+              
               <div className="row">
                   <div className="col-7">
                       <div className="card" style={{ height: " "}}>
@@ -170,7 +175,7 @@ const ITRDashboard = () => {
   
                    <div className="col-5">
                       <div className="card" style={{ height: " "}}>
-                          <span className="cardsHeader ms-3 mt-2">ITR Chart</span>
+                          <span className="cardsHeader ms-3 mt-2">ITR Status</span>
                           <div className="card-body scroll-karo">
   
                               {loading && (
