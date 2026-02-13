@@ -5,22 +5,44 @@ import { useUser } from '../../context/UserContext'
 
 
 
+// const getNowDateTimeString = () => {
+//   const now = new Date();
+
+//   const day = String(now.getDate()).padStart(2, "0");
+//   const month = String(now.getMonth() + 1).padStart(2, "0");
+//   const year = now.getFullYear();
+
+//   let hours = now.getHours();
+//   const minutes = String(now.getMinutes()).padStart(2, "0");
+//   const seconds = String(now.getSeconds()).padStart(2, "0");
+
+//   const meridian = hours >= 12 ? "PM" : "AM";
+//   hours = hours % 12 || 12;
+//   hours = String(hours).padStart(2, "0");
+
+//   return `${month}-${day}-${year} ${hours}:${minutes}:${seconds} ${meridian}`;
+// };
+
 const getNowDateTimeString = () => {
   const now = new Date();
 
-  const day = String(now.getDate()).padStart(2, "0");
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const year = now.getFullYear();
+  const options = {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true
+  };
 
-  let hours = now.getHours();
-  const minutes = String(now.getMinutes()).padStart(2, "0");
-  const seconds = String(now.getSeconds()).padStart(2, "0");
+  const formatter = new Intl.DateTimeFormat("en-US", options);
+  const parts = formatter.formatToParts(now);
 
-  const meridian = hours >= 12 ? "PM" : "AM";
-  hours = hours % 12 || 12;
-  hours = String(hours).padStart(2, "0");
+  const get = (type) => parts.find(p => p.type === type).value;
 
-  return `${month}-${day}-${year} ${hours}:${minutes}:${seconds} ${meridian}`;
+  return `${get("month")}-${get("day")}-${get("year")} ${get("hour")}:${get("minute")}:${get("second")} ${get("dayPeriod")}`;
 };
 
 const arrangePunches = (punch) => {
@@ -204,7 +226,7 @@ function getTimeDifference(startTime, endTime) {
 //COMPONENT FUNCTION
 const HomePunch = () => {
 
-const {USERID} = useUser();
+const {USERID, ORG} = useUser();
 
 const [punch, setPunch] = useState([])
 
@@ -257,7 +279,7 @@ useEffect(() => {
     const nowDateTime = getNowDateTimeString();
 
     const baseWorkedMinutes = timeStringToMinutes(workedRef.current);
-    // console.log(currentInTime,nowDateTime);
+    console.log(currentInTime,nowDateTime);
     const liveDiff = getTimeDifference(currentInTime,nowDateTime);
     setLiveDifference(liveDiff)
     const liveMinutes = timeStringToMinutes(liveDiff);
@@ -341,18 +363,21 @@ useEffect(() => {
 
         <div className='d-flex justify-content-center text-center'>
             <div className="card w-50 p-3 rounded-4" style={{background:"#f3fffc", border:"#139a74",boxShadow: "0 0 0 0.4px #139a74"}}>
-            <p className='mb-2'>Hours Worked</p>
-            <h4  className='fw-normal mb-2' style={{color:"#139a74"}}>{displayWorked}</h4>
-            <div >
-                <div className="progress" style={{height:"10px"}}>
-                <div className="progress-bar progress-bar-striped bg-success" 
-                    style={{ width: `${workPercentage}%` }}
-                    ></div>
-                </div>
+              <p className='mb-2'>Hours Worked</p>
+              <h4  className='fw-normal mb-2' style={{color:"#139a74"}}>{displayWorked}</h4>
+              <div>
+                  <div className="progress" style={{height:"10px"}}>
+                      <div className="progress-bar progress-bar-striped bg-success" style={{ width: `${workPercentage}%` }}></div>
+                  </div>
+              </div>
             </div>
-            </div>
-            
         </div>
+
+{/* {liveDifference && (
+    <p>{liveDifference} US Time issue Rectified</p> 
+)}
+
+{ORG && (<p>{ORG}</p>)} */}
 
 
         <table className='table'>

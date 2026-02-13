@@ -11,7 +11,7 @@ const AddTaskOffcanvas = ({startEnd, setEvents}) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
 
-  console.log(startEnd.start, startEnd.end,USERID )
+  // console.log(startEnd.start, startEnd.end,USERID )
 
     function formatDateToMMDDYYYY(dateInput) {
       if(!dateInput){
@@ -52,9 +52,9 @@ const AddTaskOffcanvas = ({startEnd, setEvents}) => {
     Assignee: USERID,
   });
 
-  console.log(taskData)
+  // console.log(taskData)
 
-  console.log("projects",myProjects.length)
+  // console.log("projects",myProjects.length)
   const selectedProject = myProjects?.find((p) => p.ID === taskData.Project_Name);
 
 

@@ -1,13 +1,31 @@
 
 import { useState,useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useUser } from '../context/UserContext';
 
 const Sidebar = ({userEmail}) => {
 
-const [activeId, setActiveId] = useState(1);
+  const {USERID} = useUser();
+
+  //266830000001230027
+
+  const [activeId, setActiveId] = useState(1);
+  const [superUser, setSuperUser] = useState(false);
+  const [manager, setManager] = useState(false);
+
   const handleClick = (id) =>{
     setActiveId(id);
   }
+
+  useEffect(() => {
+
+    if(!USERID) return
+
+    if( userEmail === "roy@zentegra.com" || userEmail === "praveen@zenfirm.app" || userEmail === "basha@zentegra.com"){
+      setSuperUser(true);
+    }
+
+  }, [USERID])
 
   // const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
   // const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
@@ -31,7 +49,7 @@ const [activeId, setActiveId] = useState(1);
   return (
     <>
     
-    <div className="d-flex flex-column flex-shrink-0 p-3  vh-100 sidebar">
+<div className="d-flex flex-column flex-shrink-0 p-3  vh-100 sidebar">
   <a
     href="/"
     className="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none"
@@ -67,35 +85,31 @@ const [activeId, setActiveId] = useState(1);
       </Link>
     </li>
 
-    {/* <li>
-      <a href="#" className="nav-link link-dark">
-        <svg className="bi me-2" width="16" height="16">
-          <use xlinkHref="#table" />
-        </svg>
-        Orders
-      </a>
+
+
+{superUser && (
+    <li>
+      <Link  to="/superadmin" onClick={() => handleClick(4)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Super Admin">
+
+        <i className={`bi bi-shield-lock fs-5 ${activeId === 4 ? "text-zen" : "text-secondary"}`} ></i>
+
+          
+      </Link>
     </li>
+)}
 
     <li>
-      <a href="#" className="nav-link link-dark">
-        <svg className="bi me-2" width="16" height="16">
-          <use xlinkHref="#grid" />
-        </svg>
-        Products
-      </a>
+      <Link  to="/charts" onClick={() => handleClick(5)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Manager">
+
+        <i className={`bi bi-clipboard2-data-fill fs-5 ${activeId === 5 ? "text-zen" : "text-secondary"}`} ></i>
+          
+      </Link>
     </li>
 
-    <li>
-      <a href="#" className="nav-link link-dark">
-        <svg className="bi me-2" width="16" height="16">
-          <use xlinkHref="#people-circle" />
-        </svg>
-        Customers
-      </a>
-    </li> */}
+    
   </ul>
 
-    <p>V 1.1.2</p>
+    <p>V 1.1.4</p>
   <hr />
 
   <div className="dropdown">
@@ -131,3 +145,6 @@ const [activeId, setActiveId] = useState(1);
 }
 
 export default Sidebar
+
+// 1.1.3 - Un scheduled Tasks
+// 1.1.4 - Super admin dashboard

@@ -107,3 +107,21 @@
   
 
 }
+
+.attendance-status{
+  font-weight: 600;
+  font-size: 12px;
+  
+  padding: 3px 4px;
+  border-radius: 4px;
+}
+
+.in{
+  background-color: #11cc82;
+  color: white;
+}
+
+.out{
+  background-color: #ff3849;
+  color: white;
+}

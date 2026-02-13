@@ -9,6 +9,8 @@ import { Routes, Route } from 'react-router-dom'
 import Kanban from './pages/Kanban'
 import Loading from './components/ui/Loading'
 import { use } from 'react'
+import SuperAdmin from './superadmin/SuperAdmin'
+import ChartsPage from './pages/ChartsPage'
 
 function App() {
 
@@ -50,6 +52,10 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/calendar" element={<Calendar />} />
               <Route path="/kanban" element={<Kanban />} />
+              <Route path="/superadmin" element={<SuperAdmin/>} />
+              <Route path="/charts" element={<ChartsPage />} />
+
+
               {/* <Route path="/contact" element={<Contact />} />
               <Route path="*" element={<NotFound />} /> */}
             </Routes>

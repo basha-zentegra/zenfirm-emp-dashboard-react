@@ -168,7 +168,8 @@ const MyBigCalendar = ({allTask}) => {
 
     useEffect(() => {
         if (allTask.length > 0) {
-            const newEvents = allTask.map(eve => ({
+
+            const newEvents = allTask.filter(eve => eve?.Task_Date && eve?.Start_Time).map(eve => ({
                 id: eve.ID,
                 title: eve.Task_Name,
                 start: parseEventDate(eve.Task_Date, eve.Start_Time),
@@ -181,6 +182,8 @@ const MyBigCalendar = ({allTask}) => {
             setEvents(newEvents); 
 
             console.log(newEvents)
+
+
 
             const newUnscheduled = allTask.filter(task => !task.Start_Time && !task.End_Time);
             setunscheduledTasks(newUnscheduled)
@@ -322,9 +325,11 @@ const MyBigCalendar = ({allTask}) => {
 
         <AddTaskOffcanvas startEnd={startEnd} setEvents={setEvents}/>
 
-        <button onClick={handleUnScheduled}>Un Scheduled</button>
+        <button style={{position: "fixed", right:"29%", top:"-3px"}} className="d-non btn btn-sm border-secondary text-dark" onClick={handleUnScheduled}><i class="bi bi-hourglass-top"></i> Unscheduled</button>
 
-        <UnScheduledTasks />
+        <UnScheduledTasks setEvents={setEvents} />
+
+        {console.log("EVENTSSSS", events)}
 
     </div>
   )

@@ -1,105 +1,76 @@
-import { useState,useEffect } from 'react'
+import {useState,useEffect} from 'react'
 import { useUser } from '../context/UserContext'
-import { APP_NAME } from '../config'
-import { formattedDate } from '../config'
-import HomePunch from '../components/punch/HomePunch'
-import OffcanvasTaskDetails from '../components/cal/OffcanvasTaskDetails'
-import { getPriorityBorder } from '../utils/uiUtils'
+import { formattedDate } from '../config';
+import { getPriorityBorder } from '../utils/uiUtils';
+import TodayPunch from './TodayPunch';
 
-const Home = () => {
+const SuperAdmin = () => {
 
-  const { USERID } = useUser();
+    const {USERID} = useUser();
+ 
+    const [todayTasks, setTodayTasks] = useState([])
+    const [todayCompleted, setTodayCompleted] = useState([])
+    const [todayInprog, setTodayInprog] = useState([])
+    const [todayNotstarted, setTodayNotstarted] = useState([])
 
-  const [myTodayTasks, setMyTodayTasks] = useState([])
-  const[overDueTasks, setOverDueTasks] = useState([])
-  const[todayCompleted, setTodayCompleted] = useState([])
-  const[todayInprog, setTodayInprog] = useState([])
-  const[todayNotStarted, setTodayNotstarted] = useState([])
+    const[overDueTasks, setOverDueTasks] = useState([])
+ 
 
-  const [selectedTask, setSelectedTask] = useState(null)
 
-  useEffect(() => {
-    if (!USERID) return
+    useEffect(() => {
+        if (!USERID) return
 
-    const config = {
-      app_name: APP_NAME,
-      report_name: "My_Team_Tasks",
-      criteria: `Assignee.ID==${USERID} && Task_Date == "${formattedDate}"`
-    }
-
-    ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
-
-        if(response.code === 3000){
-          console.log("Today's Task Data:", response.data)
-          const taskRes = response.data;
-
-          setMyTodayTasks(taskRes.filter(e => e.Assignee.ID === USERID))
-          setTodayCompleted(taskRes.filter(e => e.Assignee.ID === USERID && e.Task_Status === "Completed"))
-          setTodayInprog(taskRes.filter(e => e.Assignee.ID === USERID && e.Task_Status === "In Progress"))
-          setTodayNotstarted(taskRes.filter(e => e.Assignee.ID === USERID && e.Task_Status === "Not Started"))
+        const config = {
+            report_name: "Task_Report",
+            criteria: `Task_Date == "${formattedDate}"`
         }
+
+        ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
+
+            if(response.code === 3000){
+                console.log("Super Admin Today's Task Data:", response.data)
+                const taskRes = response.data;
+
+              setTodayTasks(taskRes)
+              setTodayCompleted(taskRes.filter(e => e.Task_Status === "Completed"))
+              setTodayInprog(taskRes.filter(e => e.Task_Status === "In Progress"))
+              setTodayNotstarted(taskRes.filter(e => e.Task_Status === "Not Started" || e.Task_Status === "" ))
+            }
         
-      })
-      .catch((err) => console.error(err))
+        })
+        .catch((err) => console.error(err))
 
-  }, [USERID])
-
+    }, [USERID])
 
 
 
     // FETCHING OVERDUE TASKS
     useEffect(() => {
-    if (!USERID) return
+        if (!USERID) return
+    
+        const config = {
+          report_name: "Task_Report",
+          criteria: `Task_Status!="Completed" && Task_Date < "${formattedDate}"`
+        }
+    
+        ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
+    
+          if(response.code === 3000){
+            console.log("Over due Tasks Data:", response.data)
+            const taskRes = response.data;
+            setOverDueTasks(taskRes)
+          }
+            
+          })
+          .catch((err) => console.error(err))
+    
+    }, [USERID])
 
-    const config = {
-      app_name: APP_NAME,
-      report_name: "My_Team_Tasks",
-      criteria: `Assignee.ID==${USERID} && Task_Status!="Completed" && Task_Date < "${formattedDate}"`
-
-    }
-
-    ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
-
-      if(response.code === 3000){
-        console.log("Over due Tasks Data:", response.data)
-        const taskRes = response.data;
-        setOverDueTasks(taskRes)
-      }
-        
-      })
-      .catch((err) => console.error(err))
-
-  }, [USERID])
-
-
-
-
-    const handleSelectTask = (taskID) => {
-
-        const element = document.getElementById("offcanvasRight");
-        const bsOffcanvas = new window.bootstrap.Offcanvas(element);
-        bsOffcanvas.show();
-
-        var config = {
-            app_name: APP_NAME,
-            report_name: "Task_Report",
-            id : taskID
-        };
-        ZOHO.CREATOR.DATA.getRecordById(config).then(function (response) {
-            console.log(response,config);
-            if(response.code === 3000){
-              setSelectedTask(response.data)
-            }
-
-        }).catch(e => console.log(e))
-        
-    };
 
 
   return (
-    <div className='container pt-4'>
-
-
+<div className='container pt-4'>
+        SuperAdmin
 
 <article>
 
@@ -110,7 +81,7 @@ const Home = () => {
       <div className="col-md-3 col-sm-6">
         <div className="stat-card text-center bg-white p-4 shadow-sm rounded">
           <i className="bi bi-person-workspace fs-3 text-primary mb-3"></i>
-          <h3 className="fs-4 fw-bold">{myTodayTasks.length}</h3>
+          <h3 className="fs-4 fw-bold">{todayTasks.length}</h3>
           <p className="text-muted mb-0">Today's Task</p>
         </div>
       </div>
@@ -131,7 +102,7 @@ const Home = () => {
       <div className="col-md-3 col-sm-6">
         <div className="stat-card text-center bg-white p-4 shadow-sm rounded">
           <i className="bi bi-pause-circle fs-3 text-secondary mb-3"></i>
-          <h3 className="fs-4 fw-bold">{todayNotStarted.length}</h3>
+          <h3 className="fs-4 fw-bold">{todayNotstarted.length}</h3>
           <p className="text-muted mb-0">Not Started</p>
         </div>
       </div>
@@ -139,13 +110,8 @@ const Home = () => {
   </div>
 </section>
 
-
-
-
 </article>
-
-
-
+        
 
 
 <div className='row g-4'>
@@ -153,12 +119,12 @@ const Home = () => {
 
         <div className="col-6">
             <div className="card" style={{height: "500px"}}>
-              <span className='cardsHeader ms-3 mt-2'>My Punch-in Report</span>
+              <span className='cardsHeader ms-3 mt-2'>Today's Attendance</span>
               <div className="card-body scroll-karo">
 
 
 
-                    <HomePunch />
+                    <TodayPunch />
 
                 
 
@@ -168,7 +134,7 @@ const Home = () => {
 
         <div className="col-6">
             <div className="card" style={{height: "500px"}}>
-              <span className=' ms-3 mt-2 cardsHeader'>My Overdue Tasks - {overDueTasks.length}</span>
+              <span className=' ms-3 mt-2 cardsHeader'>Overdue Tasks - {overDueTasks.length}</span>
               <div className="card-body scroll-karo" >
                 
                 {overDueTasks.map((e,i) => {
@@ -178,7 +144,7 @@ const Home = () => {
                             <div className="row p-3 py-2">
                                 <div className='col-9'>
                                   <p onClick={() => handleSelectTask(e.ID)} className='d-block cursor-pointer'>{e.Task_Name}</p>
-                                  <small className='text-muted text-uppercase' style={{fontSize:"12px"}}>{e.Project_Name?.Project_Name || "No Project"}</small>
+                                  <small className='text-muted text-uppercase' style={{fontSize:"12px"}}>{e.Project_Name?.Project_Name || "No Project"}  - <span className='fw-medium text-dark'>{e?.Assignee?.Name || "NA"}</span> </small>
                                 </div>
                                 <div className='col-3 '>
                                   <span className={`bg-status ${e.Task_Status.toLowerCase().replace(" ", "-") || "not-started"}`}>{e.Task_Status || "Not Started"}</span>
@@ -196,10 +162,10 @@ const Home = () => {
 
         <div className="col-6">
             <div className="card" style={{height: "500px"}}>
-              <span className='cardsHeader ms-3 mt-2'>Today's Tasks - {myTodayTasks.length}</span>
+              <span className='cardsHeader ms-3 mt-2'>Today's Tasks - {todayTasks.length}</span>
               <div className="card-body scroll-karo" >
                 
-                    {myTodayTasks.map(e => {
+                    {todayTasks.map(e => {
                       
                       return(
                         <div key={e.ID} className={`card mb-3  ${getPriorityBorder(e.Task_Priority)}`}>
@@ -207,7 +173,7 @@ const Home = () => {
                             <div className="row p-3 py-2">
                                 <div className='col-9'>
                                   <p onClick={() => handleSelectTask(e.ID)} className='d-block cursor-pointer'>{e.Task_Name}</p>
-                                  <small className='text-muted text-uppercase' style={{fontSize:"12px"}}>{e.Project_Name?.Project_Name || "No Project"}</small>
+                                  <small className='text-muted text-uppercase' style={{fontSize:"12px"}}>{e.Project_Name?.Project_Name || "No Project"} - <span className='fw-medium text-dark'>{e?.Assignee?.Name || "NA"}</span> </small>
                                 </div>
                                 <div className='col-3 '>
                                   <span className={`bg-status ${e.Task_Status.toLowerCase().replace(" ", "-") || "not-started"}`}>{e.Task_Status || "Not Started"}</span>
@@ -225,17 +191,17 @@ const Home = () => {
 
         <div className="col-6">
             <div className="card" style={{height: "500px"}}>
-              <span className='cardsHeader ms-3 mt-2'>BTR Events - {myTodayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Business Tax Filing").length}</span>
+              <span className='cardsHeader ms-3 mt-2'>BTR Events - {todayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Business Tax Filing").length}</span>
               <div className="card-body scroll-karo" >
                 
-                    {myTodayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Business Tax Filing").map(e => {
+                    {todayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Business Tax Filing").map(e => {
                       return(
                         <div className={`card mb-3  ${getPriorityBorder(e.Task_Priority)}`}>
                          
                             <div className="row p-3 py-2">
                                 <div className='col-9'>
                                   <p onClick={() => handleSelectTask(e.ID)} className='d-block cursor-pointer'>{e.Task_Name}</p>
-                                  <small className='text-muted text-uppercase' style={{fontSize:"12px"}}>{e.Project_Name?.Project_Name || "No Project"}</small>
+                                  <small className='text-muted text-uppercase' style={{fontSize:"12px"}}>{e.Project_Name?.Project_Name || "No Project"}  - <span className='fw-medium text-dark'>{e?.Assignee?.Name || "NA"}</span> </small>
                                 </div>
                                 <div className='col-3 '>
                                  <span className={`bg-status ${e.Task_Status.toLowerCase().replace(" ", "-") || "not-started"}`}>{e.Task_Status || "Not Started"}</span>
@@ -252,17 +218,17 @@ const Home = () => {
 
         <div className="col-6">
             <div className="card" style={{height: "500px"}}>
-              <span className='cardsHeader ms-3 mt-2'>ITR Events - {myTodayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Individual Tax Filing").length}</span>
+              <span className='cardsHeader ms-3 mt-2'>ITR Events - {todayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Individual Tax Filing").length}</span>
               <div className="card-body scroll-karo" >
                 
-                    {myTodayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Individual Tax Filing").map(e => {
+                    {todayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Individual Tax Filing").map(e => {
                       return(
                         <div key={e.ID} className={`card mb-3  ${getPriorityBorder(e.Task_Priority)}`}>
                          
                             <div className="row p-3 py-2">
                                 <div className='col-9'>
                                   <p onClick={() => handleSelectTask(e.ID)} className='d-block cursor-pointer'>{e.Task_Name}</p>
-                                  <small className='text-muted text-uppercase' style={{fontSize:"12px"}}>{e.Project_Name?.Project_Name || "No Project"}</small>
+                                  <small className='text-muted text-uppercase' style={{fontSize:"12px"}}>{e.Project_Name?.Project_Name || "No Project"}  - <span className='fw-medium text-dark'>{e?.Assignee?.Name || "NA"}</span> </small>
                                 </div>
                                 <div className='col-3 '>
                                   <span className={`bg-status ${e.Task_Status.toLowerCase().replace(" ", "-") || "not-started"}`}>{e.Task_Status || "Not Started"}</span>
@@ -287,7 +253,21 @@ const Home = () => {
 
 
 
-<OffcanvasTaskDetails selectedEvent={selectedTask} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -295,4 +275,4 @@ const Home = () => {
   )
 }
 
-export default Home
+export default SuperAdmin
