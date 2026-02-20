@@ -1,8 +1,8 @@
-import {useState,useEffect} from 'react'
+import {useState, useEffect, forwardRef, useImperativeHandle} from 'react'
 import { useUser } from '../../context/UserContext'
 import NewOffcanvass from './NewOffcanvass'
 
-const KanbanSIdebar = ({setSelectedBoard}) => {
+const KanbanSIdebar = forwardRef(({ setSelectedBoard }, ref) => {
 
     const [zenBoards, setZenBoards] = useState([])
 
@@ -30,6 +30,11 @@ const KanbanSIdebar = ({setSelectedBoard}) => {
     useEffect(() => {
         fetchBoards();
     }, []);
+
+    // 👇 expose function to parent
+    useImperativeHandle(ref, () => ({
+        fetchBoards
+    }));
 
     const groupedBoards = zenBoards.reduce((acc, board) => {
         const category = board?.ZenBoard_Catagory?.Catagory || "Uncategorized";
@@ -84,6 +89,6 @@ const KanbanSIdebar = ({setSelectedBoard}) => {
 
     </div>
   )
-}
+});
 
 export default KanbanSIdebar

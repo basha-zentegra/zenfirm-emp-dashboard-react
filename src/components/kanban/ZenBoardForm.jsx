@@ -9,7 +9,7 @@ const ZenBoardForm = ({fetchBoards}) => {
     const [categories, setCatagoriees] = useState([]);
 
     const memberOptions = orgEmp ? orgEmp.map(e => ({value: e?.ID,label: e?.Name})) : [];
-    
+
 
     const [formData, setFormData] = useState({
         ZenBoard_Catagory: "",
@@ -55,6 +55,7 @@ const ZenBoardForm = ({fetchBoards}) => {
                 })
 
                 fetchBoards()
+                document.getElementById("zenbord-closebtn").click()
 
     
             } else{
@@ -67,6 +68,11 @@ const ZenBoardForm = ({fetchBoards}) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        if(!formData.Board_Name || formData.Associate_Members.length ===0 || !formData.ZenBoard_Catagory){
+            alert("Fill Data before submit...!!!")
+            return
+        }
         // fetchBoards(); // refresh sidebar
         addBoard()
         console.log("Form Data:", formData);
@@ -76,7 +82,7 @@ const ZenBoardForm = ({fetchBoards}) => {
     <div className="container mt-4">
       <div className="card shadow-sm p-4">
         <div className='text-end' style={{position:"absolute", top:"15px", right:"15px"}}>
-          <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+          <button id="zenbord-closebtn" type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
 
       </div>
         <h5 className="mb-3">Create ZenBoard</h5>

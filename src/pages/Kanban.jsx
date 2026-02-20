@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useRef} from 'react'
 import KanbanSIdebar from '../components/kanban/KanbanSIdebar'
 import { APP_NAME } from '../config';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
@@ -6,10 +6,21 @@ import React from 'react';
 import OffcanvasTaskDetails from '../components/cal/OffcanvasTaskDetails';
 import KanbanAddTask from '../components/kanban/KanbanAddTask';
 import AddKanbanLIst from '../components/kanban/AddKanbanLIst';
+import "../css/kanban.css";
+import { useUser } from '../context/UserContext';
 
 
 
 const Kanban = () => {
+
+    const sidebarRef = useRef();
+
+    const {empName} = useUser()
+
+    const handleSomeAction = () => {
+      console.log("CALLING FETCHBOARDS IN KANBAN PARENT")
+      sidebarRef.current?.fetchBoards();
+    };
 
 
     const [selectedProject, setSelectedProject] = useState(null);
@@ -23,6 +34,7 @@ const Kanban = () => {
 
     const [selectedList, setSelectedList] = useState(null);
 
+    const [newList, setNewList] = useState("")
 
 
     useEffect(() => {
@@ -37,6 +49,8 @@ const Kanban = () => {
             console.log("kanbanList",kanbanList)
         } else{
             setHideList(true)
+            setKanbanList([])
+            setKanbanTasks([])
         }
     }, [selectedBoard])
 
@@ -79,6 +93,26 @@ const Kanban = () => {
         ZOHO.CREATOR.DATA.updateRecordById(config).then(function (response) {
             if (response.code == 3000) {
                 console.log(response.message);
+            }else{
+                console.log(response)
+            }
+        }).catch(e => console.log(e))
+    }
+
+    function addNewKanbanList(newValue){
+        var config = {
+            report_name: "Zenboards_Report",
+            id: selectedBoard?.ID,
+            payload: {
+                data: {
+                    Zenboard_Status: newValue,
+                    
+            } }
+        };
+        ZOHO.CREATOR.DATA.updateRecordById(config).then(function (response) {
+            if (response.code == 3000) {
+                console.log(response.message, newValue);
+                handleSomeAction()
             }else{
                 console.log(response)
             }
@@ -192,11 +226,19 @@ const handleDragEnd = (result) => {
     } 
 
     const handleAddKanbanList = () => {
-      // addkanbanlistoffcanvas
-        const element = document.getElementById("addkanbanlistoffcanvas");
-        if(!element) return;
-        const bsOffcanvas = new window.bootstrap.Offcanvas(element);
-        bsOffcanvas.show();
+
+      if (!newList.trim()) return;
+
+      setKanbanList(prev =>{
+        const updatedList = [...prev, newList]
+        console.log(updatedList)
+        addNewKanbanList(updatedList.join(', '))
+
+        return updatedList;
+      });
+      setNewList("");
+      setHideList(false)
+        
     }
 
     // Pre-sort and group tasks by column
@@ -216,7 +258,7 @@ const handleDragEnd = (result) => {
 
         <aside className='bg-white vh-100 w-350px border border-start-0 scroll-karo'>
 
-          <KanbanSIdebar setSelectedBoard={setSelectedBoard}/>
+          <KanbanSIdebar ref={sidebarRef} setSelectedBoard={setSelectedBoard}/>
 
         </aside>
 
@@ -237,7 +279,7 @@ const handleDragEnd = (result) => {
           ref={provided.innerRef}
           {...provided.droppableProps}
         >
-          <div className={`card-header text-white rounded-0 fw-semibold ${headerColor[colIndex]}`}>
+          <div className={`card-header text-white rounded-0 fw-semibold border-bottom-0 ${headerColor[colIndex]}`}>
             {list}
           </div>
 
@@ -278,20 +320,46 @@ const handleDragEnd = (result) => {
   ))}
 </DragDropContext>
 
+{selectedBoard && (
+
+  <div
+    className='card w-350px border-0 rounded-0'
+    style={{ flex: '0 0 auto' }}
+  >
+  <div className={`card-header text-white rounded-0 fw-semibold p-1 pb-0 border-bottom-0`}>
+    <div className="input-group">
+      <input 
+        type="text" 
+        className='form-control'
+        value={newList} 
+        onChange={(e) => setNewList(e.target.value)}
+        placeholder='New Kanban List..'
+      />
+      <span onClick={handleAddKanbanList} className="input-group-text bg-primary text-white fw-medium cursor-pointer">+</span>
+
+    </div>
+  </div>
+
+</div>
+
+)}
+
+
+
 {!hideList && kanbanList.length === 0 && (
     <div className='text-center w-100 align-content-center'>
         <img width="70px" className='mb-4' src="https://cdn-icons-png.flaticon.com/128/17952/17952229.png" alt="" />
-        <h1 className='mb-5 lead'>Select the Project to Display the Kanban View</h1>
+        <h1 className='mb-5 lead'>Select the Board to Display the Kanban View</h1>
     </div>
 )}
 
-{hideList && (
+{/* {hideList && (
     <div className='text-center w-100 align-content-center'>
         <img width="70px" className='mb-4' src="https://cdn-icons-png.flaticon.com/128/17952/17952229.png" alt="" />
         <h1 className='mb-4 lead'>Selected Project doesnot have Kanban View</h1>
         <button onClick={handleAddKanbanList} className='btn btn-outline-success mb-5'>Add Kanban List</button>
     </div>
-)}
+)} */}
 
 
 
