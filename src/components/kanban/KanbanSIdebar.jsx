@@ -1,34 +1,87 @@
-import {useState} from 'react'
+import {useState,useEffect} from 'react'
 import { useUser } from '../../context/UserContext'
+import NewOffcanvass from './NewOffcanvass'
 
-const KanbanSIdebar = ({setSelectedProject}) => {
+const KanbanSIdebar = ({setSelectedBoard}) => {
 
+    const [zenBoards, setZenBoards] = useState([])
 
-    const {projects} = useUser();
+    const [activeBoardId, setActiveBoardId] = useState(null)
 
-    const [activeProjectId, setActiveProjectId] = useState(null)
+    const handleClick = (board) => {
+        setSelectedBoard(board)
+        setActiveBoardId(board.ID)
+        // console.log(project)
+    }
 
-    const handleClick = (project) => {
-        setSelectedProject(project)
-        setActiveProjectId(project.ID)
-        console.log(project)
+    // ✅ Move fetchBoards here
+    const fetchBoards = () => {
+        ZOHO.CREATOR.DATA.getRecords({ report_name: "Zenboards_Report" })
+            .then((response) => {
+                console.log("Zenboard Report:", response.data);
+                if (response.code === 3000) {
+                    setZenBoards(response.data);
+                }
+            })
+            .catch((err) => console.error(err));
+    };
+
+    // ✅ Now just call it inside useEffect
+    useEffect(() => {
+        fetchBoards();
+    }, []);
+
+    const groupedBoards = zenBoards.reduce((acc, board) => {
+        const category = board?.ZenBoard_Catagory?.Catagory || "Uncategorized";
+
+        if (!acc[category]) {
+            acc[category] = [];
+        }
+
+        acc[category].push(board);
+        return acc;
+    }, {});
+
+    const handleNewKanbanOffcanvass = () => {
+
+        const element = document.getElementById("NewKanbanOffcanvass");
+        if(!element) return;
+        const bsOffcanvas = new window.bootstrap.Offcanvas(element);
+        bsOffcanvas.show();
     }
 
 
   return (
     <div className='m-3 me-1'>
-        <h6 className='text-primary text-uppercase'>Projects</h6>
+        <h6 className='text-primary text-uppercase'>ZenBoard <i onClick={handleNewKanbanOffcanvass} class="bi bi-plus-square-fill cursor-pointer ms-2 shadow-lg"></i></h6>
 
-        {projects.map(element => (
-        <div
-            key={element.ID}
-            className={`p-2 border border-start-0 border-end-0 border-bottom-0 ${activeProjectId === element.ID ? 'bg-purple-light rounded-3' : ''}`}
-        >
+        {Object.keys(groupedBoards).map((category) => (
+            <div key={category} className="mb-3 border border-start-0 border-end-0 border-top-0">
                 
-                <small className='cursor-pointer fw-medium ' key={element.ID} onClick={() => handleClick(element)}>{element?.Project_Name}</small>
-           
+                {/* Category Title */}
+                <div className="fw-bold text-muted small text-uppercase mt-3">
+                    {category}
+                </div>
+
+                {/* Boards Under Category */}
+                {groupedBoards[category].map((element) => (
+                    <div
+                        key={element.ID}
+                        className={`p-2  ${activeBoardId === element.ID ? 'bg-purple-light rounded-3' : ''}`}
+                    >
+                        <small
+                            className='cursor-pointer fw-medium'
+                            onClick={() => handleClick(element)}
+                        >
+                            {element?.Board_Name}
+                        </small>
+                    </div>
+                ))}
             </div>
         ))}
+
+        <NewOffcanvass fetchBoards={fetchBoards} />
+
     </div>
   )
 }

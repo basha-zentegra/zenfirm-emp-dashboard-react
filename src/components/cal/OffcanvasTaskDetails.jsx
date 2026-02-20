@@ -1,11 +1,43 @@
-import React from 'react'
+import {useMemo} from 'react'
+import { useUser } from '../../context/UserContext'
+import Stopwatch from '../timer/Stopwatch';
 
 const OffcanvasTaskDetails = ({selectedEvent}) => {
+
+  const {userEmail, USERID} = useUser();
+
+  const project = selectedEvent?.Project_Name;
+
+  // Compute base URL safely
+  const baseUrl = useMemo(() => {
+    if (!userEmail) return null;
+
+    if (userEmail.includes("@zentegra")) {
+      return "https://creatorapp.zoho.in/zentegraindia/zenfirm/#Page:All_Projects?pid=";
+    }
+
+    return "https://zenfirm.zohocreatorportal.in/zentegraindia/zenfirm/#Page:All_Projects?pid="; 
+  }, [userEmail]);
+
+  const projectUrl = project?.ID && baseUrl ? `${baseUrl}${project.ID}` : null;
+
+
+  
+
   return (
     <>
 <div className="offcanvas offcanvas-end" tabIndex="-1" id="offcanvasRight" aria-labelledby="taskOffcanvasLable" style={{width: "800px"}}>
-  <div className="offcanvas-header">
-    <h5 className="offcanvas-title" id="taskOffcanvasLable">{selectedEvent?.Task_Name || " "}</h5>
+  <div className="offcanvas-header pb-0">
+
+    <div className='d-flex w-100 justify-content-between pe-4 align-items-center'>
+      <h5 className="offcanvas-title" id="taskOffcanvasLable">{selectedEvent?.Task_Name || " "}</h5>
+      <div>
+        
+        {/* <CountdownTimer /> */}
+        <Stopwatch />
+      </div>
+    </div>
+
     <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
   <div className="offcanvas-body">
@@ -28,7 +60,22 @@ const OffcanvasTaskDetails = ({selectedEvent}) => {
             Project
           </th>
           <td style={{ width: "58%" }}>
-            {selectedEvent?.Project_Name?.Project_Name || "No Project"}
+
+
+            {projectUrl ? (
+              <a
+                href={projectUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-decoration-none text-dark"
+              >
+                {project.Project_Name}
+              </a>
+              ) : (
+                <span className="text-muted">No Project</span>
+            )}
+
+
           </td>
         </tr>
 

@@ -10,6 +10,8 @@ const Home = () => {
 
   const { USERID } = useUser();
 
+  const [UID, setUID] = useState(USERID);
+
   const [myTodayTasks, setMyTodayTasks] = useState([])
   const[overDueTasks, setOverDueTasks] = useState([])
   const[todayCompleted, setTodayCompleted] = useState([])
@@ -19,12 +21,12 @@ const Home = () => {
   const [selectedTask, setSelectedTask] = useState(null)
 
   useEffect(() => {
-    if (!USERID) return
+    if (!UID) return
 
     const config = {
       app_name: APP_NAME,
       report_name: "My_Team_Tasks",
-      criteria: `Assignee.ID==${USERID} && Task_Date == "${formattedDate}"`
+      criteria: `Assignee.ID==${UID} && Task_Date == "${formattedDate}"`
     }
 
     ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
@@ -33,28 +35,28 @@ const Home = () => {
           console.log("Today's Task Data:", response.data)
           const taskRes = response.data;
 
-          setMyTodayTasks(taskRes.filter(e => e.Assignee.ID === USERID))
-          setTodayCompleted(taskRes.filter(e => e.Assignee.ID === USERID && e.Task_Status === "Completed"))
-          setTodayInprog(taskRes.filter(e => e.Assignee.ID === USERID && e.Task_Status === "In Progress"))
-          setTodayNotstarted(taskRes.filter(e => e.Assignee.ID === USERID && e.Task_Status === "Not Started"))
+          setMyTodayTasks(taskRes.filter(e => e.Assignee.ID === UID))
+          setTodayCompleted(taskRes.filter(e => e.Assignee.ID === UID && e.Task_Status === "Completed"))
+          setTodayInprog(taskRes.filter(e => e.Assignee.ID === UID && e.Task_Status === "In Progress"))
+          setTodayNotstarted(taskRes.filter(e => e.Assignee.ID === UID && e.Task_Status === "Not Started"))
         }
         
       })
       .catch((err) => console.error(err))
 
-  }, [USERID])
+  }, [UID])
 
 
 
 
     // FETCHING OVERDUE TASKS
     useEffect(() => {
-    if (!USERID) return
+    if (!UID) return
 
     const config = {
       app_name: APP_NAME,
       report_name: "My_Team_Tasks",
-      criteria: `Assignee.ID==${USERID} && Task_Status!="Completed" && Task_Date < "${formattedDate}"`
+      criteria: `Assignee.ID==${UID} && Task_Status!="Completed" && Task_Date < "${formattedDate}"`
 
     }
 
@@ -69,7 +71,7 @@ const Home = () => {
       })
       .catch((err) => console.error(err))
 
-  }, [USERID])
+  }, [UID])
 
 
 

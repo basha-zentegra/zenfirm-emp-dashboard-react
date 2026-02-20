@@ -3,29 +3,29 @@ import { useUser } from '../../context/UserContext';
 import { formattedDate } from '../../config';
 import { APP_NAME } from '../../config';
 
-const KanbanAddTask = ({list,selectedProject,setKanbanTasks}) => {
+const KanbanAddTask = ({list,selectedBoard,setKanbanTasks}) => {
 
 
-    if(!selectedProject || !list){
-        return null;
-    }
+    // if(!selectedProject || !list){
+    //     return null;
+    // }
 
     const {USERID, projects, orgEmp} = useUser();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-
-
+    const myProjects = projects || [];
   
     const [taskData, setTaskData] = useState({
       Task_Name: "",
       Task_Description: "",
       Task_Status: "Not Started",
       Task_Priority: "Low",
-      Project_Name: selectedProject?.ID,
+      Project_Name: "",
       Task_Date: formattedDate,
       Assignee: USERID,
       Kanban_Status: list,
-      Budgered_Time: "1h 0m"
+      Budgered_Time: "1h 0m",
+      Zenboards: selectedBoard?.ID,
     });
 
     useEffect(()=>{
@@ -36,6 +36,16 @@ const KanbanAddTask = ({list,selectedProject,setKanbanTasks}) => {
       }));
       
     },[list])
+
+
+      useEffect(() => {
+        if (selectedBoard?.ID) {
+          setTaskData((prev) => ({
+            ...prev,
+            Zenboards: selectedBoard?.ID,
+          }));
+        }
+      }, [selectedBoard]);
 
   
     console.log(taskData)
@@ -75,6 +85,7 @@ const KanbanAddTask = ({list,selectedProject,setKanbanTasks}) => {
                 data: taskData
             }
         };
+        console.log(taskData)
         ZOHO.CREATOR.DATA.addRecords(config).then(function (response) {
             if (response.code == 3000) {
                 console.log(response.message);
@@ -90,7 +101,8 @@ const KanbanAddTask = ({list,selectedProject,setKanbanTasks}) => {
                   ...prev,
                   Task_Name: "",
                   Task_Description: "",
-                  Assignee: USERID
+                  Assignee: USERID,
+                  Project_Name:""
                 }));
                 closeOffCanvas()
                 setIsSubmitting(false)
@@ -114,15 +126,21 @@ const KanbanAddTask = ({list,selectedProject,setKanbanTasks}) => {
     return (
       <>
   <div className="offcanvas offcanvas-end" tabIndex="-1" id="addtaskoffcanvaskanban" aria-labelledby="taskOffcanvasLable" style={{width: "800px"}}>
-    <div className="offcanvas-header">
+    {/* <div className="offcanvas-header">
       <h5 className="offcanvas-title" id="taskOffcanvasLable"></h5>
       <button type="button" onClick={closeButton} className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
+    </div> */}
     <div className="offcanvas-body">
-     
+      
   
   <div className="card">
     <div className="card-body">
+
+      <div className='text-end' style={{position:"absolute", top:"15px", right:"15px"}}>
+          <button type="button" onClick={closeButton} className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+
+      </div>
+
       <div className="py-2 mb-2">
         <h5 className="text-primary">Add Task Details</h5>
       </div>
@@ -147,6 +165,26 @@ const KanbanAddTask = ({list,selectedProject,setKanbanTasks}) => {
               />
             </td>
           </tr>
+
+          <tr>
+            <th style={{ width: "7%" }}>
+              <i className="bi bi-kanban"></i>
+            </th>
+            <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
+              Board Name <span className='text-danger'></span>
+            </th>
+            <td style={{ width: "58%" }}>
+  
+                <input
+                  className="form-control"
+                  name="Project_Name"
+                  value={selectedBoard?.Board_Name}
+                    readOnly
+                />
+
+  
+            </td>
+          </tr>
   
           <tr>
             <th style={{ width: "7%" }}>
@@ -156,13 +194,20 @@ const KanbanAddTask = ({list,selectedProject,setKanbanTasks}) => {
               Project Name <span className='text-danger'></span>
             </th>
             <td style={{ width: "58%" }}>
-  
-                <input
-                  className="form-control"
-                  name="Project_Name"
-                  value={selectedProject?.Project_Name}
-                    readOnly
-                />
+
+              <select
+                className="form-control"
+                name="Project_Name"
+                value={taskData.Project_Name}
+                onChange={handleChange}
+              >
+                <option selected disabled value="">Select Project</option>
+                {myProjects.map((project) => (
+                  <option key={project.ID} value={project.ID}>
+                    {project.Project_Name}
+                  </option>
+                ))}
+              </select>
 
   
             </td>

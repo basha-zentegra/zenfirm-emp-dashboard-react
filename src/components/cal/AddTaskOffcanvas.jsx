@@ -120,6 +120,7 @@ const AddTaskOffcanvas = ({startEnd, setEvents}) => {
                 Project_Name: ""
               }));
               closeOffCanvas()
+              setIsSubmitting(false)
 
           } else{
             console.log(response);

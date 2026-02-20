@@ -13,6 +13,7 @@ const Kanban = () => {
 
 
     const [selectedProject, setSelectedProject] = useState(null);
+    const [selectedBoard, setSelectedBoard] = useState(null);
     const [kanbanList, setKanbanList] = useState([])
     const [kanbanTasks, setKanbanTasks] = useState([])
 
@@ -25,33 +26,33 @@ const Kanban = () => {
 
 
     useEffect(() => {
-        if (!selectedProject) return
+        if (!selectedBoard) return
 
-        if (selectedProject?.Kanban_List) {
-            const listArray = selectedProject.Kanban_List.split(',').map(item => item.trim())
+        if (selectedBoard?.Zenboard_Status) {
+            const listArray = selectedBoard.Zenboard_Status.split(',').map(item => item.trim())
             setKanbanList(listArray)
             setHideList(false)
+            setKanbanTasks([])
 
             console.log("kanbanList",kanbanList)
         } else{
             setHideList(true)
         }
-    }, [selectedProject])
+    }, [selectedBoard])
 
 
     useEffect(() => {
-        if (!selectedProject) return
+        if (!selectedBoard) return
     
         const config = {
-            app_name: APP_NAME,
             report_name: "Task_Report",
-            criteria: `Project_Name.ID==${selectedProject?.ID}`
+            criteria: `Zenboards.ID==${selectedBoard?.ID}`
         }
     
         ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
     
             if(response.code === 3000){
-                console.log("Selected Project's Tasks:", response.data)
+                console.log("Selected board's Tasks:", response.data)
                 const taskRes = response.data;
 
                 setKanbanTasks(taskRes)
@@ -61,7 +62,7 @@ const Kanban = () => {
             })
             .catch((err) => console.error(err))
     
-    }, [selectedProject])
+    }, [selectedBoard])
 
 
     function updateKanbanStatus(eventID, destination){
@@ -83,27 +84,75 @@ const Kanban = () => {
             }
         }).catch(e => console.log(e))
     }
+    
 
-    const handleDragEnd = (result) => {
-        const { source, destination, draggableId } = result;
+const handleDragEnd = (result) => {
+  const { destination, source, draggableId } = result;
 
-        console.log(source, destination, draggableId)
+  // If dropped outside a droppable area
+  if (!destination) return;
 
-        if (!destination) return; // dropped outside
+  // If dropped in the same position
+  if (
+    destination.droppableId === source.droppableId &&
+    destination.index === source.index
+  ) return;
 
-        // If dropped in the same column and same index, do nothing
-        if (source.droppableId === destination.droppableId && source.index === destination.index) return;
+  // Get source and destination column tasks (sorted by order)
+  const sourceColumn = kanbanTasks
+    .filter(task => task.Kanban_Status === source.droppableId)
+    .sort((a, b) => a.Kanban_Order - b.Kanban_Order);
 
+  const destColumn = source.droppableId === destination.droppableId
+    ? sourceColumn
+    : kanbanTasks
+        .filter(task => task.Kanban_Status === destination.droppableId)
+        .sort((a, b) => a.Kanban_Order - b.Kanban_Order);
 
-        // Find the task being moved
-        const task = kanbanTasks.find(t => t.ID === draggableId);
+  // Remove the dragged task from the source column
+  const draggedTask = sourceColumn[source.index];
+  const newSourceColumn = [...sourceColumn];
+  newSourceColumn.splice(source.index, 1);
 
-        // Update the task's Kanban_Status to the new column
-        const updatedTasks = kanbanTasks.map(t =>t.ID === task.ID ? { ...t, Kanban_Status: destination.droppableId } : t );
+  // Insert into destination column
+  const newDestColumn = source.droppableId === destination.droppableId
+    ? newSourceColumn
+    : [...destColumn];
+  newDestColumn.splice(destination.index, 0, draggedTask);
 
-        setKanbanTasks(updatedTasks);
-        updateKanbanStatus(draggableId, destination.droppableId);
-    };
+  // Build updated tasks with new order and status
+  const updatedTasks = kanbanTasks.map(task => {
+    // Update source column orders
+    const sourceIdx = newSourceColumn.findIndex(t => t.ID === task.ID);
+    if (sourceIdx !== -1 && source.droppableId !== destination.droppableId) {
+      return { ...task, Kanban_Order: sourceIdx };
+    }
+
+    // Update destination column orders + status
+    const destIdx = newDestColumn.findIndex(t => t.ID === task.ID);
+    if (destIdx !== -1) {
+      return {
+        ...task,
+        Kanban_Status: destination.droppableId,
+        Kanban_Order: destIdx,
+      };
+    }
+
+    return task;
+  });
+
+  setKanbanTasks(updatedTasks);
+
+  
+  updateKanbanStatus(draggableId, destination.droppableId);
+    
+
+  console.log("draggableId, destination.droppableId, destination.index")
+  console.log(draggableId, destination.droppableId, destination.index)
+
+  // Persist to backend if needed
+  // updateTaskOrder(draggableId, destination.droppableId, destination.index);
+};
 
 
     const headerColor = ["headerColor0","headerColor1","headerColor2","headerColor3","headerColor4"]
@@ -150,6 +199,13 @@ const Kanban = () => {
         bsOffcanvas.show();
     }
 
+    // Pre-sort and group tasks by column
+    const getColumnTasks = (status) => {
+      return kanbanTasks
+        .filter(task => task.Kanban_Status === status)
+        .sort((a, b) => a.Kanban_Order - b.Kanban_Order); // Sort by order field
+    }; 
+
 
 
 
@@ -160,7 +216,7 @@ const Kanban = () => {
 
         <aside className='bg-white vh-100 w-350px border border-start-0 scroll-karo'>
 
-          <KanbanSIdebar setSelectedProject={setSelectedProject}/>
+          <KanbanSIdebar setSelectedBoard={setSelectedBoard}/>
 
         </aside>
 
@@ -171,12 +227,9 @@ const Kanban = () => {
           
         >
 
-
 <DragDropContext onDragEnd={handleDragEnd}>
-
   {!hideList && kanbanList.map((list, colIndex) => (
-    <Droppable droppableId={list} key={colIndex}>
-
+    <Droppable droppableId={list} key={list}>
       {(provided) => (
         <div
           className='card w-350px border-0 rounded-0'
@@ -184,13 +237,18 @@ const Kanban = () => {
           ref={provided.innerRef}
           {...provided.droppableProps}
         >
+          <div className={`card-header text-white rounded-0 fw-semibold ${headerColor[colIndex]}`}>
+            {list}
+          </div>
 
-          <div className={`card-header text-white rounded-0 fw-semibold ${headerColor[colIndex]}`}>{list}</div>
-
-          <div className='card-body' style={{background: colIndex % 2 === 0 ? '#e2e7ee' : '#ebeff9'}}>
-            {kanbanTasks.filter(task => task.Kanban_Status === list).map((task, taskIndex) => (
+          <div className='card-body' style={{ background: colIndex % 2 === 0 ? '#e2e7ee' : '#ebeff9' }}>
+            {/* ✅ Sort by Kanban_Order */}
+            {kanbanTasks
+              .filter(task => task.Kanban_Status === list)
+              .sort((a, b) => a.Kanban_Order - b.Kanban_Order)
+              .map((task, taskIndex) => (
                 <Draggable
-                  draggableId={task.ID} 
+                  draggableId={String(task.ID)}  // ✅ Ensure string
                   index={taskIndex}
                   key={task.ID}
                 >
@@ -211,22 +269,14 @@ const Kanban = () => {
               ))}
             {provided.placeholder}
             <div className='text-center'>
-                <button onClick={() => handleAddTask(list)} className='btn bg-white'> +</button>
+              <button onClick={() => handleAddTask(list)} className='btn bg-white'>+</button>
             </div>
           </div>
-          
-
         </div>
-        
       )}
-      
-
     </Droppable>
-    
-
   ))}
 </DragDropContext>
-
 
 {!hideList && kanbanList.length === 0 && (
     <div className='text-center w-100 align-content-center'>
@@ -250,7 +300,7 @@ const Kanban = () => {
 
 <OffcanvasTaskDetails selectedEvent={selectedTask} />
 
-<KanbanAddTask list={selectedList} selectedProject={selectedProject} setKanbanTasks={setKanbanTasks} />
+<KanbanAddTask list={selectedList} selectedBoard={selectedBoard} setKanbanTasks={setKanbanTasks} />
 
 <AddKanbanLIst selectedProject={selectedProject} setKanbanList={setKanbanList} setHideList={setHideList} />
 
