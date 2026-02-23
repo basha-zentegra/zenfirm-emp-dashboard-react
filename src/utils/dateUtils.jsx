@@ -37,3 +37,9 @@ export function formatTimeToHHMM(dateInput) {
 
     return `${hours}:${minutes}`;
 }
+
+export function inputToMMDDYYYY(dateString) {
+  if (!dateString) return "";
+  const [year, month, day] = dateString.split("-");
+  return `${month}-${day}-${year}`;
+}

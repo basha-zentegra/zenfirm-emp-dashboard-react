@@ -2,6 +2,7 @@ import {useState,useEffect} from 'react'
 import { useUser } from '../../context/UserContext';
 import { formattedDate } from '../../config';
 import { APP_NAME } from '../../config';
+import { inputToMMDDYYYY } from '../../utils/dateUtils';
 
 const KanbanAddTask = ({list,selectedBoard,setKanbanTasks}) => {
 
@@ -10,7 +11,7 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks}) => {
     //     return null;
     // }
 
-    const {USERID, projects, orgEmp} = useUser();
+    const {USERID, projects, orgEmp,empName} = useUser();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const myProjects = projects || [];
@@ -21,11 +22,12 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks}) => {
       Task_Status: "Not Started",
       Task_Priority: "Low",
       Project_Name: "",
-      Task_Date: formattedDate,
+      Task_Date: "",
       Assignee: USERID,
       Kanban_Status: list,
       Budgered_Time: "1h 0m",
       Zenboards: selectedBoard?.ID,
+      Due_Date: ""
     });
 
     useEffect(()=>{
@@ -78,11 +80,19 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks}) => {
   
   
     function addEvent() {
+
+        const formattedDueDate = inputToMMDDYYYY(taskData.Due_Date);
+        const formattedTaskDate = inputToMMDDYYYY(taskData.Task_Date);
+
         var config = {
             app_name: APP_NAME,
             form_name: "Task",
             payload: {
-                data: taskData
+                data: {
+                  ...taskData,
+                  Due_Date: formattedDueDate,
+                  Task_Date: formattedTaskDate
+                }
             }
         };
         console.log(taskData)
@@ -102,7 +112,9 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks}) => {
                   Task_Name: "",
                   Task_Description: "",
                   Assignee: USERID,
-                  Project_Name:""
+                  Project_Name:"",
+                  Due_Date:"",
+                  Task_Date:""
                 }));
                 closeOffCanvas()
                 setIsSubmitting(false)
@@ -130,7 +142,7 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks}) => {
       <h5 className="offcanvas-title" id="taskOffcanvasLable"></h5>
       <button type="button" onClick={closeButton} className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div> */}
-    <div className="offcanvas-body">
+    <div className="offcanvas-body scroll-karo">
       
   
   <div className="card">
@@ -177,9 +189,9 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks}) => {
   
                 <input
                   className="form-control"
-                  name="Project_Name"
+                  name="Zenboards"
                   value={selectedBoard?.Board_Name}
-                    readOnly
+                  disabled
                 />
 
   
@@ -245,7 +257,7 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks}) => {
                 name="Task_Status"
                 value={taskData.Task_Status}
                 onChange={handleChange}
-                readOnly
+                disabled
                 
               />
             </td>
@@ -260,12 +272,31 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks}) => {
             </th>
             <td id="startDate" style={{ width: "58%" }}>
               <input 
-                type='text'
+                type='date'
                 className='form-control' 
                 name="Task_Date"
                 value={taskData.Task_Date}
                 onChange={handleChange}
-                readOnly
+                
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <th style={{ width: "7%" }}>
+              <i className="bi bi-calendar-check"></i>
+            </th>
+            <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
+              Due Date 
+            </th>
+            <td style={{ width: "58%" }}>
+              <input 
+                type='date'
+                className='form-control' 
+                name="Due_Date"
+                value={taskData.Due_Date}
+                onChange={handleChange}
+                
               />
             </td>
           </tr>
@@ -284,7 +315,7 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks}) => {
                 name="Kanban_Status"
                 value={taskData.Kanban_Status}
                 // onChange={handleChange}
-                readOnly
+                disabled
               />
             </td>
           </tr>
@@ -345,14 +376,6 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks}) => {
               Assignee
             </th>
             <td style={{ width: "58%" }}> 
-               {/* <input 
-                type='text'
-                className='form-control' 
-                name="Assignee"
-                value={taskData.Assignee}
-                onChange={handleChange}
-                
-              /> */}
               <select
                   className="form-control"
                   name="Assignee"
@@ -363,6 +386,24 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks}) => {
                     <option value={employee.ID}>{employee?.Name}</option>
                   ))}
               </select>
+            </td>
+          </tr>
+
+          <tr className=''>
+            <th style={{ width: "7%" }}>
+              <i className="bi bi-person"></i>
+            </th>
+            <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
+              Assigneed By
+            </th>
+            <td style={{ width: "58%" }}> 
+               <input 
+                type='text'
+                className='form-control' 
+                name="Assigned_By"
+                value={empName|| "NA"}
+                disabled
+              />
             </td>
           </tr>
   
