@@ -55,35 +55,68 @@ const KanbanSIdebar = forwardRef(({ setSelectedBoard }, ref) => {
         bsOffcanvas.show();
     }
 
+    const [openCategories, setOpenCategories] = useState({});
+
+    const toggleCategory = (category) => {
+        setOpenCategories((prev) => ({
+            ...prev,
+            [category]: !prev[category],
+        }));
+    };
 
   return (
     <div className='m-3 me-1'>
         <h6 className='text-primary text-uppercase'>ZenBoard <i onClick={handleNewKanbanOffcanvass} class="bi bi-plus-square-fill cursor-pointer ms-2 shadow-lg"></i></h6>
 
-        {Object.keys(groupedBoards).map((category) => (
-            <div key={category} className="mb-3 border border-start-0 border-end-0 border-top-0">
-                
-                {/* Category Title */}
-                <div className="fw-bold text-muted small text-uppercase mt-3">
-                    {category}
-                </div>
+        {Object.keys(groupedBoards).map((category) => {
+  const isOpen = openCategories[category];
 
-                {/* Boards Under Category */}
-                {groupedBoards[category].map((element) => (
-                    <div
-                        key={element.ID}
-                        className={`p-2  ${activeBoardId === element.ID ? 'bg-purple-light rounded-3' : ''}`}
-                    >
-                        <small
-                            className='cursor-pointer fw-medium'
-                            onClick={() => handleClick(element)}
-                        >
-                            {element?.Board_Name}
-                        </small>
-                    </div>
-                ))}
-            </div>
+  return (
+    <div
+      key={category}
+      className="mb-3 border border-start-0 border-end-0 border-top-0"
+    >
+      {/* Category Header */}
+      <div
+        className="fw-bold text-muted small text-uppercase mt-3 fs-6 d-flex justify-content-between align-items-center cursor-pointer"
+        onClick={() => toggleCategory(category)}
+        style={{ cursor: "pointer" }}
+      >
+        <span>{category}</span>
+        <span>{isOpen ? "−" : "+"}</span>
+      </div>
+
+      {/* Collapsible Content */}
+      <div
+        className={`overflow-hidden transition-all ${
+          isOpen ? "mt-2" : ""
+        }`}
+        style={{
+          maxHeight: isOpen ? "500px" : "0px",
+          transition: "max-height 0.3s ease",
+        }}
+      >
+        {groupedBoards[category].map((element) => (
+          <div
+            key={element.ID}
+            className={`p-2 ${
+              activeBoardId === element.ID
+                ? "bg-purple-light rounded-3"
+                : ""
+            }`}
+          >
+            <span
+              className="cursor-pointer fw-medium"
+              onClick={() => handleClick(element)}
+            >
+              {element?.Board_Name}
+            </span>
+          </div>
         ))}
+      </div>
+    </div>
+  );
+})}
 
         <NewOffcanvass fetchBoards={fetchBoards} />
 

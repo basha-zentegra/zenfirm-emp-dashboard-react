@@ -37,7 +37,7 @@ const Stopwatch = ({ initialSeconds = 0 }) => {
   return (
     <div style={styles.wrapper}>
       <span className="fw-medium text-muted" style={styles.time}>{formatTime(timeLeft)}</span>
-      <button className="btn btn-sm fs-3 py-0 border-0" onClick={toggleTimer}>
+      <button className="btn btn-sm fs-3 py-0 border-0" onClick={toggleTimer} disabled>
         {isRunning ? <i class="bi bi-stop-circle text-danger"></i> : <i class="bi bi-play-circle text-success"></i>}
       </button>
     </div>

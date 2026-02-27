@@ -36,6 +36,8 @@ const Kanban = () => {
 
     const [newList, setNewList] = useState("")
 
+    const [boardMembers, setBoardMembers] = useState([]);
+
 
     useEffect(() => {
         if (!selectedBoard) return
@@ -52,29 +54,40 @@ const Kanban = () => {
             setKanbanList([])
             setKanbanTasks([])
         }
+
+        if(selectedBoard?.Associate_Members.length > 0){
+          setBoardMembers(selectedBoard?.Associate_Members)
+        }else{
+          setBoardMembers([])
+        }
+
     }, [selectedBoard])
 
+    function fetchTasks(){
+            const config = {
+                  report_name: "Task_Report",
+                  criteria: `Zenboards.ID==${selectedBoard?.ID}`
+            }
+          
+              ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
+          
+                  if(response.code === 3000){
+                      console.log("Selected board's Tasks:", response.data)
+                      const taskRes = response.data;
+
+                      setKanbanTasks(taskRes)
+                      
+                  }
+            
+            })
+            .catch((err) => console.error(err))
+    }
 
     useEffect(() => {
         if (!selectedBoard) return
     
-        const config = {
-            report_name: "Task_Report",
-            criteria: `Zenboards.ID==${selectedBoard?.ID}`
-        }
-    
-        ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
-    
-            if(response.code === 3000){
-                console.log("Selected board's Tasks:", response.data)
-                const taskRes = response.data;
-
-                setKanbanTasks(taskRes)
-                
-            }
-            
-            })
-            .catch((err) => console.error(err))
+        fetchTasks()
+        
     
     }, [selectedBoard])
 
@@ -206,6 +219,7 @@ const handleDragEnd = (result) => {
         ZOHO.CREATOR.DATA.getRecordById(config).then(function (response) {
             // console.log(response,config);
             if(response.code === 3000){
+              console.log(response.data)
                 setSelectedTask(response.data)
             }
             // 
@@ -366,9 +380,9 @@ const handleDragEnd = (result) => {
         </main>
 
 
-<OffcanvasTaskDetails selectedEvent={selectedTask} />
+<OffcanvasTaskDetails selectedEvent={selectedTask} fetchTasks={fetchTasks} />
 
-<KanbanAddTask list={selectedList} selectedBoard={selectedBoard} setKanbanTasks={setKanbanTasks} />
+<KanbanAddTask list={selectedList} selectedBoard={selectedBoard} setKanbanTasks={setKanbanTasks} boardMembers={boardMembers} />
 
 <AddKanbanLIst selectedProject={selectedProject} setKanbanList={setKanbanList} setHideList={setHideList} />
 

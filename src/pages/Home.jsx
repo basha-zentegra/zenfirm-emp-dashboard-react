@@ -289,7 +289,7 @@ const Home = () => {
 
 
 
-<OffcanvasTaskDetails selectedEvent={selectedTask} />
+<OffcanvasTaskDetails selectedEvent={selectedTask} setSelectedEvent={setSelectedTask}  />
 
 
 

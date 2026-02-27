@@ -34,6 +34,11 @@ p{
     color: #f0a400;
 }
 
+.pause{
+    background-color: #ffd6a7;
+    color: #E17100;
+}
+
 .approved{
     background-color: #8EC5FF;
     color: #155DFC;

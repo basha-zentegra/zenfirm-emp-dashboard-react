@@ -4,7 +4,7 @@ import { formattedDate } from '../../config';
 import { APP_NAME } from '../../config';
 import { inputToMMDDYYYY } from '../../utils/dateUtils';
 
-const KanbanAddTask = ({list,selectedBoard,setKanbanTasks}) => {
+const KanbanAddTask = ({list,selectedBoard,setKanbanTasks, boardMembers = []}) => {
 
 
     // if(!selectedProject || !list){
@@ -25,7 +25,7 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks}) => {
       Task_Date: "",
       Assignee: USERID,
       Kanban_Status: list,
-      Budgered_Time: "1h 0m",
+      Budgeted_Time: "1h 0m",
       Zenboards: selectedBoard?.ID,
       Due_Date: ""
     });
@@ -328,7 +328,7 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks}) => {
               Budgeted Time
             </th>
             <td id="endDate" style={{ width: "58%" }}>
-                <select class="form-control" name="Budgered_Time" onChange={handleChange} value={taskData.Budgered_Time} >
+                <select class="form-control" name="Budgeted_Time" onChange={handleChange} value={taskData.Budgeted_Time} >
                     <option disabled value="">Select duration</option>
                     <option value="0h 30m">0h 30m</option>
                     <option value="1h 0m">1h 0m</option>
@@ -382,7 +382,8 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks}) => {
                   value={taskData.Assignee}
                   onChange={handleChange}
                 >
-                  {orgEmp.map(employee => (
+                  <option disabled >select</option>
+                  {boardMembers.map(employee => (
                     <option value={employee.ID}>{employee?.Name}</option>
                   ))}
               </select>
@@ -408,7 +409,7 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks}) => {
           </tr>
   
   
-        <tr>
+          <tr>
             <th style={{ width: "7%" }}>
               
             </th>

@@ -43,3 +43,23 @@ export function inputToMMDDYYYY(dateString) {
   const [year, month, day] = dateString.split("-");
   return `${month}-${day}-${year}`;
 }
+
+export function zohoToInput(dateString) {
+  if (!dateString) return "";
+  const [month, day, year] = dateString.split("-");
+  return `${year}-${month}-${day}`;
+}
+
+export function isFuture(todayDate, targetDate) {
+  if (!todayDate || !targetDate) return false;
+
+  const parseDate = (dateStr) => {
+    const [month, day, year] = dateStr.split("-").map(Number);
+    return new Date(year, month - 1, day); // month is 0-indexed
+  };
+
+  const today = parseDate(todayDate);
+  const target = parseDate(targetDate);
+
+  return target > today;
+}

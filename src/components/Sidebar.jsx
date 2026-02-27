@@ -78,7 +78,7 @@ const Sidebar = ({userEmail}) => {
     </li>
 
     <li>
-      <Link  to="/kanban" onClick={() => handleClick(3)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Kanban">
+      <Link  to="/kanban" onClick={() => handleClick(3)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="ZenBoards">
 
         <i className={`bi bi-kanban fs-5 ${activeId === 3 ? "text-zen" : "text-secondary"}`} ></i>
           
@@ -109,10 +109,11 @@ const Sidebar = ({userEmail}) => {
     
   </ul>
 
-    <p>V 1.1.5</p>
   <hr />
 
-  <div className="dropdown">
+    <p>V 1.1.5</p>
+
+  {/* <div className="dropdown">
     <a
       href="#"
       className="d-flex align-items-center link-dark text-decoration-none dropdown-toggle text-center"
@@ -121,7 +122,6 @@ const Sidebar = ({userEmail}) => {
       aria-expanded="false"
     >
 
-      {/* <span className='small fw-semibold'>{userEmail}</span> */}
       <i className="bi bi-person-circle fs-5"></i>
     </a>
 
@@ -135,7 +135,7 @@ const Sidebar = ({userEmail}) => {
       <li><hr className="dropdown-divider" /></li>
       <li><a className="dropdown-item" href="#">Current</a></li>
     </ul>
-  </div>
+  </div> */}
 </div>
 
     

@@ -1,15 +1,36 @@
-import { useState,useEffect } from "react";
+import { useState,useEffect,useMemo } from "react";
 import Select from "react-select";
 import { useUser } from "../../context/UserContext";
 
 const ZenBoardForm = ({fetchBoards}) => {
 
-    const {orgEmp} = useUser();
+    const [allEmp, setAllEmp] = useState([]);
 
+    const memberOptions = useMemo(() => {
+      return allEmp?.map(e => ({value: e?.ID, label: e?.Name})) || [];
+    }, [allEmp]);
+
+    useEffect(() => {
+        const config = {
+        report_name: "All_Employee",
+        // criteria: "Email !='"
+        }
+    
+        ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
+          if(response.code === 3000){
+              console.log("All Super Admin Employees:", response.data)
+              setAllEmp(response.data.filter(e => e.Email))
+              
+          } else{
+              console.log(response)
+          }
+        
+        })
+        .catch((err) => console.error(err))
+    
+    }, [])
+    
     const [categories, setCatagoriees] = useState([]);
-
-    const memberOptions = orgEmp ? orgEmp.map(e => ({value: e?.ID,label: e?.Name})) : [];
-
 
     const [formData, setFormData] = useState({
         ZenBoard_Catagory: "",

@@ -13,12 +13,15 @@ import { APP_NAME } from "../../config";
 import OffcanvasTaskDetails from "./OffcanvasTaskDetails";
 import AddTaskOffcanvas from "./AddTaskOffcanvas";
 import UnScheduledTasks from "./UnScheduledTasks";
+import { useUser } from "../../context/UserContext";
+
+import { Link } from "react-router-dom";
 
 const locales = { "en-US": enUS };
 const localizer = dateFnsLocalizer({ format, parse, getDay, locales,startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }),  });
 const DnDCalendar = withDragAndDrop(Calendar);
 
-const MyBigCalendar = ({allTask}) => {
+const MyBigCalendar = () => {
 
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [events, setEvents] = useState([]);
@@ -27,6 +30,37 @@ const MyBigCalendar = ({allTask}) => {
 
 
     const [startEnd, setStartEnd] = useState({});
+
+    const {USERID} = useUser();
+
+    const [allTask, setAllTask] = useState([]);
+
+
+    useEffect(() => {
+        if (!USERID) return
+    
+        const config = {
+          app_name: APP_NAME,
+          report_name: "My_Team_Tasks",
+          criteria: `Assignee.ID==${USERID}`,
+          max_records : 1000
+
+        }
+    
+        ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
+    
+            if(response.code === 3000){
+              console.log("My All Tasks for Calendar:", response.data)
+              const taskRes = response.data;
+
+                setAllTask(taskRes)
+              
+            }
+            
+          })
+          .catch((err) => console.error(err))
+    
+    }, [USERID])
 
 
     function parseEventDate(dateStr, timeStr) {
@@ -117,33 +151,6 @@ const MyBigCalendar = ({allTask}) => {
         return `${hours}:${minutes}`;
     }
 
-
-    //=============API====================
-    function addEvent(title,start,end) {
-        var config = {
-            app_name: APP_NAME,
-            form_name: "Task",
-            payload: {
-                data: {
-                    Task_Name : title,
-                    Start_Time: formatTimeToHHMM(start),
-                    End_Time: formatTimeToHHMM(end),
-                    Task_Date: formatDateToMMDDYYYY(start),
-                    Task_Status: "Not Started",
-                    Task_Priority: "Medium",
-                    Assignee: USERID
-
-            }
-            }
-        };
-        ZOHO.CREATOR.DATA.addRecords(config).then(function (response) {
-            if (response.code == 3000) {
-                console.log(response);
-            } else{
-            console.log(response);
-            }
-        }).catch(e => console.log(e))
-    }
 
     function updateEvent(event, start,end){
         var config = {
@@ -321,11 +328,17 @@ const MyBigCalendar = ({allTask}) => {
         </DndProvider>
 
 
-        <OffcanvasTaskDetails selectedEvent={selectedEvent} />
+        <OffcanvasTaskDetails selectedEvent={selectedEvent} setSelectedEvent={setSelectedEvent} setEvents={setEvents}/>
 
         <AddTaskOffcanvas startEnd={startEnd} setEvents={setEvents}/>
 
-        <button style={{position: "fixed", right:"29%", top:"-3px"}} className="d-non btn btn-sm border-secondary text-dark" onClick={handleUnScheduled}><i class="bi bi-hourglass-top"></i> Unscheduled</button>
+        <div className="border-secondary border rounded-2" style={{position: "fixed", right:"25%", top:"-3px"}}>
+            <button className="d-non btn btn-sm  text-dark" onClick={handleUnScheduled}><i class="bi bi-hourglass-top"></i> Unscheduled</button>
+            <Link className="btn btn-sm" to="admincalendar"><i class="bi bi-people-fill"></i> Team Calendar</Link>
+
+
+        </div>
+
 
         <UnScheduledTasks setEvents={setEvents} />
 

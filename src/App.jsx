@@ -13,6 +13,8 @@ import SuperAdmin from './superadmin/SuperAdmin'
 import ChartsPage from './pages/ChartsPage'
 import ITRDashboard from './components/charts/ITRDashboard'
 import BTRDashboard from './components/charts/BTRDashboard'
+import AdminBigCalendar from './components/cal/AdminBigCalendar'
+import MyBigCalendar from './components/cal/MyBigCalendar'
 
 function App() {
 
@@ -49,9 +51,17 @@ function App() {
 
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/calendar" element={<Calendar />} />
+              <Route path="/calendar" element={<Calendar />} >
+
+                <Route index element={<MyBigCalendar />} />
+                <Route path="admincalendar" element={<AdminBigCalendar />} />
+
+              </Route>
+
               <Route path="/kanban" element={<Kanban />} />
               <Route path="/superadmin" element={<SuperAdmin/>} />
+
+              {/* <Route path="/admincalendar" element={<AdminBigCalendar/> } /> */}
 
               <Route path="/charts" element={<ChartsPage />} > 
 

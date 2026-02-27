@@ -3,12 +3,14 @@ import { useUser } from '../../context/UserContext';
 import { formattedDate } from '../../config';
 import { APP_NAME } from '../../config';
 
-const AddTaskOffcanvas = ({startEnd, setEvents}) => {
-  const {USERID, projects} = useUser();
+const AddTaskOffcanvas = ({startEnd, setEvents, resourceID = null}) => {
+  const {USERID, projects, empName, orgEmp} = useUser();
 
   const myProjects = projects || [];
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [assigneName, setAssigneeName] = useState(null);
 
 
   // console.log(startEnd.start, startEnd.end,USERID )
@@ -49,7 +51,8 @@ const AddTaskOffcanvas = ({startEnd, setEvents}) => {
     Start_Time: formatTimeToHHMM(startEnd.start),
     End_Time:  formatTimeToHHMM(startEnd.end),
     Task_Date: formatDateToMMDDYYYY(startEnd.start),
-    Assignee: USERID,
+    Assignee: resourceID || USERID,
+    // resources: resourceID ||
   });
 
   // console.log(taskData)
@@ -66,12 +69,20 @@ const AddTaskOffcanvas = ({startEnd, setEvents}) => {
    // 🔥 Sync when startEnd changes
   useEffect(() => {
     if (startEnd?.start && startEnd?.end) {
+      const newAssignee = resourceID || USERID;
       setTaskData((prev) => ({
         ...prev,
         Start_Time: formatTimeToHHMM(startEnd.start),
         End_Time: formatTimeToHHMM(startEnd.end),
         Task_Date: formatDateToMMDDYYYY(startEnd.start),
+        Assignee: newAssignee
       }));
+
+      const employee = orgEmp.find(e => e.ID === newAssignee);
+      setAssigneeName(employee?.Name || "NA");
+
+      // setAssigneeName(orgEmp.find(e => e.ID === taskData.Assignee).Name)
+      
     }
   }, [startEnd]);
 
@@ -82,6 +93,7 @@ const AddTaskOffcanvas = ({startEnd, setEvents}) => {
       ...prev,
       [name]: value,
     }));
+    console.log(taskData)
   };
 
   const closeOffCanvas = () => {
@@ -111,13 +123,16 @@ const AddTaskOffcanvas = ({startEnd, setEvents}) => {
                 end:startEnd.end,
                 priority: taskData.Task_Priority.toLowerCase(),
                 projectName: projectName,
+                resourceId: taskData?.Assignee ||  "unassigned",
+                assigneeName: taskData?.Assignee || eve?.Assignee_Name || "",
               };
               setEvents(prev => [...prev, newEvent]);
               setTaskData((prev) => ({
                 ...prev,
                 Task_Name: "",
                 Task_Description: "",
-                Project_Name: ""
+                Project_Name: "",
+                Assignee: USERID
               }));
               closeOffCanvas()
               setIsSubmitting(false)
@@ -141,15 +156,19 @@ const AddTaskOffcanvas = ({startEnd, setEvents}) => {
   return (
     <>
 <div className="offcanvas offcanvas-end" tabIndex="-1" id="addtaskoffcanvas" aria-labelledby="taskOffcanvasLable" style={{width: "800px"}}>
-  <div className="offcanvas-header">
+  {/* <div className="offcanvas-header">
     <h5 className="offcanvas-title" id="taskOffcanvasLable"></h5>
     <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-  </div>
+  </div> */}
   <div className="offcanvas-body">
    
 
 <div className="card">
   <div className="card-body">
+      <div className='text-end' style={{position:"absolute", top:"15px", right:"15px"}}>
+          <button type="button"  className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+
+      </div>
     <div className="py-2 mb-2">
       <h5 className="text-primary">Add Task Details</h5>
     </div>
@@ -253,7 +272,7 @@ const AddTaskOffcanvas = ({startEnd, setEvents}) => {
               name="Task_Date"
               value={taskData.Task_Date}
               onChange={handleChange}
-              readOnly
+              disabled
             />
           </td>
         </tr>
@@ -272,7 +291,7 @@ const AddTaskOffcanvas = ({startEnd, setEvents}) => {
               name="Start_Time"
               value={taskData.Start_Time + " - " + taskData.End_Time}
               onChange={handleChange}
-              readOnly
+              disabled
             />
           </td>
         </tr>
@@ -308,7 +327,7 @@ const AddTaskOffcanvas = ({startEnd, setEvents}) => {
           </td>
         </tr>
 
-        <tr className='d-none'>
+        <tr className=''>
           <th style={{ width: "7%" }}>
             <i className="bi bi-person"></i>
           </th>
@@ -320,8 +339,29 @@ const AddTaskOffcanvas = ({startEnd, setEvents}) => {
               type='text'
               className='form-control' 
               name="Assignee"
-              value={taskData.Assignee}
+              value={assigneName}
               onChange={handleChange}
+              disabled
+              
+            />
+          </td>
+        </tr>
+
+        <tr className=''>
+          <th style={{ width: "7%" }}>
+            <i className="bi bi-person"></i>
+          </th>
+          <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
+            Assigned By
+          </th>
+          <td style={{ width: "58%" }}> 
+             <input 
+              type='text'
+              className='form-control' 
+              name="Assignee"
+              value={empName}
+              // onChange={}
+              disabled
               
             />
           </td>
