@@ -77,3 +77,12 @@
 .headerColor19{
   background-color: #b56576;  /* dusty rose */
 }
+
+
+.task-edited{
+  background-color: #ffdede;
+}
+
+.edited-text{
+  font-size: 12px;
+}

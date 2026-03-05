@@ -2,6 +2,7 @@ import {useState,useEffect} from 'react'
 import { useUser } from '../../context/UserContext';
 import { formattedDate } from '../../config';
 import { APP_NAME } from '../../config';
+import ProjectSelect from '../projects/ProjectSelect';
 
 const AddTaskOffcanvas = ({startEnd, setEvents, resourceID = null}) => {
   const {USERID, projects, empName, orgEmp} = useUser();
@@ -11,6 +12,9 @@ const AddTaskOffcanvas = ({startEnd, setEvents, resourceID = null}) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [assigneName, setAssigneeName] = useState(null);
+
+    const [selectedProject, setSelectedProject] = useState(null);
+
 
 
   // console.log(startEnd.start, startEnd.end,USERID )
@@ -56,14 +60,21 @@ const AddTaskOffcanvas = ({startEnd, setEvents, resourceID = null}) => {
   });
 
   // console.log(taskData)
-
+    const onProjectChange = (selectedOption) => {
+      console.log(selectedOption)
+      setSelectedProject(selectedOption)
+      setTaskData((prev) => ({
+        ...prev,
+        Project_Name:selectedOption.value
+      }))
+    }
   // console.log("projects",myProjects.length)
-  const selectedProject = myProjects?.find((p) => p.ID === taskData.Project_Name);
+  // const selectedProject = myProjects?.find((p) => p.ID === taskData.Project_Name);
 
 
 
 
-  const projectName = selectedProject?.Project_Name;
+  const projectName = selectedProject?.label;
 
 
    // 🔥 Sync when startEnd changes
@@ -136,6 +147,7 @@ const AddTaskOffcanvas = ({startEnd, setEvents, resourceID = null}) => {
               }));
               closeOffCanvas()
               setIsSubmitting(false)
+              setSelectedProject(null)
 
           } else{
             console.log(response);
@@ -203,7 +215,7 @@ const AddTaskOffcanvas = ({startEnd, setEvents, resourceID = null}) => {
           </th>
           <td style={{ width: "58%" }}>
 
-              <select
+              {/* <select
                 className="form-control"
                 name="Project_Name"
                 value={taskData.Project_Name}
@@ -215,7 +227,9 @@ const AddTaskOffcanvas = ({startEnd, setEvents, resourceID = null}) => {
                     {project.Project_Name}
                   </option>
                 ))}
-              </select>
+              </select> */}
+
+              <ProjectSelect onProjectChange={onProjectChange} selectedProject={selectedProject}/>
 
           </td>
         </tr>

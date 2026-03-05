@@ -3,6 +3,9 @@ import { useUser } from '../../context/UserContext';
 import { formattedDate } from '../../config';
 import { APP_NAME } from '../../config';
 import { inputToMMDDYYYY } from '../../utils/dateUtils';
+import Select from "react-select";
+import AsyncSelect from 'react-select/async';
+import ProjectSelect from '../projects/ProjectSelect';
 
 const KanbanAddTask = ({list,selectedBoard,setKanbanTasks, boardMembers = []}) => {
 
@@ -15,6 +18,8 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks, boardMembers = []}) =
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const myProjects = projects || [];
+
+    const [selectedProject, setSelectedProject] = useState(null);
   
     const [taskData, setTaskData] = useState({
       Task_Name: "",
@@ -38,6 +43,15 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks, boardMembers = []}) =
       }));
       
     },[list])
+
+    const onProjectChange = (selectedOption) => {
+      console.log(selectedOption)
+      setSelectedProject(selectedOption)
+      setTaskData((prev) => ({
+        ...prev,
+        Project_Name:selectedOption.value
+      }))
+    }
 
 
       useEffect(() => {
@@ -118,6 +132,7 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks, boardMembers = []}) =
                 }));
                 closeOffCanvas()
                 setIsSubmitting(false)
+                setSelectedProject(null)
   
             } else{
               console.log(response);
@@ -207,7 +222,7 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks, boardMembers = []}) =
             </th>
             <td style={{ width: "58%" }}>
 
-              <select
+              {/* <select
                 className="form-control"
                 name="Project_Name"
                 value={taskData.Project_Name}
@@ -219,7 +234,9 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks, boardMembers = []}) =
                     {project.Project_Name}
                   </option>
                 ))}
-              </select>
+              </select> */}
+              <ProjectSelect onProjectChange={onProjectChange} selectedProject={selectedProject} />
+
 
   
             </td>

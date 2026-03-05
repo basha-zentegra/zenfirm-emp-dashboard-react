@@ -310,7 +310,7 @@ const handleDragEnd = (result) => {
                 >
                   {(provided) => (
                     <div
-                      className='card mb-3 p-3 border-0 rounded-3'
+                      className={`card mb-3 p-3 border-0 rounded-3 ${task?.Edited ? 'task-edited' : ''}`}
                       ref={provided.innerRef}
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
@@ -318,6 +318,9 @@ const handleDragEnd = (result) => {
                       <div onClick={() => clickTask(task.ID)}>
                         <h6>{task.Task_Name}</h6>
                         <small className='text-muted'>{task?.Task_Description}</small>
+                        {task?.Edited && (
+                          <small className='small text-muted d-block edited-text'>Edited: {task?.Edited}</small>
+                        )}
                       </div>
                     </div>
                   )}

@@ -26,7 +26,8 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
     return "https://zenfirm.zohocreatorportal.in/zentegraindia/zenfirm/#Page:All_Projects?pid="; 
   }, [userEmail]);
 
-    const baseAccountUrl = useMemo(() => {
+
+  const baseAccountUrl = useMemo(() => {
     if (!userEmail) return null;
 
     if (userEmail.includes("@zentegra")) {
@@ -482,7 +483,7 @@ function isOverlapping(date, newStart, newEnd) {
 <div className="card mt-4">
   <div className="card-body">
     <div className="py-2 mb-2">
-      <h5 className="text-primary">Logs <button className='btn btn-sm ' onClick={addManualLogs}>Add</button></h5>
+      <h5 className="text-primary">Logs <button className='btn btn-sm d-none' onClick={addManualLogs}>Add</button></h5>
     </div>
 
             <div>

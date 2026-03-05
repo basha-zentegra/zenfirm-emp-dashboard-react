@@ -1,6 +1,7 @@
 import {useState, useEffect} from 'react'
 import { useUser } from '../../context/UserContext';
 import { inputToMMDDYYYY, zohoToInput } from '../../utils/dateUtils';
+import { CURRENTDATETIME } from '../../config';
 
 const EditTask = ({selectedEvent,setEdit,fetchTasks}) => {
 
@@ -76,7 +77,8 @@ const EditTask = ({selectedEvent,setEdit,fetchTasks}) => {
                 data: {
                     ...taskData,
                     Due_Date: formattedDueDate,
-                    Task_Date: formattedTaskDate
+                    Task_Date: formattedTaskDate,
+                    Edited: CURRENTDATETIME
                 }
             }
         };

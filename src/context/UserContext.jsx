@@ -47,7 +47,8 @@ export const UserProvider = ({ children }) => {
       const config = {
         app_name: APP_NAME,
         report_name: "My_Team_Projects",
-        // criteria: `Associated_Members==${USERID}`
+        max_records : 1000,
+        // criteria: `Stage!="Completed" || Stage!="Cancelled"`
       }
   
       ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
