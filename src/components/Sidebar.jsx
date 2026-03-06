@@ -21,7 +21,7 @@ const Sidebar = ({userEmail}) => {
 
     if(!USERID) return
 
-    if( userEmail === "roy@zentegra.com" || userEmail === "praveen@zenfirm.app" || userEmail === "basha@zentegra.com" || userEmail === "abdul@zentegra.com"){
+    if( userEmail === "roy@zentegra.com" || userEmail === "praveen@zenfirm.app" || userEmail === "basha@zentegra.com" || userEmail === "abdul@zentegra.com" || userEmail === "abdul@zenfirm.app"){
       setSuperUser(true);
     }
 

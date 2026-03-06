@@ -2,7 +2,7 @@ import { useState,useEffect,useMemo } from "react";
 import Select from "react-select";
 import { useUser } from "../../context/UserContext";
 
-const ZenBoardForm = ({fetchBoards}) => {
+const ZenBoardForm = ({fetchBoards, isEdit,setEditZenBoard}) => {
 
     const [allEmp, setAllEmp] = useState([]);
 
@@ -38,6 +38,17 @@ const ZenBoardForm = ({fetchBoards}) => {
         Associate_Members: [],
         Zenboard_Status: ""
     });
+
+    useEffect(() =>{
+
+      setFormData({
+        ZenBoard_Catagory: isEdit?.ZenBoard_Catagory?.ID ||"",
+        Board_Name: isEdit?.Board_Name ||"",
+        Associate_Members: isEdit?.Associate_Members ? isEdit.Associate_Members.map(m => m.ID) : [],
+        Zenboard_Status: isEdit?.Zenboard_Status || ""
+      })
+
+    }, [isEdit])
 
 
     useEffect(() => {
@@ -85,6 +96,33 @@ const ZenBoardForm = ({fetchBoards}) => {
         }).catch(e => console.log(e))
     }
 
+    function updateBoard() {
+        var config = {
+            report_name: "Zenboards_Report",
+            id: isEdit.ID,
+            payload: {data: formData}
+        };
+        // console.log(taskData)
+        ZOHO.CREATOR.DATA.updateRecordById(config).then(function (response) {
+            if (response.code == 3000) {
+                
+                setFormData({
+                    ZenBoard_Catagory: "",
+                    Board_Name: "",
+                    Associate_Members: [],
+                    Zenboard_Status: ""
+                })
+
+                fetchBoards()
+                document.getElementById("zenbord-closebtn").click()
+                setEditZenBoard(null)
+
+    
+            } else{
+                console.log(response);
+            }
+        }).catch(e => console.log(e))
+    }
 
 
     const handleSubmit = (e) => {
@@ -95,7 +133,12 @@ const ZenBoardForm = ({fetchBoards}) => {
             return
         }
         // fetchBoards(); // refresh sidebar
-        addBoard()
+        if(isEdit){
+          updateBoard()
+        }else{
+          addBoard()
+
+        }
         console.log("Form Data:", formData);
     };
 
@@ -172,7 +215,8 @@ const ZenBoardForm = ({fetchBoards}) => {
 
           {/* Submit Button */}
           <button type="submit" className="btn btn-primary w-100">
-            Create Board
+            
+            {isEdit ? 'Update Board' : 'Create Board'}
           </button>
 
 

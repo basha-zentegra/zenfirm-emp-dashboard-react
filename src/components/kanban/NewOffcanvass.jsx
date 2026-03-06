@@ -1,7 +1,7 @@
 import React from 'react'
 import ZenBoardForm from './ZenBoardForm'
 
-const NewOffcanvass = ({fetchBoards}) => {
+const NewOffcanvass = ({fetchBoards,isEdit,setEditZenBoard}) => {
   return (
     <div>
 
@@ -14,7 +14,7 @@ const NewOffcanvass = ({fetchBoards}) => {
             <div className="offcanvas-body">
 
            
-              <ZenBoardForm fetchBoards={fetchBoards} />
+              <ZenBoardForm fetchBoards={fetchBoards} isEdit={isEdit}  setEditZenBoard={setEditZenBoard}/>
 
             </div>
         </div>

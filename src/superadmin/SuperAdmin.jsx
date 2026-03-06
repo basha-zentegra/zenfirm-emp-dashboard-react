@@ -191,10 +191,10 @@ const SuperAdmin = () => {
 
         <div className="col-6">
             <div className="card" style={{height: "500px"}}>
-              <span className='cardsHeader ms-3 mt-2'>BTR Events - {todayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Business Tax Filing").length}</span>
+              <span className='cardsHeader ms-3 mt-2'>BTR Events - {todayTasks.filter(e => e["Project_Name.Project_Group1"]?.Project_Group === "Business Tax Filing").length}</span>
               <div className="card-body scroll-karo" >
                 
-                    {todayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Business Tax Filing").map(e => {
+                    {todayTasks.filter(e => e["Project_Name.Project_Group1"]?.Project_Group === "Business Tax Filing").map(e => {
                       return(
                         <div className={`card mb-3  ${getPriorityBorder(e.Task_Priority)}`}>
                          
@@ -218,10 +218,10 @@ const SuperAdmin = () => {
 
         <div className="col-6">
             <div className="card" style={{height: "500px"}}>
-              <span className='cardsHeader ms-3 mt-2'>ITR Events - {todayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Individual Tax Filing").length}</span>
+              <span className='cardsHeader ms-3 mt-2'>ITR Events - {todayTasks.filter(e => e["Project_Name.Project_Group1"]?.Project_Group === "Individual Tax Filing").length}</span>
               <div className="card-body scroll-karo" >
                 
-                    {todayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Individual Tax Filing").map(e => {
+                    {todayTasks.filter(e => e["Project_Name.Project_Group1"]?.Project_Group === "Individual Tax Filing").map(e => {
                       return(
                         <div key={e.ID} className={`card mb-3  ${getPriorityBorder(e.Task_Priority)}`}>
                          

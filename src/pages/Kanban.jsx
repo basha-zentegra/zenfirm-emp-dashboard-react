@@ -202,7 +202,7 @@ const handleDragEnd = (result) => {
 };
 
 
-    const headerColor = ["headerColor0","headerColor1","headerColor2","headerColor3","headerColor4"]
+    // const headerColor = ["headerColor0","headerColor1","headerColor2","headerColor3","headerColor4"]
 
     const clickTask = (taskID) => {
 
@@ -293,7 +293,7 @@ const handleDragEnd = (result) => {
           ref={provided.innerRef}
           {...provided.droppableProps}
         >
-          <div className={`card-header text-white rounded-0 fw-semibold border-bottom-0 ${headerColor[colIndex]}`}>
+          <div className={`card-header text-white rounded-0 fw-semibold border-bottom-0 headerColor${colIndex}`}>
             {list}
           </div>
 

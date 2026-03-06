@@ -8,6 +8,8 @@ const KanbanSIdebar = forwardRef(({ setSelectedBoard }, ref) => {
 
     const [activeBoardId, setActiveBoardId] = useState(null)
 
+    const [editZenBoard, setEditZenBoard] = useState(null)
+
     const handleClick = (board) => {
         setSelectedBoard(board)
         setActiveBoardId(board.ID)
@@ -21,6 +23,9 @@ const KanbanSIdebar = forwardRef(({ setSelectedBoard }, ref) => {
                 console.log("Zenboard Report:", response.data);
                 if (response.code === 3000) {
                     setZenBoards(response.data);
+                    setSelectedBoard(prev =>
+                        response.data.find(e => e.ID === prev?.ID) || null
+                    );
                 }
             })
             .catch((err) => console.error(err));
@@ -47,12 +52,15 @@ const KanbanSIdebar = forwardRef(({ setSelectedBoard }, ref) => {
         return acc;
     }, {});
 
-    const handleNewKanbanOffcanvass = () => {
+    const handleNewKanbanOffcanvass = (edit=null) => {
 
         const element = document.getElementById("NewKanbanOffcanvass");
         if(!element) return;
         const bsOffcanvas = new window.bootstrap.Offcanvas(element);
         bsOffcanvas.show();
+
+        if(edit) console.log(edit)
+        setEditZenBoard(edit)
     }
 
     const [openCategories, setOpenCategories] = useState({});
@@ -66,10 +74,10 @@ const KanbanSIdebar = forwardRef(({ setSelectedBoard }, ref) => {
 
   return (
     <div className='m-3 me-1'>
-        <h6 className='text-primary text-uppercase'>ZenBoard <i onClick={handleNewKanbanOffcanvass} class="bi bi-plus-square-fill cursor-pointer ms-2 shadow-lg"></i></h6>
+        <h6 className='text-primary text-uppercase'>ZenBoard <i onClick={() => handleNewKanbanOffcanvass()} class="bi bi-plus-square-fill cursor-pointer ms-2 shadow-lg"></i></h6>
 
         {Object.keys(groupedBoards).map((category) => {
-  const isOpen = openCategories[category];
+        const isOpen = openCategories[category];
 
   return (
     <div
@@ -82,7 +90,7 @@ const KanbanSIdebar = forwardRef(({ setSelectedBoard }, ref) => {
         onClick={() => toggleCategory(category)}
         style={{ cursor: "pointer" }}
       >
-        <span>{category}</span>
+        <span>{category} </span>
         <span>{isOpen ? "−" : "+"}</span>
       </div>
 
@@ -109,7 +117,7 @@ const KanbanSIdebar = forwardRef(({ setSelectedBoard }, ref) => {
               className="cursor-pointer fw-medium"
               onClick={() => handleClick(element)}
             >
-              {element?.Board_Name}
+              {element?.Board_Name} {activeBoardId === element.ID ? (<i onClick={() => handleNewKanbanOffcanvass(element)} class="bi bi-pencil-fill cursor-pointer ms-2 small"></i>) : ""} 
             </span>
           </div>
         ))}
@@ -118,7 +126,7 @@ const KanbanSIdebar = forwardRef(({ setSelectedBoard }, ref) => {
   );
 })}
 
-        <NewOffcanvass fetchBoards={fetchBoards} />
+        <NewOffcanvass fetchBoards={fetchBoards} isEdit={editZenBoard} setEditZenBoard={setEditZenBoard} />
 
     </div>
   )
