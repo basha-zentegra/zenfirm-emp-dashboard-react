@@ -383,7 +383,7 @@ const handleDragEnd = (result) => {
         </main>
 
 
-<OffcanvasTaskDetails selectedEvent={selectedTask} fetchTasks={fetchTasks} />
+<OffcanvasTaskDetails selectedEvent={selectedTask} fetchTasks={fetchTasks} boardMembers={boardMembers} />
 
 <KanbanAddTask list={selectedList} selectedBoard={selectedBoard} setKanbanTasks={setKanbanTasks} boardMembers={boardMembers} />
 

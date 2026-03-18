@@ -70,6 +70,14 @@ const Sidebar = ({userEmail}) => {
     </li>
 
     <li>
+      <Link  to="/attendance" onClick={() => handleClick(5)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Attendance">
+
+        <i className={`bi bi-person-check fs-5 ${activeId === 5 ? "text-zen" : "text-secondary"}`} ></i>
+          
+      </Link>
+    </li>
+
+    <li>
       <Link  to="/calendar" onClick={() => handleClick(2)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Calendar">
         {/* <i className="bi bi-journal-bookmark fs-5"></i> */}
         <i className={`bi bi-calendar-week fs-5 ${activeId === 2 ? "text-zen" : "text-secondary"}`} ></i>
@@ -98,13 +106,7 @@ const Sidebar = ({userEmail}) => {
     </li>
 )}
 
-    <li>
-      <Link  to="/charts" onClick={() => handleClick(5)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="NMG Dashboards">
-
-        <i className={`bi bi-clipboard2-data-fill fs-5 ${activeId === 5 ? "text-zen" : "text-secondary"}`} ></i>
-          
-      </Link>
-    </li>
+    
 
     
   </ul>

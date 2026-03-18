@@ -3,7 +3,7 @@ import { useUser } from '../../context/UserContext';
 import { inputToMMDDYYYY, zohoToInput } from '../../utils/dateUtils';
 import { CURRENTDATETIME } from '../../config';
 
-const EditTask = ({selectedEvent,setEdit,fetchTasks}) => {
+const EditTask = ({selectedEvent,setEdit,fetchTasks, boardMembers = []}) => {
 
     const {USERID,projects} = useUser();
 
@@ -31,7 +31,8 @@ const EditTask = ({selectedEvent,setEdit,fetchTasks}) => {
                 Task_Date: zohoToInput(selectedEvent?.Task_Date) || "",
                 Assignee: selectedEvent?.Assignee?.ID || "",
                 Budgeted_Time: selectedEvent?.Budgeted_Time || "",
-                Due_Date: zohoToInput(selectedEvent?.Due_Date) || ""
+                Due_Date: zohoToInput(selectedEvent?.Due_Date) || "",
+                Task_Status: selectedEvent?.Task_Status || ""
             });
         }
     }, [selectedEvent]);
@@ -234,6 +235,30 @@ const EditTask = ({selectedEvent,setEdit,fetchTasks}) => {
           </td>
         </tr>
 
+        <tr>
+          <th style={{ width: "7%" }}>
+            <i className="bi bi-flag"></i>
+          </th>
+          <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
+            Status
+          </th>
+          <td
+            style={{ width: "58%" }}
+            
+          >
+            <select
+                className="form-control"
+                name="Task_Status"
+                value={taskData.Task_Status}
+                onChange={handleChange}
+            >
+                  <option disabled value="">Select Status</option>
+                  <option value="Not Started">Not Started</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Completed">Completed</option>
+            </select>
+          </td>
+        </tr>
 
         <tr>
           <th style={{ width: "7%" }}>
@@ -244,7 +269,7 @@ const EditTask = ({selectedEvent,setEdit,fetchTasks}) => {
           </th>
           <td
             style={{ width: "58%" }}
-            id="prio-td-266830000001194162"
+            
           >
             <select
                   className="form-control"
@@ -259,6 +284,37 @@ const EditTask = ({selectedEvent,setEdit,fetchTasks}) => {
             </select>
           </td>
         </tr>
+
+
+        {boardMembers.length > 0 && (
+            
+            <tr>
+              <th style={{ width: "7%" }}>
+                <i className="bi bi-flag"></i>
+              </th>
+              <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
+                Asignee
+              </th>
+              <td
+                style={{ width: "58%" }}
+                id="prio-td-266830000001194162"
+              >
+                <select
+                      className="form-control"
+                      name="Assignee"
+                      value={taskData.Assignee}
+                      onChange={handleChange}
+                >
+
+                      <option disabled >select</option>
+                      {boardMembers.map(employee => (
+                        <option value={employee.ID}>{employee?.Name}</option>
+                      ))}
+
+                </select>
+              </td>
+            </tr>
+        )}
 
         <tr>
 

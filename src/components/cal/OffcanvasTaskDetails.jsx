@@ -5,8 +5,10 @@ import { formattedDate } from '../../config';
 import { isFuture } from '../../utils/dateUtils'; 
 import { calculateWorkedTime } from '../../utils/logsUtils';
 import EditTask from './EditTask';
+import TaskChecklists from '../task/TaskChecklists';
+import ChecklistManager from '../task/ChecklistManager';
 
-const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin=false, fetchTasks }) => {
+const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin=false, fetchTasks, boardMembers = [] }) => {
 
   const {userEmail, USERID} = useUser();
 
@@ -78,6 +80,7 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
 
     setLogs(selectedEvent?.Logs || [])
 
+    console.log("selectedEvent", selectedEvent)
   }, [selectedEvent]);
 
   useEffect(() => {
@@ -242,7 +245,7 @@ function isOverlapping(date, newStart, newEnd) {
         )}
 
           <i onClick={() => setEdit(prev => !prev)}  class="bi bi-pencil-fill text-primary fs-5 me-4 cursor-pointer"></i>
-          <i className='bi bi-trash text-danger fs-5'></i>
+          {/* <i className='bi bi-trash text-danger fs-5'></i> */}
         </div>
 
         <div>
@@ -470,7 +473,7 @@ function isOverlapping(date, newStart, newEnd) {
       <section>
        
 
-       <EditTask selectedEvent={selectedEvent} setEdit={setEdit} fetchTasks={fetchTasks} />
+       <EditTask selectedEvent={selectedEvent} setEdit={setEdit} fetchTasks={fetchTasks} boardMembers={boardMembers}/>
 
 
 
@@ -480,7 +483,71 @@ function isOverlapping(date, newStart, newEnd) {
   </div>
 </div>
 
-<div className="card mt-4">
+
+
+
+
+
+
+
+
+
+
+
+
+
+     <div className=" mt-4">
+
+        {/* <h3 className="mb-4">Individual Tax Filing</h3> */}
+
+
+        <ul className="nav nav-tabs nav-pills border-bottom-0" id="myTab" role="tablist">
+          
+          <li className="nav-item" role="presentation">
+            <button className="nav-link active" 
+                    id="logs-tab" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#logs" 
+                    type="button">
+              Logs
+            </button>
+          </li>
+
+          <li className="nav-item" role="presentation">
+            <button className="nav-link" 
+                    id="checklist-tab" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#checklist" 
+                    type="button">
+              Checklist
+            </button>
+          </li>
+
+          {/* <li className="nav-item" role="presentation">
+            <button className="nav-link" 
+                    id="checklist-tab" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#checklist" 
+                    type="button">
+              Checklists
+            </button>
+          </li> */}
+
+        </ul>
+
+
+        <div className="tab-content">
+
+          <div className="tab-pane fade show active" id="logs" >
+            
+
+            <section className="">
+              
+
+
+
+            
+<div className="card shadow-sm border-0 mb-4 mt-4">
   <div className="card-body">
     <div className="py-2 mb-2">
       <h5 className="text-primary">Logs <button className='btn btn-sm d-none' onClick={addManualLogs}>Add</button></h5>
@@ -558,6 +625,35 @@ function isOverlapping(date, newStart, newEnd) {
 
   </div>
 </div>
+
+
+
+            </section>
+
+          </div>
+
+            <div className="tab-pane fade" id="checklist">
+              {/* <TaskChecklists/> */}
+              <ChecklistManager selectedEvent={selectedEvent}/>
+            </div>
+
+         
+
+        </div>
+
+      </div>
+
+
+
+
+
+
+
+
+
+
+
+
 
   </div>
 </div>

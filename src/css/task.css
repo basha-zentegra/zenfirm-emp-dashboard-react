@@ -1,0 +1,11 @@
+.nav-item .nav-link{
+    font-weight: 600;
+    color: #222;
+
+}
+
+.nav-item .nav-link.active{
+    background-color: #222;
+    border-radius: 8px;
+    
+}
