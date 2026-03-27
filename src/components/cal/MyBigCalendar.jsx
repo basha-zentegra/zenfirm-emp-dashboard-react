@@ -320,7 +320,7 @@ const MyBigCalendar = () => {
                 onEventResize={handleEventResize}
                 eventPropGetter={eventStyleGetter}
                 components={{event: CustomEvent}}
-                min={new Date(1970, 0, 1, 11, 0)}   
+                min={new Date(1970, 0, 1, 10, 0)}   
                 max={new Date(1970, 0, 1, 23, 59)}  
                 onSelectEvent={handleSelectEvent}
                 step={15}

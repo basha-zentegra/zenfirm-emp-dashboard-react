@@ -44,21 +44,29 @@ export function inputToMMDDYYYY(dateString) {
   return `${month}-${day}-${year}`;
 }
 
+export function MMDDYYYY_TO_YYYYMMDD(dateStr) {
+  const [month, day, year] = dateStr.split("-");
+  return `${year}-${month}-${day}`;
+}
+
 export function zohoToInput(dateString) {
   if (!dateString) return "";
   const [month, day, year] = dateString.split("-");
   return `${year}-${month}-${day}`;
 }
 
-export function isFuture(todayDate, targetDate) {
-  if (!todayDate || !targetDate) return false;
+const today = new Date();
+const formattedToday = `${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}-${today.getFullYear()}`;
+
+export function isFuture(targetDate) {
+  if (!targetDate) return false;
 
   const parseDate = (dateStr) => {
     const [month, day, year] = dateStr.split("-").map(Number);
     return new Date(year, month - 1, day); // month is 0-indexed
   };
 
-  const today = parseDate(todayDate);
+  const today = parseDate(formattedToday);
   const target = parseDate(targetDate);
 
   return target > today;

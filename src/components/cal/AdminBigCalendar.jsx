@@ -28,7 +28,7 @@ const DnDCalendar = withDragAndDrop(Calendar);
 
 const AdminBigCalendar = () => {
 
-    const {orgEmp, USERID} = useUser();
+    const {orgEmp, USERID,userEmail,AllEmployees} = useUser();
 
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [events, setEvents] = useState([]);
@@ -51,8 +51,10 @@ const AdminBigCalendar = () => {
         const config = {
           app_name: APP_NAME,
           report_name: "Task_Report",
-          criteria: `Task_Date!=null`,
-          max_records : 1000
+          criteria: `Task_Date!=null && Start_Time!=null`,
+          max_records : 1000,
+          // sort_by: "Task_Date",     // field name
+          // sort_order: "dsc"
           
         }
     
@@ -70,7 +72,7 @@ const AdminBigCalendar = () => {
     
     }, [USERID])
 
-  let allEmployees = orgEmp || [];
+  let allEmployees = AllEmployees || orgEmp || [];
 
   // ─────────────────────────────────────────────
   // RESOURCES (Employees)
@@ -835,10 +837,10 @@ const AdminBigCalendar = () => {
         resourceID={selectedResourceID} // Pass resources so admin can assign
       />
 
-      <UnScheduledTasks
+      {/* <UnScheduledTasks
         setEvents={setEvents}
-        resources={resources} // Pass resources for assignment
-      />
+        resources={resources} 
+      /> */}
     </div>
   );
 };

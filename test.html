@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dynamic Zoho PDF Preview</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    #loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-size: 18px;
+      color: #666;
+    }
+    
+    #error {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-size: 18px;
+      color: #d32f2f;
+      text-align: center;
+      padding: 20px;
+    }
+    
+    iframe {
+      width: 100%;
+      height: 100vh;
+      border: none;
+      display: none;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #0070f3;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 10px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div id="loading">
+    <div class="spinner"></div>
+    Loading PDF...
+  </div>
+  
+  <div id="error">
+    <div>
+      <h3>❌ Error Loading PDF</h3>
+      <p id="error-message"></p>
+      <p><strong>Usage:</strong></p>
+      <p>https://your-app.vercel.app/?url=YOUR_PDF_URL</p>
+      <p><strong>Example:</strong></p>
+      <p>https://your-app.vercel.app/?url=https://example.com/document.pdf</p>
+    </div>
+  </div>
+  
+  <iframe id="pdfFrame" title="PDF Preview"></iframe>
+
+  <script>
+    const iframe = document.getElementById("pdfFrame");
+    const loading = document.getElementById("loading");
+    const errorDiv = document.getElementById("error");
+    const errorMessage = document.getElementById("error-message");
+
+    // Extract URL from browser address bar
+    function getURLParameter(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    }
+
+    // Load PDF automatically when page loads
+    window.addEventListener('DOMContentLoaded', function() {
+      const pdfUrl = getURLParameter('url');
+      
+      if (!pdfUrl) {
+        // No URL parameter provided
+        loading.style.display = 'none';
+        errorDiv.style.display = 'flex';
+        errorMessage.textContent = 'No PDF URL provided in the URL parameter.';
+        return;
+      }
+
+      console.log('Loading PDF:', pdfUrl);
+      
+      // Load PDF through the backend proxy
+      const proxyUrl = `/api/preview?url=${encodeURIComponent(pdfUrl)}`;
+      iframe.src = proxyUrl;
+      
+      // Handle iframe load events
+      iframe.onload = function() {
+        loading.style.display = 'none';
+        iframe.style.display = 'block';
+        console.log('PDF loaded successfully');
+      };
+      
+      iframe.onerror = function() {
+        loading.style.display = 'none';
+        errorDiv.style.display = 'flex';
+        errorMessage.textContent = 'Failed to load PDF. Please check if the URL is valid and accessible.';
+        console.error('Failed to load PDF');
+      };
+      
+      // Timeout fallback (in case iframe doesn't trigger load/error)
+      setTimeout(function() {
+        if (loading.style.display !== 'none') {
+          // Still loading after 10 seconds, assume success
+          loading.style.display = 'none';
+          iframe.style.display = 'block';
+        }
+      }, 10000);
+    });
+
+    // Update page title with PDF URL
+    const pdfUrl = getURLParameter('url');
+    if (pdfUrl) {
+      document.title = `PDF Preview - ${pdfUrl.split('/').pop() || 'Document'}`;
+    }
+  </script>
+</body>
+</html>
+
+
+
+266830000006760083
+
+
+https://creator.zoho.in/publishapi/v2/zentegraindia/zenfirm/report/All_Files/266830000006760083/File_field/download?privatelink=qwnEArdsy1UD58d13SSOxFHqX4U74QSQnv2uKsE2ZP7Ht47xsvfm3pNpJBp9TqhXavXf3OSby2wjn6EHxQggbaSqC0eYBzMA41Gm

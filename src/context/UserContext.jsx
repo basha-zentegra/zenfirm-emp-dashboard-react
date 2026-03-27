@@ -12,6 +12,8 @@ export const UserProvider = ({ children }) => {
   const [nmgEmp, setNmgEmp] = useState([])
   const [empName, setEmpName] = useState("");
 
+  const [AllEmployees, setAllEmployees] = useState(null);
+
   useEffect(() => {
     ZOHO.CREATOR.UTIL.getInitParams()
       .then((response) => {
@@ -102,8 +104,36 @@ export const UserProvider = ({ children }) => {
   
     }, [])
 
+    const allowedUsers = ["basha@zentegra.com", "roy@zentegra.com"];
+
+    useEffect(() => {
+      
+      if (!allowedUsers.includes(userEmail)) return;
+
+      const config = {
+        app_name: APP_NAME,
+        report_name: "All_Employee",
+        criteria: `Email!=""`
+      }
+  
+      ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
+        console.log("All Admin Employees:", response)
+        if(response.code === 3000){
+
+          setAllEmployees(response.data)
+
+        
+        } else{
+          console.log(response)
+        }
+        
+      })
+      .catch((err) => console.error(err))
+  
+    }, [userEmail])
+
   return (
-    <UserContext.Provider value={{ userEmail, USERID, projects, orgEmp, ORG, nmgEmp, empName}}>
+    <UserContext.Provider value={{ userEmail, USERID, projects, orgEmp, ORG, nmgEmp, empName, AllEmployees}}>
       {children}
     </UserContext.Provider>
   );

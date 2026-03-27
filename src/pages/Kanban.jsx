@@ -73,7 +73,7 @@ const Kanban = () => {
           
                   if(response.code === 3000){
                       console.log("Selected board's Tasks:", response.data)
-                      const taskRes = response.data;
+                      const taskRes = response.data.reverse();
 
                       setKanbanTasks(taskRes)
                       
@@ -288,7 +288,7 @@ const handleDragEnd = (result) => {
     <Droppable droppableId={list} key={list}>
       {(provided) => (
         <div
-          className='card w-350px border-0 rounded-0'
+          className='card w-350px border-0 rounded-0 '
           style={{ flex: '0 0 auto' }}
           ref={provided.innerRef}
           {...provided.droppableProps}
@@ -297,7 +297,7 @@ const handleDragEnd = (result) => {
             {list}
           </div>
 
-          <div className='card-body' style={{ background: colIndex % 2 === 0 ? '#e2e7ee' : '#ebeff9' }}>
+          <div className='card-body scroll-karo' style={{ background: colIndex % 2 === 0 ? '#e2e7ee' : '#ebeff9' }}>
             {/* ✅ Sort by Kanban_Order */}
             {kanbanTasks
               .filter(task => task.Kanban_Status === list)

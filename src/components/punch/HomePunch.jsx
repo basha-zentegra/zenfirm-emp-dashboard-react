@@ -279,7 +279,7 @@ useEffect(() => {
     const nowDateTime = getNowDateTimeString();
 
     const baseWorkedMinutes = timeStringToMinutes(workedRef.current);
-    console.log(currentInTime,nowDateTime);
+    // console.log(currentInTime,nowDateTime);
     const liveDiff = getTimeDifference(currentInTime,nowDateTime);
     setLiveDifference(liveDiff)
     const liveMinutes = timeStringToMinutes(liveDiff);

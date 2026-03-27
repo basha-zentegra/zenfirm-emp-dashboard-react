@@ -40,34 +40,71 @@ const ChecklistManager = ({selectedEvent}) => {
 
   const inputRefs = useRef({});
 
+  const deleteItem = (listId, itemId) => {
+
+    var config = {
+      report_name: "All_Checklists",
+      id: itemId,
+
+    };
+    ZOHO.CREATOR.DATA.deleteRecordById(config).then(function (response) {
+      if (response.code == 3000) {
+        console.log(response);
+            const updated = checklists.map((list) =>
+              list.id === listId ? {...list,items: list.items.filter((item) => item.id !== itemId), } : list
+            );
+            setChecklists(updated);
+      }
+    });
+
+
+  }
+
   // Toggle complete
-  const toggleItem = (listId, itemId) => {
+const toggleItem = (listId, itemId) => {
+  let updatedCompletedStatus = null;
 
-    let updatedCompletedStatus = null; // 👈 store value here
+  // Find the current item first
+  const targetItem = checklists.find(list => list.id === listId)?.items.find(item => item.id === itemId);
 
+  if (!targetItem) return;
 
-    const updated = checklists.map((list) =>
-      list.id === listId
-        ? {
-            ...list,
-            items: list.items.map((item) => {
-                if (item.id === itemId) {
-                updatedCompletedStatus = !item.completed; // 👈 capture it
-                return { ...item, completed: updatedCompletedStatus };
-                }
-                return item;
-            }),
-          }
-        : list
-    );
+  // Compute BEFORE API call
+  updatedCompletedStatus = !targetItem.completed;
 
-    setChecklists(updated);
-
-    console.log(updatedCompletedStatus)
-
-    // 🔌 API
-    // updateChecklistItem(listId, itemId)
+  var config = {
+    report_name: "All_Checklists",
+    id: itemId,
+    payload: {
+      data: {
+        
+          Completed: updatedCompletedStatus
+        
+      }
+    }
   };
+
+  ZOHO.CREATOR.DATA.updateRecordById(config).then(function (response) {
+    if (response.code == 3000) {
+      console.log(response)
+      const updated = checklists.map((list) =>
+        list.id === listId
+          ? {
+              ...list,
+              items: list.items.map((item) =>
+                item.id === itemId
+                  ? { ...item, completed: updatedCompletedStatus }
+                  : item
+              ),
+            }
+          : list
+      );
+
+      setChecklists(updated);
+      // console.log(updatedCompletedStatus,config);
+    }
+  });
+};
 
   // Show input field
   const startAdding = (listId) => {
@@ -130,12 +167,6 @@ const ChecklistManager = ({selectedEvent}) => {
             setChecklists(updated);
         }
     });
-
-
-    // 🔌 API
-    // createChecklistItem(listId, list.newItemText)
-
-    // addChecklist(list.newItemText)
     
   };
 
@@ -197,9 +228,15 @@ const ChecklistManager = ({selectedEvent}) => {
                       </span>
                     </div>
 
-                    {item.completed && (
-                      <i className="bi bi-check-circle-fill text-success"></i>
-                    )}
+                    <div className="d-flex">
+                      <div className="me-4">
+                        <i className="bi bi-trash text-danger cursor-pointer checklistTrash" onClick={() => deleteItem(list.id, item.id)}></i>
+                      </div>
+
+                      {item.completed && (
+                        <i className="bi bi-check-circle-fill text-success"></i>
+                      )}
+                    </div>
                   </li>
                 ))}
 

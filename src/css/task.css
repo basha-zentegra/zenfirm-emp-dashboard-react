@@ -9,3 +9,11 @@
     border-radius: 8px;
     
 }
+
+.checklistTrash{
+    display: none;
+}
+
+.list-group-item:hover .checklistTrash{
+    display: block;
+}

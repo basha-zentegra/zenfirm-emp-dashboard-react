@@ -3,10 +3,12 @@ import { useUser } from '../../context/UserContext'
 import Stopwatch from '../timer/Stopwatch';
 import { formattedDate } from '../../config';
 import { isFuture } from '../../utils/dateUtils'; 
-import { calculateWorkedTime } from '../../utils/logsUtils';
 import EditTask from './EditTask';
-import TaskChecklists from '../task/TaskChecklists';
 import ChecklistManager from '../task/ChecklistManager';
+import TaskLogs from '../task/TaskLogs';
+import TaskNotes from '../task/TaskNotes';
+import TaskAttachments from '../task/TaskAttachments';
+import ConfirmDialog from '../task/ConfirmDialog';
 
 const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin=false, fetchTasks, boardMembers = [] }) => {
 
@@ -15,6 +17,8 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
   const project = selectedEvent?.Project_Name;
 
   const account = selectedEvent?.["Project_Name.Accounts"];
+
+  const [showConfirm, setShowConfirm] = useState(false);
 
 
   // Compute base URL safely
@@ -57,18 +61,6 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
 
   const [isEdit, setEdit] = useState(false);
 
-  const [logs, setLogs] = useState([]);
-  const [showManualRow, setShowManualRow] = useState(false);
-
-  const [manualLog, setManualLog] = useState({
-    Date_field: new Date().toISOString().split("T")[0],
-    Work_Started: "",
-    Work_Ended: ""
-  });
-
-  function addManualLogs() {
-    setShowManualRow(prev => !prev);
-  }
 
 
   useEffect(() => {
@@ -78,13 +70,12 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
       setShowAction(true);
     }
 
-    setLogs(selectedEvent?.Logs || [])
 
     console.log("selectedEvent", selectedEvent)
   }, [selectedEvent]);
 
   useEffect(() => {
-    if(isFuture(formattedDate, selectedEvent?.Task_Date)){
+    if(isFuture(selectedEvent?.Task_Date)){
       setShowCompleteBtn(false)
     } else{
       setShowCompleteBtn(true)
@@ -130,103 +121,35 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
         .catch((e) => console.log(e));
     }
 
-const [formData, setFormData] = useState({
-  Date_field: "",
-  Work_Started: "",
-  Work_Ended: ""
-});
+      const handleDeleteClick = () => {
+        setShowConfirm(true);
+      };
 
-const handleChange = (e) => {
-  const { name, value } = e.target;
+    const cancelDelete = () => {
+        setShowConfirm(false);
+    };
 
-  setFormData(prev => ({
-    ...prev,
-    [name]: value
-  }));
-};
+    function confirmDelete(){
+      var config = {
+        report_name: "Task_Report",
+        id: selectedEvent.ID,
+      };
+      ZOHO.CREATOR.DATA.deleteRecordById(config).then(function (response) {
+        if (response.code == 3000) {
+          console.log(response);
+          // ✅ Remove the deleted task
+          setEvents(prev =>
+            prev.filter(e => e.id !== selectedEvent.ID)
+          );
 
-const handleSubmit = () => {
-  console.log(formData);
+          setShowConfirm(false);
+          setSelectedEvent(null)
 
-  setFormData({
-    Date_field: "",
-    Work_Started: "",
-    Work_Ended: ""
-  });
-};
-
-function submitManualLog() {
-  const { Date_field, Work_Started, Work_Ended } = manualLog;
-
-  if (!Date_field || !Work_Started || !Work_Ended) {
-    alert("All fields mandatory");
-    return;
-  }
-  const now = new Date();
-  const selectedStart = new Date(`${Date_field}T${Work_Started}`);
-  const selectedEnd = new Date(`${Date_field}T${Work_Ended}`);
-  if (selectedStart > now || selectedEnd > now) {
-    alert("Future time not allowed");
-    return;
-  }
-  if (selectedEnd <= selectedStart) {
-    alert("End must be greater");
-    return;
-  }
-  if (isOverlapping(Date_field, selectedStart, selectedEnd)) {
-    alert("Overlapping time");
-    return;
-  }
-  const Hours_Worked = calculateWorkedTime(Work_Started, Work_Ended);
-  const newLog = {
-    Date_field,
-    Work_Started,
-    Work_Ended,
-    Hours_Worked
-  };
-  // ✅ Update state instead of innerHTML
-  setLogs(prev => [...prev, newLog]);
-
-  setShowManualRow(false);
-}
-
-function isOverlapping(date, newStart, newEnd) {
-  return logs.some(log => {
-    if (log.date !== date) return false;
-
-    const existingStart = new Date(`${date}T${log.st}`);
-    const existingEnd = new Date(`${date}T${log.et}`);
-
-    return newStart < existingEnd && newEnd > existingStart;
-  });
-}
-
-// const totalWorked = useMemo(() => {
-//   let totalMinutes = 0;
-
-//   logs.forEach(log => {
-//     const match = log.worked.match(/(\d+)h\s+(\d+)m/);
-//     if (!match) return;
-
-//     totalMinutes += parseInt(match[1]) * 60 + parseInt(match[2]);
-//   });
-
-//   const h = Math.floor(totalMinutes / 60);
-//   const m = totalMinutes % 60;
-
-//   return `${h}h ${m}m`;
-// }, [logs]);
-
-// useEffect(() => {
-//   const allocatedMinutes = convertToMinutes(allocatedTime);
-//   const workedMinutes = convertToMinutes(totalWorked);
-
-//   if (workedMinutes > allocatedMinutes) {
-//     console.log("Overtime");
-//     // Call Zoho update here
-//   }
-// }, [totalWorked]);
-//Handle submit has to add with api post...
+          document.getElementById("taskdetailsclsbtn").click()
+          
+        }
+      });
+    }
 
 
   return (
@@ -245,14 +168,14 @@ function isOverlapping(date, newStart, newEnd) {
         )}
 
           <i onClick={() => setEdit(prev => !prev)}  class="bi bi-pencil-fill text-primary fs-5 me-4 cursor-pointer"></i>
-          {/* <i className='bi bi-trash text-danger fs-5'></i> */}
+          <i onClick={handleDeleteClick} className='bi bi-trash text-danger cursor-pointer fs-5'></i> 
         </div>
 
         <div>
 
-        {showTimer && (
+        {/* {showTimer && (
           <Stopwatch />
-        )}
+        )} */}
           
 
         </div>
@@ -384,6 +307,18 @@ function isOverlapping(date, newStart, newEnd) {
 
         <tr>
           <th style={{ width: "7%" }}>
+            <i className="bi bi-calendar-x"></i>
+          </th>
+          <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
+            Due Date
+          </th>
+          <td style={{ width: "58%" }}>
+            {selectedEvent?.Due_Date || "-"}
+          </td>
+        </tr>
+
+        <tr>
+          <th style={{ width: "7%" }}>
             <i className="bi bi-clock"></i>
           </th>
           <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
@@ -484,18 +419,6 @@ function isOverlapping(date, newStart, newEnd) {
 </div>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
      <div className=" mt-4">
 
         {/* <h3 className="mb-4">Individual Tax Filing</h3> */}
@@ -523,15 +446,27 @@ function isOverlapping(date, newStart, newEnd) {
             </button>
           </li>
 
-          {/* <li className="nav-item" role="presentation">
+
+          <li className="nav-item" role="presentation">
             <button className="nav-link" 
-                    id="checklist-tab" 
+                    id="notes-tab" 
                     data-bs-toggle="tab" 
-                    data-bs-target="#checklist" 
+                    data-bs-target="#notes" 
                     type="button">
-              Checklists
+              Notes
             </button>
-          </li> */}
+          </li>
+
+          <li className="nav-item" role="presentation">
+            <button className="nav-link" 
+                    id="attachments-tab" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#attachments" 
+                    type="button">
+              Attachments
+            </button>
+          </li>
+
 
         </ul>
 
@@ -539,125 +474,41 @@ function isOverlapping(date, newStart, newEnd) {
         <div className="tab-content">
 
           <div className="tab-pane fade show active" id="logs" >
-            
-
-            <section className="">
-              
-
-
-
-            
-<div className="card shadow-sm border-0 mb-4 mt-4">
-  <div className="card-body">
-    <div className="py-2 mb-2">
-      <h5 className="text-primary">Logs <button className='btn btn-sm d-none' onClick={addManualLogs}>Add</button></h5>
-    </div>
-
-            <div>
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Start Time</th>
-                    <th>End Time</th>
-                    <th>Worked</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {logs.map((log, index) => (
-                    <tr key={index}>
-                      <td>{log.Date_field}</td>
-                      <td>{log.Work_Started}</td>
-                      <td>{log.Work_Ended}</td>
-                      <td>{log.Hours_Worked}</td>
-                    </tr>
-                  ))}
-
-{showManualRow && (
-  <tr>
-    <td>
-      <input
-        type="date"
-        className='form-control'
-        max={new Date().toISOString().split("T")[0]}
-        value={manualLog.Date_field}
-        onChange={(e) =>
-          setManualLog({ ...manualLog, Date_field: e.target.value })
-        }
-      />
-    </td>
-
-    <td>
-      <input
-        type="time"
-        className='form-control'
-
-        value={manualLog.Work_Started}
-        onChange={(e) =>
-          setManualLog({ ...manualLog, Work_Started: e.target.value })
-        }
-      />
-    </td>
-
-    <td>
-      <input
-        type="time"
-        className='form-control'
-
-        value={manualLog.Work_Ended}
-        onChange={(e) =>
-          setManualLog({ ...manualLog, Work_Ended: e.target.value })
-        }
-      />
-    </td>
-
-    <td>
-      <button className='btn btn-sm' onClick={submitManualLog}>Submit</button>
-    </td>
-  </tr>
-)}
-
-                </tbody>
-              </table>
-            </div>
-
-
-
-  </div>
-</div>
-
-
-
-            </section>
-
+            <TaskLogs  selectedEvent={selectedEvent}/>
           </div>
 
-            <div className="tab-pane fade" id="checklist">
-              {/* <TaskChecklists/> */}
-              <ChecklistManager selectedEvent={selectedEvent}/>
-            </div>
+          <div className="tab-pane fade" id="checklist">
+            <ChecklistManager selectedEvent={selectedEvent}/>
+          </div>
+
+          <div className="tab-pane fade" id="notes">
+            
+            <TaskNotes selectedEvent={selectedEvent} />
+          </div>
+
+          <div className="tab-pane fade" id="attachments">
+            
+            {/* <TaskNotes selectedEvent={selectedEvent} /> */}
+            <TaskAttachments  selectedEvent={selectedEvent} /> 
+          </div>
 
          
 
         </div>
 
+        {showConfirm && (
+            <ConfirmDialog confirmDelete={confirmDelete} cancelDelete={cancelDelete} />
+        )}
+
       </div>
-
-
-
-
-
-
-
-
-
-
 
 
 
   </div>
 </div>
     
+
+
     
     </>
   )
