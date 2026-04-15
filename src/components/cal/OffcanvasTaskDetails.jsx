@@ -138,12 +138,23 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
         if (response.code == 3000) {
           console.log(response);
           // ✅ Remove the deleted task
-          setEvents(prev =>
-            prev.filter(e => e.id !== selectedEvent.ID)
-          );
+
+          if(setEvents){
+            setEvents(prev =>
+              prev.filter(e => e.id !== selectedEvent.ID)
+            );
+          }
+
+          if(document.getElementById(selectedEvent.ID)){
+            document.getElementById(selectedEvent.ID).classList.add("d-none");
+          }
+          
 
           setShowConfirm(false);
-          setSelectedEvent(null)
+          if(setSelectedEvent){
+            setSelectedEvent(null)
+          }
+          
 
           document.getElementById("taskdetailsclsbtn").click()
           

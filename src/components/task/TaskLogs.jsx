@@ -1,6 +1,7 @@
 import {useState, useEffect} from 'react'
 import { convertTo24Hour,calculateWorkedTime } from '../../utils/logsUtils';
 import { inputToMMDDYYYY,isFuture, MMDDYYYY_TO_YYYYMMDD } from '../../utils/dateUtils';
+import ConfirmDialog from './ConfirmDialog';
 
 const TaskLogs = ({selectedEvent}) => {
 
@@ -8,6 +9,9 @@ const TaskLogs = ({selectedEvent}) => {
     const [logs, setLogs] = useState([]);
     const [isAdding, setIsAdding] = useState(false);
     const [isFutureTask, setIsFutureTask] = useState(false);
+
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [logToDelete, setLogToDelete] = useState(null);
 
 
 
@@ -148,7 +152,16 @@ const TaskLogs = ({selectedEvent}) => {
                 setIsAdding(false)
                 setLogs(prev => [...prev, {...manualLog,
                     Date_field:inputToMMDDYYYY(manualLog.Date_field),
-                    Hours_Worked: calculateWorkedTime(manualLog.Work_Started, manualLog.Work_Ended) } ])
+                    Hours_Worked: calculateWorkedTime(manualLog.Work_Started, manualLog.Work_Ended),
+                    ID: response.data.ID
+                 }])
+
+                    setManualLog({
+                        Date_field: MMDDYYYY_TO_YYYYMMDD(selectedEvent?.Task_Date),
+                        Work_Started: convertTo24Hour(selectedEvent?.Start_Time) || "",
+                        Work_Ended: convertTo24Hour(selectedEvent?.End_Time) || "",
+                        Task: selectedEvent?.ID,
+                    })
                 
             }
         });
@@ -162,6 +175,40 @@ const TaskLogs = ({selectedEvent}) => {
         })
     },[])
 
+  const confirmDelete = () => {
+
+    if(!logToDelete) return;
+
+    var config = {
+      report_name: "All_Logs",
+      id: logToDelete,
+
+    };
+    ZOHO.CREATOR.DATA.deleteRecordById(config).then(function (response) {
+        console.log(response);
+      if (response.code == 3000) {
+        
+
+            const newUpdated = logs.filter((log) => log.ID !== logToDelete);
+            setLogs(newUpdated)
+
+            setShowConfirm(false);
+            setLogToDelete(null);
+      }
+    });
+
+
+  }
+
+    const cancelDelete = () => {
+        setShowConfirm(false);
+        setLogToDelete(null);
+    };
+
+    const handleDeleteClick = (logID) => {
+        setLogToDelete(logID);
+        setShowConfirm(true);
+    };
 
 
   return (
@@ -188,6 +235,7 @@ const TaskLogs = ({selectedEvent}) => {
                       <td>{log.Work_Started}</td>
                       <td>{log.Work_Ended}</td>
                       <td>{log.Hours_Worked}</td>
+                      <td><i className="bi bi-trash text-danger cursor-pointer" onClick={() => handleDeleteClick(log.ID)}></i></td>
                     </tr>
                   ))}
 
@@ -258,6 +306,11 @@ const TaskLogs = ({selectedEvent}) => {
 </div>
 
 </section>
+
+{showConfirm && (
+    
+    <ConfirmDialog confirmDelete={confirmDelete} cancelDelete={cancelDelete} />
+)}
 
 
 

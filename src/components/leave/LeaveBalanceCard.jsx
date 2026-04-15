@@ -1,26 +1,62 @@
-import React from "react";
+import {useState,useEffect} from "react";
+import { useUser } from "../../context/UserContext";
 // import "bootstrap/dist/css/bootstrap.min.css";
 // import "bootstrap-icons/font/bootstrap-icons.css";
 
 const LeaveBalanceCard = () => {
+
+      const [history, setHistory] = useState([])
+      const {USERID} = useUser()
+      const [currentData, setCurrentData] = useState({});
+  
+      useEffect(()=>{
+  
+          fetchLeaveHistory()
+  
+      },[])
+
+      useEffect(()=>{
+        setCurrentData(history[history.length -1])
+
+        console.log(history[history.length -1])
+  
+      },[history])
+
   const data = [
     {
       title: "Casual Leave",
-      used: 2,
-      total: 12,
+      used: currentData?.Used_Casual_Leave,
+      total: currentData?.Eligible_Casual_Leave,
       icon: "bi-umbrella",
       bg: "bg-primary-subtle",
       iconColor: "text-primary",
     },
     {
       title: "Sick Leave",
-      used: 1,
-      total: 12,
+      used: currentData?.Used_Sick_Leave,
+      total: currentData?.Eligible_Sick_Leave,
       icon: "bi-thermometer-half",
       bg: "bg-danger-subtle",
       iconColor: "text-danger",
     },
   ];
+
+      function fetchLeaveHistory(){
+        const config = {
+                report_name: "All_Leave_Balances",
+                criteria: `Employee.ID==${USERID}`
+        }
+        
+        ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
+        
+            if(response.code === 3000){
+                console.log("Leave History:", response.data)
+                setHistory(response.data[0]?.Leave_History)
+                
+            }
+        
+        }).catch((err) => console.error(err))
+    }
 
   return (
     <div className="container py-4">

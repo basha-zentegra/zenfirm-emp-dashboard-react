@@ -218,7 +218,7 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks, boardMembers = []}) =
               <i className="bi bi-journal"></i>
             </th>
             <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
-              Project Name <span className='text-danger'></span>
+              Project Name <span className='text-danger'>*</span>
             </th>
             <td style={{ width: "58%" }}>
 

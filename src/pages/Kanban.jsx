@@ -307,9 +307,11 @@ const handleDragEnd = (result) => {
                   draggableId={String(task.ID)}  // ✅ Ensure string
                   index={taskIndex}
                   key={task.ID}
+                  
                 >
                   {(provided) => (
                     <div
+                      id={task.ID}
                       className={`card mb-3 p-3 border-0 rounded-3 ${task?.Edited ? 'task-edited' : ''}`}
                       ref={provided.innerRef}
                       {...provided.draggableProps}
@@ -383,7 +385,7 @@ const handleDragEnd = (result) => {
         </main>
 
 
-<OffcanvasTaskDetails selectedEvent={selectedTask} fetchTasks={fetchTasks} boardMembers={boardMembers} />
+<OffcanvasTaskDetails selectedEvent={selectedTask} setEvents={setKanbanTasks} fetchTasks={fetchTasks} boardMembers={boardMembers}  />
 
 <KanbanAddTask list={selectedList} selectedBoard={selectedBoard} setKanbanTasks={setKanbanTasks} boardMembers={boardMembers} />
 

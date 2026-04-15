@@ -157,8 +157,8 @@ const AddTaskOffcanvas = ({startEnd, setEvents, resourceID = null}) => {
 
   const handleSubmit = () => {
 
-    if(!taskData.Task_Name){
-      alert("Task Name is Mandatory")
+    if(!taskData.Task_Name || !taskData.Project_Name){
+      alert("Task Name & Project is Mandatory")
       return
     }
     setIsSubmitting(true); // 🔒 disable button
@@ -211,7 +211,7 @@ const AddTaskOffcanvas = ({startEnd, setEvents, resourceID = null}) => {
             <i className="bi bi-journal"></i>
           </th>
           <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
-            Project Name <span className='text-danger'></span>
+            Project Name <span className='text-danger'>*</span>
           </th>
           <td style={{ width: "58%" }}>
 

@@ -1,0 +1,28 @@
+.card {
+  /* border-radius: 10px; */
+}
+
+.table th {
+  /* text-align: center; */
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+table.leave-request-table td{
+    padding: 20px;
+}
+
+table.leave-request-table th  {
+    padding: 10px 20px;
+}
+
+.bg-approved{
+    background-color: #D0FAE5;
+}
+
+
+table.table.table-hover > tbody > tr:hover > * {
+  background-color: rgb(237, 237, 253) !important;
+}
