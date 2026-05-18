@@ -20,6 +20,12 @@ const Home = () => {
 
   const [selectedTask, setSelectedTask] = useState(null)
 
+  const [loading, setLoading] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState(null);
+  const [now, setNow] = useState(Date.now());
+
+  const [triggerApi, setTriggerApi] = useState(false);
+
   useEffect(() => {
     if (!UID) return
 
@@ -98,49 +104,138 @@ const Home = () => {
     };
 
 
+
+
+    const COOLDOWN = 15 * 60 * 1000; // 15 minutes
+
+    const isCooldownActive = lastRefresh !== null && now - lastRefresh < COOLDOWN;
+
+    const remainingMinutes = isCooldownActive
+  ? Math.ceil((COOLDOWN - (now - lastRefresh)) / 60000)
+  : 0;
+
+    useEffect(() => {
+      const saved = localStorage.getItem("lastRefresh");
+      if (saved !== null) setLastRefresh(Number(saved));
+    }, []);
+
+    useEffect(() => {
+      if (lastRefresh) {
+        localStorage.setItem("lastRefresh", lastRefresh);
+      }
+    }, [lastRefresh]);
+
+
+    const handleRefresh = () => {
+
+      if (loading || isCooldownActive) return;
+
+      setLoading(true);
+
+
+      var config = {
+        form_name: "Function_Call",
+        payload: {
+          data: {
+            Employee : USERID
+        }
+        }
+      };
+      ZOHO.CREATOR.DATA.addRecords(config).then(function (response) {
+        console.log(response);
+        if (response.code == 3000) {
+          // console.log(response);
+          // setLoading(false);
+          setLastRefresh(Date.now()); // ✅ START COOLDOWN HERE
+          setTriggerApi(p => !p)
+        }
+      }).catch((err) => {
+        console.error(err);
+      })
+      .finally(() => {
+        setLoading(false); // ✅ always stop spinner
+      });
+
+    }
+
+    useEffect(() => {
+
+      if (!isCooldownActive) return;
+
+      const interval = setInterval(() => {
+        setNow(Date.now()); // triggers re-render
+      }, 1000); // update every second
+
+      return () => clearInterval(interval); // cleanup
+    }, [isCooldownActive]);
+
+
   return (
-    <div className='container pt-4'>
+    <div className=' pt-4 px-5' style={{ marginLeft: "70px", backgroundColor:"#FCF8FF" }} >
 
 
 
 <article>
 
-<section className="app-stats pb-5">
-  <div className="container">
-   
+<section className="app-stats pb-5 ">
+  <div className="container-flui">
     <div className="row g-4">
+      
+      {/* Total Tasks */}
       <div className="col-md-3 col-sm-6">
-        <div className="stat-card text-center bg-white p-4 shadow-sm rounded">
-          <i className="bi bi-person-workspace fs-3 text-primary mb-3"></i>
-          <h3 className="fs-4 fw-bold">{myTodayTasks.length}</h3>
-          <p className="text-muted mb-0">Today's Task</p>
+        <div className="stat-card d-flex align-items-center bg-white p-4 shadow-sm rounded-4">
+          <div className="icon-box rounded-circle d-flex align-items-center justify-content-center bg-primary-subtle" style={{ width: '60px', height: '60px' }}>
+            <i className="bi bi-clipboard-data fs-3 text-primary"></i>
+          </div>
+          <div className="ms-3">
+            <p className="text-uppercase small fw-semibold text-muted mb-0">Total Tasks</p>
+            <h3 className="fs-3 fw-bold mb-0">{myTodayTasks.length}</h3>
+          </div>
         </div>
       </div>
+
+      {/* Completed Tasks */}
       <div className="col-md-3 col-sm-6">
-        <div className="stat-card text-center bg-white p-4 shadow-sm rounded">
-          <i className="bi bi-check-circle-fill fs-3 text-success mb-3"></i>
-          <h3 className="fs-4 fw-bold">{todayCompleted.length}</h3>
-          <p className="text-muted mb-0">Completed</p>
+        <div className="stat-card d-flex align-items-center bg-white p-4 shadow-sm rounded-4">
+          <div className="icon-box rounded-circle d-flex align-items-center justify-content-center bg-success-subtle" style={{ width: '60px', height: '60px' }}>
+            <i className="bi bi-check2-circle fs-3 text-success"></i>
+          </div>
+          <div className="ms-3">
+            <p className="text-uppercase small fw-semibold text-muted mb-0">Completed Tasks</p>
+            <h3 className="fs-3 fw-bold mb-0">{todayCompleted.length}</h3>
+          </div>
         </div>
       </div>
+
+      {/* In Progress */}
       <div className="col-md-3 col-sm-6">
-        <div className="stat-card text-center bg-white p-4 shadow-sm rounded">
-          <i className="bi bi-hourglass-split fs-3 text-warning mb-3"></i>
-          <h3 className="fs-4 fw-bold">{todayInprog.length}</h3>
-          <p className="text-muted mb-0">Inprogress</p>
+        <div className="stat-card d-flex align-items-center bg-white p-4 shadow-sm rounded-4">
+          <div className="icon-box rounded-circle d-flex align-items-center justify-content-center bg-warning-subtle" style={{ width: '60px', height: '60px' }}>
+            <i className="bi bi-three-dots fs-3 text-warning"></i>
+          </div>
+          <div className="ms-3">
+            <p className="text-uppercase small fw-semibold text-muted mb-0">In Progress</p>
+            <h3 className="fs-3 fw-bold mb-0">{todayInprog.length}</h3>
+          </div>
         </div>
       </div>
+
+      {/* Not Started */}
       <div className="col-md-3 col-sm-6">
-        <div className="stat-card text-center bg-white p-4 shadow-sm rounded">
-          <i className="bi bi-pause-circle fs-3 text-secondary mb-3"></i>
-          <h3 className="fs-4 fw-bold">{todayNotStarted.length}</h3>
-          <p className="text-muted mb-0">Not Started</p>
+        <div className="stat-card d-flex align-items-center bg-white p-4 shadow-sm rounded-4">
+          <div className="icon-box rounded-circle d-flex align-items-center justify-content-center bg-info-subtle" style={{ width: '60px', height: '60px' }}>
+            <i className="bi bi-hourglass fs-3 text-info"></i>
+          </div>
+          <div className="ms-3">
+            <p className="text-uppercase small fw-semibold text-muted mb-0">Not Started</p>
+            <h3 className="fs-3 fw-bold mb-0">{todayNotStarted.length}</h3>
+          </div>
         </div>
       </div>
+
     </div>
   </div>
 </section>
-
 
 
 
@@ -150,10 +245,10 @@ const Home = () => {
 
 
 
-<div className='row g-4'>
+<div className='row g-4 '>
 
 
-        <div className="col-6">
+        {/* <div className="col-6">
             <div className="card" style={{height: "500px"}}>
               <span className='cardsHeader ms-3 mt-2'>My Punch-in Report</span>
               <div className="card-body scroll-karo">
@@ -166,16 +261,42 @@ const Home = () => {
 
               </div>
             </div>
+        </div> */}
+
+        <div className="col-12">
+            <div className="card border-0 rounded-4 shadow-sm overflow-hidden biometric-card ">
+
+              
+              <div className="card-body scroll-karo p-4">
+
+                <span className=" fw-medium mb-3 " style={{fontSize:"20px",color:"#8593e8"}}>Today's Biometric Data 
+                   {!remainingMinutes && <i
+                      onClick={!loading && !isCooldownActive ? handleRefresh : undefined}
+                      className={`bi bi-arrow-clockwise cursor-pointer ms-3 ${
+                        loading ? "spin" : ""
+                      } ${isCooldownActive ? "opacity-50 cursor-not-allowed" : ""}`}
+                      
+                    ></i>}
+                    <small className='text-small ms-3 text-mute' style={{fontSize:"10px"}}>{remainingMinutes > 0 && remainingMinutes}</small>
+                </span>
+
+                    <HomePunch triggerApi={triggerApi} />
+
+                    <img className='fingerprint ' src="https://cdn-icons-png.flaticon.com/128/9796/9796333.png" alt="" />
+
+
+              </div>
+            </div>
         </div>
 
         <div className="col-6">
-            <div className="card" style={{height: "500px"}}>
+            <div className="card border-0 rounded-4 shadow-sm" style={{height: "500px"}}>
               <span className=' ms-3 mt-2 cardsHeader'>My Overdue Tasks - {overDueTasks.length}</span>
               <div className="card-body scroll-karo" >
                 
                 {overDueTasks.map((e,i) => {
                       return(
-                        <div key={i} className={`card mb-3  ${getPriorityBorder(e.Task_Priority)}`}>
+                        <div key={i} className={`tasklist card mb-3 border-0 rounded-3 shadow-sm  ${getPriorityBorder(e.Task_Priority)}`}>
                          
                             <div className="row p-3 py-2">
                                 <div className='col-9'>
@@ -197,14 +318,14 @@ const Home = () => {
 
 
         <div className="col-6">
-            <div className="card" style={{height: "500px"}}>
-              <span className='cardsHeader ms-3 mt-2'>Today's Tasks - {myTodayTasks.length}</span>
+            <div className="card border-0 rounded-4 shadow-sm" style={{height: "500px"}}>
+              <span className='cardsHeader ms-3 mt-2 '>Today's Tasks - {myTodayTasks.length}</span>
               <div className="card-body scroll-karo" >
                 
                     {myTodayTasks.map(e => {
                       
                       return(
-                        <div key={e.ID} className={`card mb-3  ${getPriorityBorder(e.Task_Priority)}`}>
+                        <div key={e.ID} className={`tasklist card mb-3 border-0 rounded-3 shadow-sm  ${getPriorityBorder(e.Task_Priority)}`}>
                          
                             <div className="row p-3 py-2">
                                 <div className='col-9'>
@@ -226,13 +347,13 @@ const Home = () => {
 
 
         <div className="col-6">
-            <div className="card" style={{height: "500px"}}>
+            <div className="card border-0 rounded-4 shadow-sm" style={{height: "500px"}}>
               <span className='cardsHeader ms-3 mt-2'>BTR Events - {myTodayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Business Tax Filing").length}</span>
               <div className="card-body scroll-karo" >
                 
                     {myTodayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Business Tax Filing").map(e => {
                       return(
-                        <div className={`card mb-3  ${getPriorityBorder(e.Task_Priority)}`}>
+                        <div key={e.ID} className={` tasklist card mb-3 border-0 rounded-3 shadow-sm  ${getPriorityBorder(e.Task_Priority)}`}>
                          
                             <div className="row p-3 py-2">
                                 <div className='col-9'>
@@ -253,13 +374,13 @@ const Home = () => {
         </div>
 
         <div className="col-6">
-            <div className="card" style={{height: "500px"}}>
+            <div className="card border-0 rounded-4 shadow-sm" style={{height: "500px"}}>
               <span className='cardsHeader ms-3 mt-2'>ITR Events - {myTodayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Individual Tax Filing").length}</span>
               <div className="card-body scroll-karo" >
                 
                     {myTodayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Individual Tax Filing").map(e => {
                       return(
-                        <div key={e.ID} className={`card mb-3  ${getPriorityBorder(e.Task_Priority)}`}>
+                        <div key={e.ID} className={` tasklist card mb-3 border-0 rounded-3 shadow-sm  ${getPriorityBorder(e.Task_Priority)}`}>
                          
                             <div className="row p-3 py-2">
                                 <div className='col-9'>

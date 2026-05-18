@@ -36,11 +36,8 @@ const MyBigCalendar = () => {
     const [allTask, setAllTask] = useState([]);
 
 
-    useEffect(() => {
-        if (!USERID) return
-    
+    function fetchTasks(){
         const config = {
-          app_name: APP_NAME,
           report_name: "My_Team_Tasks",
           criteria: `Assignee.ID==${USERID}`,
           max_records : 1000
@@ -50,7 +47,7 @@ const MyBigCalendar = () => {
         ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
     
             if(response.code === 3000){
-              console.log("My All Tasks for Calendar:", response.data)
+            //   console.log("My All Tasks for Calendar:", response.data)
               const taskRes = response.data;
 
                 setAllTask(taskRes)
@@ -59,6 +56,14 @@ const MyBigCalendar = () => {
             
           })
           .catch((err) => console.error(err))
+    }
+
+
+    useEffect(() => {
+        if (!USERID) return
+    
+        fetchTasks();
+        
     
     }, [USERID])
 
@@ -188,7 +193,7 @@ const MyBigCalendar = () => {
 
             setEvents(newEvents); 
 
-            console.log(newEvents)
+            // console.log(newEvents)
 
 
 
@@ -208,7 +213,7 @@ const MyBigCalendar = () => {
 
         if (event.taskStatus === "Completed") return;
 
-        console.log(event, formatDateToMMDDYYYY(start) ,formatTimeToHHMM(start), formatTimeToHHMM(end))
+        // console.log(event, formatDateToMMDDYYYY(start) ,formatTimeToHHMM(start), formatTimeToHHMM(end))
 
 
         const updatedEvent = { ...event, start, end };
@@ -225,7 +230,7 @@ const MyBigCalendar = () => {
 
     const handleEventResize = ({ event, start, end }) => {
         if (event.taskStatus === "Completed") return;
-        console.log(event, formatDateToMMDDYYYY(start) ,formatTimeToHHMM(start), formatTimeToHHMM(end))
+        // console.log(event, formatDateToMMDDYYYY(start) ,formatTimeToHHMM(start), formatTimeToHHMM(end))
 
         const resizedEvent = { ...event, start, end };
 
@@ -269,7 +274,7 @@ const MyBigCalendar = () => {
     };
 
     const handleSelectEvent = (event) => {
-        console.log("Event clicked:", event);
+        // console.log("Event clicked:", event);
         // document.getElementById("taskOffcanvas").click()
         const element = document.getElementById("offcanvasRight");
         const bsOffcanvas = new window.bootstrap.Offcanvas(element);
@@ -284,7 +289,7 @@ const MyBigCalendar = () => {
             id : event.id
         };
         ZOHO.CREATOR.DATA.getRecordById(config).then(function (response) {
-            console.log(response,config);
+            // console.log(response,config);
             if(response.code === 3000){
             setSelectedEvent(response.data)
             }
@@ -300,9 +305,30 @@ const MyBigCalendar = () => {
         bsOffcanvas.show();
     }
 
+    const [calStart, setCalStart] = useState(new Date(1970, 0, 1, 10, 0))
+    const [calEnd, setCalEnd] = useState(new Date(1970, 0, 1, 23, 59))
+
+    const [fullView, setFullView] = useState(false)
+
+    const handle24HrsView = () => {
+
+        if(!fullView){
+            setCalStart(new Date(1970, 0, 1, 0, 0))
+            setCalEnd(new Date(1970, 0, 1, 23, 59))
+            setFullView(true)
+        }else{
+            setCalStart(new Date(1970, 0, 1, 10, 0))
+            setCalEnd(new Date(1970, 0, 1, 23, 59))
+            setFullView(false)
+        }
+        
+    }
+
+     const [open, setOpen] = useState(false);
     
 
   return (
+    
     <div className="me-1" style={{marginLeft:"80px"}}>
         <DndProvider backend={HTML5Backend}>
             <DnDCalendar
@@ -320,8 +346,8 @@ const MyBigCalendar = () => {
                 onEventResize={handleEventResize}
                 eventPropGetter={eventStyleGetter}
                 components={{event: CustomEvent}}
-                min={new Date(1970, 0, 1, 10, 0)}   
-                max={new Date(1970, 0, 1, 23, 59)}  
+                min={calStart}   
+                max={calEnd}  
                 onSelectEvent={handleSelectEvent}
                 step={15}
                 timeslots={4}
@@ -333,19 +359,33 @@ const MyBigCalendar = () => {
 
         <OffcanvasTaskDetails selectedEvent={selectedEvent} setSelectedEvent={setSelectedEvent} setEvents={setEvents}/>
 
-        <AddTaskOffcanvas startEnd={startEnd} setEvents={setEvents}/>
+        <AddTaskOffcanvas startEnd={startEnd} setEvents={setEvents} fetchTasks={fetchTasks}/>
 
-        <div className="border-secondary border rounded-2" style={{position: "fixed", right:"25%", top:"-3px"}}>
-            <button className="d-non btn btn-sm  text-dark" onClick={handleUnScheduled}><i class="bi bi-hourglass-top"></i> Unscheduled</button>
-            <Link className="btn btn-sm" to="admincalendar"><i class="bi bi-people-fill"></i> Team Calendar</Link>
+        <div className="d-flex" style={{position: "fixed", right:"25%", top:"-3px", zIndex:"200"}}>
 
+            {open && (
+                <div className="border-secondary-subtle border rounded-bottom-4 bg-whit p-2 text-muted" style={{background:"#fcf8ff"}}>
+                    {/* <button className="d-non btn btn-s  text-dark" onClick={handle24HrsView} ><i class="bi bi-clock-history me-2"></i> 24Hrs View</button> <br /> */}
+                    <button className="d-non btn text-muted fw-semibold" onClick={handleUnScheduled}><i class="bi bi-hourglass-top me-2"></i> Unscheduled</button> <br />
+                    <Link  to="admincalendar"><button className="btn text-muted fw-semibold"><i class="bi bi-people-fill me-2"></i> Team Calendar</button></Link> <br />
+                    <button className="d-non btn text-muted fw-semibold" onClick={handle24HrsView} ><i class="bi bi-clock-history me-2"></i> 24Hrs View</button> <br />
+                </div>
+            )}
+
+            <div>
+                <button className="btn btn-sm bg-zen text-white rounded-3" onClick={() => setOpen(!open)}>
+                {open ? (<i class="bi bi-chevron-double-up"></i>) : (<i class="bi bi-chevron-double-down"></i>)}
+            </button>
+            </div>
 
         </div>
 
 
+
+
         <UnScheduledTasks setEvents={setEvents} />
 
-        {console.log("EVENTSSSS", events)}
+        {/* {console.log("EVENTSSSS", events)} */}
 
     </div>
   )

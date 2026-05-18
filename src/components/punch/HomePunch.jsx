@@ -224,7 +224,7 @@ function getTimeDifference(startTime, endTime) {
 
 
 //COMPONENT FUNCTION
-const HomePunch = () => {
+const HomePunch = ({triggerApi}) => {
 
 const {USERID, ORG} = useUser();
 
@@ -297,15 +297,8 @@ useEffect(() => {
 }, [isIn, currentInTime]);
 
 
-
-
- useEffect(() => {
-    if (!USERID) return
-
-     setLoading(true);
-    setError(null);
-
-    const config = {
+function fetchBiometricData(){
+   const config = {
       app_name: APP_NAME,
       report_name: "All_Punches",
       criteria: `Employee.ID==${USERID} && Punch_Time > "${formattedDate} 09:00:00 AM"`
@@ -332,11 +325,39 @@ useEffect(() => {
     })
     .catch((err) => {
             console.error(err);
-            setError("No Punch-in Data Available");
+            setError("No Biometric Data Available");
     })
     .finally(() => {
             setLoading(false);
     });
+}
+
+useEffect(()=>{
+  
+  setTimeout(() => {
+    fetchBiometricData()
+  }, 2000);
+  
+},[triggerApi])
+
+ useEffect(() => {
+    if (!USERID) return
+
+     setLoading(true);
+    setError(null);
+
+
+    // Initial call
+    fetchBiometricData();
+
+    // Set interval (5 minutes = 300000 ms)
+    const interval = setInterval(() => {
+      fetchBiometricData();
+      console.log("LIVE SINC")
+    }, 90000);
+
+    // Cleanup on unmount or USERID change
+    return () => clearInterval(interval);
 
   }, [USERID])
 
@@ -359,50 +380,52 @@ useEffect(() => {
 
 
   return (
-    <>
+    <div className='d-flex mt-3 align-items-center'>
 
-        <div className='d-flex justify-content-center text-center'>
-            <div className="card w-50 p-3 rounded-4" style={{background:"#f3fffc", border:"#139a74",boxShadow: "0 0 0 0.4px #139a74"}}>
-              <p className='mb-2'>Hours Worked</p>
-              <h4  className='fw-normal mb-2' style={{color:"#139a74"}}>{displayWorked}</h4>
-              <div>
-                  <div className="progress" style={{height:"10px"}}>
-                      <div className="progress-bar progress-bar-striped bg-success" style={{ width: `${workPercentage}%` }}></div>
-                  </div>
+      
+
+        <div className='w-100 scroll-karo' style={{height:"150px"}}>
+          <table className='table table-borderless'>
+                  <thead style={{fontSize:"12px"}}>
+                      <tr>
+                          <th className='text-center text-uppercase text-muted '>Check-in</th>
+                          <th className='text-center text-uppercase text-muted'>Check-out</th>
+                          <th className='text-center text-uppercase text-muted'>Worked</th>
+                      </tr>
+                  </thead>
+                          
+                  <tbody className='' style={{fontSize:"15px"}}>
+                      {arrangedPunches.map((e, i) => (
+                          <tr key={`${e.inTime}-${e.outTime}-${i}`}>
+                          <td className='text-center'>{e.inTime}</td>
+                          <td className='text-center'>{e.outTime}</td>
+                          <td className='text-center workedtd'>
+                              {calculateWorkedTime(e.inTime, e.outTime)}
+                          </td>
+                          </tr>
+                      ))}
+                  </tbody>
+          </table>
+        </div>
+
+        <div className="vline"> </div>
+
+
+        <div className='d-flex justify-content-start text-center w-75 align-items-center'>
+            <div className="card border-0 w-75 p-3 rounded-4 text-end">
+              <p className='mb-1 text-uppercase fw-semibold letter-spacing-2 ' style={{color:"#8593e8"}}>Total Office Hours</p>
+              <h4  className='fw-semibold mb-2' style={{color:"#3525cc", fontSize:"60px"}}>{displayWorked}<span className='fw-bold' style={{color:"#55cca6"}}>.</span> </h4>
+              <div className="w-75 ms-auto">
+                <div className=''>
+                    <div className="progress" style={{height:"5px"}}>
+                        <div className="progress-bar progress-bar-striped" style={{ width: `${workPercentage}%`, background:"#8593e8" }}></div>
+                    </div>
+                </div>
               </div>
             </div>
         </div>
 
-{/* {liveDifference && (
-    <p>{liveDifference} US Time issue Rectified</p> 
-)}
-
-{ORG && (<p>{ORG}</p>)} */}
-
-
-        <table className='table'>
-                <thead>
-                    <tr>
-                        <th className='text-center text-uppercase text-muted'>In</th>
-                        <th className='text-center text-uppercase text-muted'>Out</th>
-                        <th className='text-center text-uppercase text-muted'>Worked</th>
-                    </tr>
-                </thead>
-                        
-                <tbody>
-                    {arrangedPunches.map((e, i) => (
-                        <tr key={`${e.inTime}-${e.outTime}-${i}`}>
-                        <td className='text-center'>{e.inTime}</td>
-                        <td className='text-center'>{e.outTime}</td>
-                        <td className='text-center workedtd'>
-                            {calculateWorkedTime(e.inTime, e.outTime)}
-                        </td>
-                        </tr>
-                    ))}
-                </tbody>
-        </table>
-
-    </>
+    </div>
   )
 }
 
@@ -410,3 +433,37 @@ export default HomePunch
 
 
 
+// <div className='d-flex justify-content-center text-center'>
+//             <div className="card w-50 p-3 rounded-4" style={{background:"#f3fffc", border:"#139a74",boxShadow: "0 0 0 0.4px #139a74"}}>
+//               <p className='mb-2'>Hours Worked</p>
+//               <h4  className='fw-normal mb-2' style={{color:"#139a74"}}>{displayWorked}</h4>
+//               <div>
+//                   <div className="progress" style={{height:"10px"}}>
+//                       <div className="progress-bar progress-bar-striped bg-success" style={{ width: `${workPercentage}%` }}></div>
+//                   </div>
+//               </div>
+//             </div>
+//         </div>
+
+
+//         <table className='table'>
+//                 <thead>
+//                     <tr>
+//                         <th className='text-center text-uppercase text-muted'>In</th>
+//                         <th className='text-center text-uppercase text-muted'>Out</th>
+//                         <th className='text-center text-uppercase text-muted'>Worked</th>
+//                     </tr>
+//                 </thead>
+                        
+//                 <tbody>
+//                     {arrangedPunches.map((e, i) => (
+//                         <tr key={`${e.inTime}-${e.outTime}-${i}`}>
+//                         <td className='text-center'>{e.inTime}</td>
+//                         <td className='text-center'>{e.outTime}</td>
+//                         <td className='text-center workedtd'>
+//                             {calculateWorkedTime(e.inTime, e.outTime)}
+//                         </td>
+//                         </tr>
+//                     ))}
+//                 </tbody>
+//         </table>

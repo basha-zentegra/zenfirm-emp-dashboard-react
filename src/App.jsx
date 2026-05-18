@@ -32,25 +32,25 @@ function App() {
     }, 2200);
   })
 
-  useEffect(() => {
-    fetch("https://api.ipify.org?format=json").then(res => res.json()).then(data => {
-        const userIp = data.ip;
+  // useEffect(() => {
+  //   fetch("https://api.ipify.org?format=json").then(res => res.json()).then(data => {
+  //       const userIp = data.ip;
 
-        console.log("userIp", userIp)
+  //       console.log("userIp", userIp)
 
-        const allowedIps = ["106.51.67.56", "122.171.17.139"];
-        //122.171.17.139
+  //       const allowedIps = ["106.51.67.56", "122.171.17.139"];
+  //       //122.171.17.139
 
-        if (!allowedIps.includes(userIp)) {
-          setBlocked(true);
-        }
-      });
+  //       if (!allowedIps.includes(userIp)) {
+  //         setBlocked(true);
+  //       }
+  //     });
 
-      navigator.geolocation.getCurrentPosition((position) => {
-        console.log("position.coords.latitude",position.coords.latitude);
-        console.log("position.coords.longitude",position.coords.longitude);
-      });
-  }, []);
+  //     navigator.geolocation.getCurrentPosition((position) => {
+  //       console.log("position.coords.latitude",position.coords.latitude);
+  //       console.log("position.coords.longitude",position.coords.longitude);
+  //     });
+  // }, []);
 
 
 const getLocation = () => {

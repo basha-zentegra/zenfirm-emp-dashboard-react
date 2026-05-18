@@ -560,6 +560,27 @@ const AdminBigCalendar = () => {
   // Determine if we should show resources (day view)
   const showResources = currentView === "day";
 
+  const [calStart, setCalStart] = useState(new Date(1970, 0, 1, 10, 0))
+      const [calEnd, setCalEnd] = useState(new Date(1970, 0, 1, 23, 59))
+  
+      const [fullView, setFullView] = useState(false)
+  
+      const handle24HrsView = () => {
+  
+          if(!fullView){
+              setCalStart(new Date(1970, 0, 1, 0, 0))
+              setCalEnd(new Date(1970, 0, 1, 23, 59))
+              setFullView(true)
+          }else{
+              setCalStart(new Date(1970, 0, 1, 10, 0))
+              setCalEnd(new Date(1970, 0, 1, 23, 59))
+              setFullView(false)
+          }
+          
+      }
+  
+       const [open, setOpen] = useState(false);
+
   return (
     <div className="me-1" style={{ marginLeft: "80px" }}>
 
@@ -819,8 +840,8 @@ const AdminBigCalendar = () => {
               ),
             }),
           }}
-          min={new Date(1970, 0, 1, 11, 0)}
-          max={new Date(1970, 0, 1, 23, 59)}
+          min={calStart}   
+          max={calEnd}
           onSelectEvent={handleSelectEvent}
           step={15}
           timeslots={4}
@@ -841,6 +862,24 @@ const AdminBigCalendar = () => {
         setEvents={setEvents}
         resources={resources} 
       /> */}
+
+      <div className="d-flex" style={{position: "fixed", right:"25%", top:"-3px", zIndex:"200"}}>
+
+            {open && (
+                <div className="border-secondary-subtle border rounded-bottom-4 bg-whit p-2 text-muted" style={{background:"#fcf8ff"}}>
+                    {/* <button className="d-non btn btn-s  text-dark" onClick={handle24HrsView} ><i class="bi bi-clock-history me-2"></i> 24Hrs View</button> <br /> */}
+                    {/* <Link  to="admincalendar"><button className="btn text-muted fw-semibold"><i class="bi bi-people-fill me-2"></i> Team Calendar</button></Link> <br /> */}
+                    <button className="d-non btn text-muted fw-semibold" onClick={handle24HrsView} ><i class="bi bi-clock-history me-2"></i> 24Hrs View</button> <br />
+                </div>
+            )}
+
+            <div>
+                <button className="btn btn-sm bg-zen text-white rounded-3" onClick={() => setOpen(!open)}>
+                  {open ? (<i class="bi bi-chevron-double-up"></i>) : (<i class="bi bi-chevron-double-down"></i>)}
+              </button>
+            </div>
+
+        </div>
     </div>
   );
 };

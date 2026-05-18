@@ -11,7 +11,7 @@
 }
 
 .stat-card:hover i {
-  transform: scale(1.1);
+  transform: scale(1.3);
 }
 
 .sidebar{
@@ -81,10 +81,10 @@
   background-color: #e3dcff;
   display: inline-block;
   width: max-content;
-  padding: 2px 6px;
-  border-radius: 6px;
+  padding: 2px 8px;
+  border-radius: 8px;
   font-weight: 500;
-  border: 1px solid #754ffe;
+  /* border: 1px solid #754ffe; */
   color: #754ffe;
   
 
@@ -108,3 +108,80 @@
   color: white;
 }
 
+.fs-12p{
+  font-size: 12px;
+}
+
+
+.bg-success-subtle{
+  background-color: #ECFDF5 !important;
+}
+
+
+.letter-spacing-1 {
+  letter-spacing: 1px;
+}
+
+.letter-spacing-2 {
+  letter-spacing: 2px;
+}
+
+.fingerprint{
+  position: absolute;
+  top: -8px;
+  right: -18px;
+  opacity: 0.4;
+  width: 110px;
+  transform: rotate(20deg);
+  transition: transform 1s ease-in-out;
+}
+.biometric-card:hover .fingerprint{
+  transform: rotate(-10deg);
+  
+}
+.biometric-card{
+  margin-bottom: 20px;
+}
+
+
+.tasklist{
+  transition: transform 0.3s ease;
+
+}
+
+.tasklist:hover{
+   transform: scale(1.01);     
+
+}
+.vline{
+  height: 100px;
+  width: 1px;
+  border-left: 1px solid rgb(187, 187, 187);
+  background: #000;
+  margin-bottom: 20px;
+  /* margin-left: 30px; */
+}
+
+.sidebar-icon {
+  transition: transform 0.3s ease;
+}
+
+.sidebar-icon:hover{
+  transform: rotate(20deg);
+}
+
+
+
+.spin {
+  animation: spin 1.5s linear ;
+  display: inline-block; /* IMPORTANT for <i> */
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg) scale(50);
+  }
+}

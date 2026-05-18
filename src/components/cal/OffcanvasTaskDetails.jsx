@@ -9,6 +9,7 @@ import TaskLogs from '../task/TaskLogs';
 import TaskNotes from '../task/TaskNotes';
 import TaskAttachments from '../task/TaskAttachments';
 import ConfirmDialog from '../task/ConfirmDialog';
+import ItrBtrPopup from '../task/ItrBtrPopup';
 
 const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin=false, fetchTasks, boardMembers = [] }) => {
 
@@ -19,6 +20,8 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
   const account = selectedEvent?.["Project_Name.Accounts"];
 
   const [showConfirm, setShowConfirm] = useState(false);
+
+  const [showItrPopup, setShowItrPopup] = useState(false);
 
 
   // Compute base URL safely
@@ -61,6 +64,9 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
 
   const [isEdit, setEdit] = useState(false);
 
+  const [projectGroup, setProjectGroup] = useState(null);
+
+
 
 
   useEffect(() => {
@@ -70,6 +76,10 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
       setShowAction(true);
     }
 
+    if(selectedEvent?.["Project_Name.Project_Group1"]?.Project_Group){
+      setProjectGroup(selectedEvent?.["Project_Name.Project_Group1"]?.Project_Group);
+      
+    }
 
     console.log("selectedEvent", selectedEvent)
   }, [selectedEvent]);
@@ -91,7 +101,18 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
   },[selectedEvent])
 
 
+
+
     function completeTask() {
+
+
+      if(projectGroup === "Individual Tax Filing"){
+        setShowItrPopup(true);
+        return;
+      }
+
+
+
       const payload = {
         Task_Status: "Completed",
       };
@@ -510,6 +531,8 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
         {showConfirm && (
             <ConfirmDialog confirmDelete={confirmDelete} cancelDelete={cancelDelete} />
         )}
+
+        {showItrPopup && (<ItrBtrPopup setShowItrPopup={setShowItrPopup} projectId={project?.ID} />)}
 
       </div>
 

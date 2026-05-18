@@ -81,8 +81,8 @@ const MyLeaveRequests = () => {
                 {leaves.map((leave) => (
                   <tr key={leave.ID} className="tr-hight">
                     <td className="fw-medium">{leave?.Employee_Name?.Name || "Name"}</td>
-                    <td>{getLeaveType(leave?.Sick_Taken, leave?.Casual_Taken)}</td>
-                    <td>{leave?.From}</td>
+                    <td>{leave?.Leave_Type1 || "-"}</td>
+                    <td><small className="text-muted">{leave?.From} to {leave?.To}</small></td>
                     <td>{leave?.No_Of_Days_Leave}</td>
                     <td className="">{getStatusBadge(leave?.Approval_status)}</td>
                     <td>{leave?.Comments}</td>

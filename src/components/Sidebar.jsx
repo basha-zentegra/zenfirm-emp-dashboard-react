@@ -50,37 +50,39 @@ const Sidebar = ({userEmail}) => {
     <>
     
 <div className="d-flex flex-column flex-shrink-0 p-3  vh-100 sidebar">
-  <a
-    href="/"
+  <span
+    
     className="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none"
   >
     
     {/* <span className="fs-4">ZenFirm</span> */}
     <img style={{width:"50px"}} src="https://blogger.googleusercontent.com/img/a/AVvXsEhSNlyKoRigIvA0SewRbl6twztGq-Z1e-pYyb1NN8e4X47M-Qv2pf2ZPHELxIYBlQgrun3bIlRVdpRYhc3ymIhPHuuDdZNGXyGI-uwgYU7VUUra5NCybVlaBHKyJImCkDIgLGcx3LkYd-4VCcR_KnF5gEDcHTrW7wxEQ2skRrHsRqZodKLKVbBtrbucwvE" alt="" />
-  </a>
+  </span>
 
   <hr />
 
   <ul className="nav nav-pills flex-column mb-auto">
     <li className="nav-item">
       <Link to="/" onClick={() => handleClick(1)} className="nav-link px-2 mb-3" aria-current="page" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Home">
-        <i className={`bi bi-house-fill fs-5 ${activeId === 1 ? "text-zen" : "text-secondary"}`} ></i>
+        <i className={`sidebar-icon bi bi-house-fill fs-5 ${activeId === 1 ? "text-zen" : "text-secondary"}`} ></i>
           
       </Link>
     </li>
 
-    <li>
-      <Link  to="/attendance" onClick={() => handleClick(5)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Attendance">
 
-        <i className={`bi bi-person-check fs-5 ${activeId === 5 ? "text-zen" : "text-secondary"}`} ></i>
-          
-      </Link>
-    </li>
 
     <li>
       <Link  to="/calendar" onClick={() => handleClick(2)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Calendar">
         {/* <i className="bi bi-journal-bookmark fs-5"></i> */}
-        <i className={`bi bi-calendar-week fs-5 ${activeId === 2 ? "text-zen" : "text-secondary"}`} ></i>
+        <i className={`sidebar-icon bi bi-calendar-week fs-5 ${activeId === 2 ? "text-zen" : "text-secondary"}`} ></i>
+          
+      </Link>
+    </li>
+
+    <li>
+      <Link  to="/attendance" onClick={() => handleClick(5)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Leave Tracker">
+
+        <i className={`sidebar-icon bi-cloud-moon-fill fs-5 ${activeId === 5 ? "text-zen" : "text-secondary"}`} ></i>
           
       </Link>
     </li>
@@ -88,7 +90,7 @@ const Sidebar = ({userEmail}) => {
     <li>
       <Link  to="/kanban" onClick={() => handleClick(3)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="ZenBoards">
 
-        <i className={`bi bi-kanban fs-5 ${activeId === 3 ? "text-zen" : "text-secondary"}`} ></i>
+        <i className={`sidebar-icon bi bi-kanban fs-5 ${activeId === 3 ? "text-zen" : "text-secondary"}`} ></i>
           
       </Link>
     </li>
@@ -99,7 +101,7 @@ const Sidebar = ({userEmail}) => {
     <li>
       <Link  to="/superadmin" onClick={() => handleClick(4)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Super Admin">
 
-        <i className={`bi bi-shield-lock fs-5 ${activeId === 4 ? "text-zen" : "text-secondary"}`} ></i>
+        <i className={`sidebar-icon bi bi-shield-lock fs-5 ${activeId === 4 ? "text-zen" : "text-secondary"}`} ></i>
 
           
       </Link>
@@ -113,7 +115,7 @@ const Sidebar = ({userEmail}) => {
 
   <hr />
 
-    <p>V 1.1.5</p>
+    <p>V 1.1.8</p>
 
   {/* <div className="dropdown">
     <a

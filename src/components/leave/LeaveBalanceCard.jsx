@@ -30,6 +30,7 @@ const LeaveBalanceCard = () => {
       icon: "bi-umbrella",
       bg: "bg-primary-subtle",
       iconColor: "text-primary",
+      bal: currentData?.Balance_Casual_Leave
     },
     {
       title: "Sick Leave",
@@ -38,6 +39,7 @@ const LeaveBalanceCard = () => {
       icon: "bi-thermometer-half",
       bg: "bg-danger-subtle",
       iconColor: "text-danger",
+      bal: currentData?.Balance_Sick_Leave
     },
   ];
 
@@ -91,7 +93,7 @@ const LeaveBalanceCard = () => {
                 <h6 className="text-muted text-uppercase fw-semibold mb-2">
                     {item.title} - 
                 </h6>
-                <h4 className="fs-4 ms-2 fw-bold">{item.total - item.used}</h4>
+                <h4 className="fs-4 ms-2 fw-bold">{item.bal || 0}</h4>
               </div>
 
               <div className="d-flex align-items-end mt-2">

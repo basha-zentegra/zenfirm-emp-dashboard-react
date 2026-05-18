@@ -4,6 +4,7 @@ import LeaveBalanceCard from '../components/leave/LeaveBalanceCard';
 import LeaveHistory from '../components/leave/LeaveHistory';
 import LeaveManagement from '../components/leave/LeaveManagement';
 import MyLeaveRequests from '../components/leave/MyLeaveRequests';
+import LeaveApplyForm from '../components/leave/Leaveapplyform';
 
 const Attendance = () => {
 
@@ -16,9 +17,11 @@ const Attendance = () => {
   const [activeTab, setActiveTab] = useState("my-requests");
 
   return (
-    <div className='container'>
+    <div className='leaveapplyformbody'  style={{ marginLeft: "70px"}}>
 
-      <div className="text-center d-flex justify-content-center align-items-center bg-warning-subtle rounded-3 py-2 mt-2">
+      <div className='container pt-2'>
+
+      <div className="text-center d-flex justify-content-center align-items-center bg-warning-subtle rounded-3 py-2 t-2">
 
             <img src="https://blogger.googleusercontent.com/img/a/AVvXsEj7BLeOSPmoqF-qU0YYEiw3p6XaaBR_BicN39f5lSU2FRwFCb-W4actcpvfPRb3E8hvfAJNOHTc35aQdy3kEr43lpeIC9cNFa9NnYKENxLXJ3FMeUrrpnd7JAkP9IIC4fXjFcFvANx2njFsABO8CMFkdYW99gysq_vZOIeLQ82ivRrSaSF6xSGCxtjXD4k" style={{width:"50px", opacity:"0.8"}} alt="" />
 
@@ -119,11 +122,13 @@ const Attendance = () => {
 
       {showForm && (
 
-        <iframe height='700px' width='100%' frameborder='0' allowTransparency='true' scrolling='auto' src={`https://creatorapp.zohopublic.in/zentegraindia/zenfirm/form-embed/Request_Leave/gfykTe4xO2Dpgd9RfbbaBtrT411kNv1DP5SWsTRZqfsjvGYAj7Q3fBdWMYSJEmhT58mmJ1vm1Wn5k04DBWk3YKvdwMrNOrA7F6vJ?Employee_Name=${USERID}`}></iframe>
+        // <iframe height='700px' width='100%' frameborder='0' allowTransparency='true' scrolling='auto' src={`https://creatorapp.zohopublic.in/zentegraindia/zenfirm/form-embed/Request_Leave/gfykTe4xO2Dpgd9RfbbaBtrT411kNv1DP5SWsTRZqfsjvGYAj7Q3fBdWMYSJEmhT58mmJ1vm1Wn5k04DBWk3YKvdwMrNOrA7F6vJ?Employee_Name=${USERID}`}></iframe>
+
+        <LeaveApplyForm />
 
       )}
 
-      
+      </div>
     </div>
   )
 }

@@ -4,7 +4,7 @@ import { formattedDate } from '../../config';
 import { APP_NAME } from '../../config';
 import ProjectSelect from '../projects/ProjectSelect';
 
-const AddTaskOffcanvas = ({startEnd, setEvents, resourceID = null}) => {
+const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) => {
   const {USERID, projects, empName, orgEmp} = useUser();
 
   const myProjects = projects || [];
@@ -56,6 +56,9 @@ const AddTaskOffcanvas = ({startEnd, setEvents, resourceID = null}) => {
     End_Time:  formatTimeToHHMM(startEnd.end),
     Task_Date: formatDateToMMDDYYYY(startEnd.start),
     Assignee: resourceID || USERID,
+    Repeat: false,
+    Repeat_Type: "",
+    Repeating_Times: ""
     // resources: resourceID ||
   });
 
@@ -68,8 +71,7 @@ const AddTaskOffcanvas = ({startEnd, setEvents, resourceID = null}) => {
         Project_Name:selectedOption.value
       }))
     }
-  // console.log("projects",myProjects.length)
-  // const selectedProject = myProjects?.find((p) => p.ID === taskData.Project_Name);
+
 
 
 
@@ -99,13 +101,44 @@ const AddTaskOffcanvas = ({startEnd, setEvents, resourceID = null}) => {
 
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setTaskData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    console.log(taskData)
+    const { name, value, type, checked } = e.target;
+
+    // setTaskData((prev) => ({
+    //   ...prev,
+    //   [name]: type === "checkbox" ? checked : value,
+    // }));
+
+    setTaskData((prev) => {
+      const updated = {
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      };
+
+      // handle Repeat logic here
+      if (name === "Repeat") {
+        updated.Repeating_Times = checked ? 1 : "";
+        updated.Repeat_Type = checked ? "Daily" : "";
+      }
+
+      return updated;
+    });
+
+    
+
   };
+
+  useEffect(() => {
+    console.log(taskData);
+
+    // if(taskData.Repeat == true){
+    //   taskData.Repeating_Times = 1
+    //   taskData.Repeat_Type = "Daily"
+    // }else{
+    //   taskData.Repeating_Times = ""
+    //   taskData.Repeat_Type = ""
+    // }
+
+  }, [taskData]);
 
   const closeOffCanvas = () => {
     const element = document.getElementById("addtaskoffcanvas");
@@ -143,11 +176,20 @@ const AddTaskOffcanvas = ({startEnd, setEvents, resourceID = null}) => {
                 Task_Name: "",
                 Task_Description: "",
                 Project_Name: "",
-                Assignee: USERID
+                Assignee: USERID,
+                Repeat:false,
+                Repeat_Type:"",
+                Repeating_Times:""
               }));
               closeOffCanvas()
               setIsSubmitting(false)
               setSelectedProject(null)
+
+              if(taskData.Repeat && fetchTasks){
+                setTimeout(() => {
+                  fetchTasks()
+                }, 1000);
+              }
 
           } else{
             console.log(response);
@@ -168,10 +210,7 @@ const AddTaskOffcanvas = ({startEnd, setEvents, resourceID = null}) => {
   return (
     <>
 <div className="offcanvas offcanvas-end" tabIndex="-1" id="addtaskoffcanvas" aria-labelledby="taskOffcanvasLable" style={{width: "800px"}}>
-  {/* <div className="offcanvas-header">
-    <h5 className="offcanvas-title" id="taskOffcanvasLable"></h5>
-    <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-  </div> */}
+
   <div className="offcanvas-body">
    
 
@@ -214,20 +253,6 @@ const AddTaskOffcanvas = ({startEnd, setEvents, resourceID = null}) => {
             Project Name <span className='text-danger'>*</span>
           </th>
           <td style={{ width: "58%" }}>
-
-              {/* <select
-                className="form-control"
-                name="Project_Name"
-                value={taskData.Project_Name}
-                onChange={handleChange}
-              >
-                <option disabled value="">Select Project</option>
-                {myProjects.map((project) => (
-                  <option key={project.ID} value={project.ID}>
-                    {project.Project_Name}
-                  </option>
-                ))}
-              </select> */}
 
               <ProjectSelect onProjectChange={onProjectChange} selectedProject={selectedProject}/>
 
@@ -322,7 +347,6 @@ const AddTaskOffcanvas = ({startEnd, setEvents, resourceID = null}) => {
           </th>
           <td
             style={{ width: "58%" }}
-            id="prio-td-266830000001194162"
           >
            
               <select
@@ -381,6 +405,86 @@ const AddTaskOffcanvas = ({startEnd, setEvents, resourceID = null}) => {
           </td>
         </tr>
 
+        <tr className=''>
+          <th style={{ width: "7%" }}>
+            <i class="bi bi-repeat"></i>
+          </th>
+          <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
+            Repeat
+          </th>
+          <td style={{ width: "58%" }}> 
+
+              
+             <div className="form-check form-switch">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                role="switch"
+                name="Repeat"
+                checked={taskData.Repeat}
+                onChange={handleChange}
+              />
+            </div>
+
+
+            {taskData.Repeat && (
+              <div className='d-flex gap-3 mt-2'>
+
+
+
+                <div className='w-100'>
+                    <span class="fs-12p text-muted">
+                      Repeat Type <i class="bi bi-chevron-down"></i>
+                    </span>
+                      <select
+                        className="form-control"
+                        name="Repeat_Type"
+                        value={taskData.Repeat_Type}
+                        onChange={handleChange}
+                      >
+                        <option disabled value="">Repeat Type</option>
+                        <option value="Daily">Daily</option>
+                        <option value="Weekly">Weekly</option>
+                        <option value="Monthly">Monthly</option>
+                    </select>
+
+                    
+                </div>
+
+                <div className='w-100'>
+
+                  <span class="fs-12p text-muted">
+                      Repeat Count (Max 15)
+                  </span>
+
+                  <input 
+                    type="number" 
+                    className='form-control' 
+                    name="Repeating_Times" 
+                    value={taskData.Repeating_Times} 
+                    onChange={handleChange}
+                    max={15}
+                    min={1}
+                    onInput={(e) => {
+                      if (e.target.value > 15) e.target.value = 15;
+                      if (e.target.value < 1) e.target.value = 1;
+                    }}
+                  />
+
+                </div>
+
+
+              
+
+
+            </div>
+            )}
+
+            
+
+          </td>
+        </tr>
+
 
       <tr>
           <th style={{ width: "7%" }}>
@@ -409,3 +513,7 @@ const AddTaskOffcanvas = ({startEnd, setEvents, resourceID = null}) => {
 }
 
 export default AddTaskOffcanvas
+
+
+
+// EDm7A-EC8l6PbPVjhIks7Q
