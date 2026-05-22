@@ -17,6 +17,7 @@ import AdminBigCalendar from './components/cal/AdminBigCalendar'
 import MyBigCalendar from './components/cal/MyBigCalendar'
 import Attendance from './pages/Attendance'
 import IPRestricted from './components/ui/IPRestricted'
+import AllEmpLeaveBalance from './components/leave/AllEmpLeaveBalance'
 
 function App() {
 
@@ -108,6 +109,8 @@ const getLocation = () => {
               <Route path="/attendance" element={<Attendance/>} />
               <Route path="/kanban" element={<Kanban />} />
               <Route path="/superadmin" element={<SuperAdmin/>} />
+
+              <Route path="/allLeaveBalance" element={<AllEmpLeaveBalance />} />
 
               {/* <Route path="/admincalendar" element={<AdminBigCalendar/> } /> */}
 

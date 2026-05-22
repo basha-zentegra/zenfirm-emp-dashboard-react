@@ -13,7 +13,9 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
 
   const [assigneName, setAssigneeName] = useState(null);
 
-    const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
+
+  const [phase, setPhase] = useState([])
 
 
 
@@ -58,9 +60,36 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
     Assignee: resourceID || USERID,
     Repeat: false,
     Repeat_Type: "",
-    Repeating_Times: ""
+    Repeating_Times: "",
+    Milestone_Name: ""
     // resources: resourceID ||
   });
+
+
+  useEffect(()=> {
+
+    if(!selectedProject) return;
+
+    console.log("selectedProject",selectedProject)
+
+    var config = {
+      report_name: "All_Milestones",
+      criteria: `Project_Name.ID ==${selectedProject.value}`
+    };
+    ZOHO.CREATOR.DATA.getRecords(config).then(function (response) {
+      console.log("response in then block",response);
+      if(response.code===3000){
+        setPhase(response.data)
+      }else{
+        setPhase([])
+      }
+    }).catch(e => {
+      setPhase([])
+      console.log("catch blok is execting", e)
+
+    })
+
+  }, [selectedProject])
 
   // console.log(taskData)
     const onProjectChange = (selectedOption) => {
@@ -179,7 +208,8 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
                 Assignee: USERID,
                 Repeat:false,
                 Repeat_Type:"",
-                Repeating_Times:""
+                Repeating_Times:"",
+                Milestone_Name:""
               }));
               closeOffCanvas()
               setIsSubmitting(false)
@@ -255,6 +285,36 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
           <td style={{ width: "58%" }}>
 
               <ProjectSelect onProjectChange={onProjectChange} selectedProject={selectedProject}/>
+
+          </td>
+        </tr>
+
+        <tr>
+          <th style={{ width: "7%" }}>
+            <i className="bi bi-journal"></i>
+          </th>
+          <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
+            Phase Name 
+          </th>
+          <td style={{ width: "58%" }}>
+
+              {/* <ProjectSelect onProjectChange={onProjectChange} selectedProject={selectedProject}/> */}
+              <select
+                className="form-control"
+                name="Milestone_Name"
+                value={taskData.Milestone_Name}
+                onChange={handleChange}
+              >
+                <option disabled value="">Select Phase</option>
+                {phase.map(e => (
+                  <option value={e.ID}>{e.Phase_Name}</option>
+                ))}
+
+                {phase.length ===0 && (<option disabled value="">No Phases</option>)}
+                {/* <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option> */}
+              </select>
 
           </td>
         </tr>

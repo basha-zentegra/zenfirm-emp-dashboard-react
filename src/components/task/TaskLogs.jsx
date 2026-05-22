@@ -3,7 +3,7 @@ import { convertTo24Hour,calculateWorkedTime } from '../../utils/logsUtils';
 import { inputToMMDDYYYY,isFuture, MMDDYYYY_TO_YYYYMMDD } from '../../utils/dateUtils';
 import ConfirmDialog from './ConfirmDialog';
 
-const TaskLogs = ({selectedEvent}) => {
+const TaskLogs = ({selectedEvent,setIsLogAvailable}) => {
 
 
     const [logs, setLogs] = useState([]);
@@ -21,6 +21,18 @@ const TaskLogs = ({selectedEvent}) => {
         Work_Ended: "", 
         Task: ""
     });
+
+    useEffect(() => {
+        if(logs.length > 0) {
+            // alert("Log is available  ;)")
+            setIsLogAvailable(true)
+            console.log("Log is available  ;)")
+        }else{
+            // alert("Logs is not available :( ")
+            setIsLogAvailable(false)
+            console.log("Logs is not available :(")
+        }
+    },[logs])
 
     useEffect(()=> {
 

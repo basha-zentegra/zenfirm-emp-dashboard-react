@@ -23,6 +23,8 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
 
   const [showItrPopup, setShowItrPopup] = useState(false);
 
+  const [isLogAvailable, setIsLogAvailable] = useState(false);
+
 
   // Compute base URL safely
   const baseUrl = useMemo(() => {
@@ -111,6 +113,19 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
         return;
       }
 
+      if(!isLogAvailable){
+
+        alert("Please add the log to complete the Task")
+        return;
+        
+        // let myPrompt = prompt("There is no Log in this task, Type 'Confirm' to Complete the task without log..");
+        // if(myPrompt.toLowerCase() === "confirm"){
+        //   console.log("Task added without log")
+        // }else{
+        //   return;
+        // }
+        
+      }
 
 
       const payload = {
@@ -141,6 +156,10 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
         })
         .catch((e) => console.log(e));
     }
+
+
+
+    
 
       const handleDeleteClick = () => {
         setShowConfirm(true);
@@ -247,6 +266,17 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
           </th>
           <td style={{ width: "58%" }}>
             <span >{selectedEvent?.Task_Name || " "}</span>
+          </td>
+        </tr>
+        <tr>
+          <th style={{ width: "7%" }}>
+            <i className="bi bi-signpost"></i>
+          </th>
+          <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
+            Phase Name
+          </th>
+          <td style={{ width: "58%" }}>
+            <span >{selectedEvent?.Milestone_Name?.Phase_Name || "-"}</span>
           </td>
         </tr>
         <tr>
@@ -506,7 +536,7 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
         <div className="tab-content">
 
           <div className="tab-pane fade show active" id="logs" >
-            <TaskLogs  selectedEvent={selectedEvent}/>
+            <TaskLogs  selectedEvent={selectedEvent} setIsLogAvailable={setIsLogAvailable}/>
           </div>
 
           <div className="tab-pane fade" id="checklist">

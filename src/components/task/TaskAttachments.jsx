@@ -296,20 +296,3 @@ const styles = {
     boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
   },
 };
-
-
-
-
-
-
-
-
-//we are working harder then other departments
-//we are working in weends and non-office hours also
-//even i worked on my leave (i took leave and worked)
-
-//i im underpaid here
-//for fresher only 5 to 8 LPA they are provideing
-//i hardwork deserve 6 lpa
-
-//WHERE IS THE VALUE FOR MY HARDWORK

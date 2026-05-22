@@ -5,6 +5,7 @@ import LeaveHistory from '../components/leave/LeaveHistory';
 import LeaveManagement from '../components/leave/LeaveManagement';
 import MyLeaveRequests from '../components/leave/MyLeaveRequests';
 import LeaveApplyForm from '../components/leave/Leaveapplyform';
+import AllEmpLeaveBalance from '../components/leave/AllEmpLeaveBalance';
 
 const Attendance = () => {
 
@@ -15,6 +16,8 @@ const Attendance = () => {
   const [lastMonthObj, setLastMonthObj] = useState({})
 
   const [activeTab, setActiveTab] = useState("my-requests");
+
+  const [showAllEmp, setShowAllEmp] = useState(false)
 
   return (
     <div className='leaveapplyformbody'  style={{ marginLeft: "70px"}}>
@@ -30,7 +33,14 @@ const Attendance = () => {
       </div>
 
       <div className="d-flex justify-content-end p-3">
-        <button className='btn btn-sm btn-primary' onClick={() => setShowForm(prev => !prev)}>Apply Leave</button>
+
+        
+
+        <button className='btn btn-sm btn-primary' onClick={() => setShowForm(prev => !prev)}>
+          
+          {!showForm && ("Apply Leave")}
+          {showForm && ("X")}
+        </button>
         
       </div>
 
@@ -127,6 +137,22 @@ const Attendance = () => {
         <LeaveApplyForm />
 
       )}
+
+      <div className="text-center my-4">
+        <span 
+          className='small me-5 cursor-pointer' 
+          onClick={()=>setShowAllEmp(p=>!p)}
+        >All Employee Leave Balance 
+         {!showAllEmp && (<i class="bi bi-chevron-double-down ms-2"></i>)}
+         {showAllEmp && (<i class="bi bi-chevron-double-up ms-2"></i>)}
+        </span>
+      </div>
+
+      {showAllEmp && (
+        <AllEmpLeaveBalance />
+      )}
+
+      
 
       </div>
     </div>

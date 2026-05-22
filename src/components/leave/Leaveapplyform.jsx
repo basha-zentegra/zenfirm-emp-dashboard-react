@@ -69,7 +69,7 @@ export default function LeaveApplyForm() {
     const [submitted, setSubmitted] = useState(false);
     const [success, setSuccess] = useState(false);
 
-    const [LEAVE_BALANCE, setLEAVE_BALANCE] = useState({ Sick: 0, Casual: 0, Unpaid: 0 })
+    const [LEAVE_BALANCE, setLEAVE_BALANCE] = useState({ Sick: 0, Casual: 0, Unpaid: 100 })
 
     const [loading, setLoading] = useState(false);
     const [apiError, setApiError] = useState("");

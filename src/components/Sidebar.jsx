@@ -95,6 +95,14 @@ const Sidebar = ({userEmail}) => {
       </Link>
     </li>
 
+    {/* <li>
+      <Link  to="/allLeaveBalance" onClick={() => handleClick(6)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Emp Leave Balance">
+
+        <i className={`sidebar-icon bi bi-layout-wtf fs-5 ${activeId === 6 ? "text-zen" : "text-secondary"}`} ></i>
+          
+      </Link>
+    </li> */}
+
 
 
 {superUser && (
