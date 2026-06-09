@@ -545,6 +545,27 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
           </td>
         </tr>
 
+        {/* <tr className=''>
+          <th style={{ width: "7%" }}>
+            <i class="bi bi-suitcase-lg"></i>
+          </th>
+          <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
+            Add To Meeting
+          </th>
+          <td style={{ width: "58%" }}> 
+             <div className="form-check form-switch">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                role="switch"
+                name="Repeat"
+                // checked={taskData.Repeat}
+                // onChange={handleChange}
+              />
+            </div>
+          </td>
+        </tr> */}
+
 
       <tr>
           <th style={{ width: "7%" }}>

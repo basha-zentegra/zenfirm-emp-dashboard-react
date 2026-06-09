@@ -3,6 +3,7 @@ import '../../css/leaveapplayform.css'
 import { inputToMMDDYYYY } from "../../utils/dateUtils";
 
 import { useUser } from "../../context/UserContext";
+import { startOfMonth,getMonthStartDate,endOfMonth } from "../../utils/dateUtils";
 
 const LEAVE_TYPES = ["Sick", "Casual", "Unpaid"];
 const SESSION_OPTIONS = ["Full Day", "First Half", "Second Half"];
@@ -57,6 +58,11 @@ function calcLeaveBalance(rows,LEAVE_BALANCE) {
   return result;
 }
 
+const parseDate = (dateStr) => {
+  const [month, day, year] = dateStr.split('-');
+  return new Date(year, month - 1, day);
+};
+
 export default function LeaveApplyForm() {
 
     const {USERID} = useUser();
@@ -74,38 +80,60 @@ export default function LeaveApplyForm() {
     const [loading, setLoading] = useState(false);
     const [apiError, setApiError] = useState("");
 
+    const [allowApply, setAllowApply] = useState(false);
+
+
 
 
     function fetchLeaveHistory(){
-        const config = {
-            report_name: "All_Leave_Balances",
-            criteria: `Employee.ID==${USERID}`
+
+        const config2 = {
+                report_name: "Leave_History_Report",
+                criteria: `Leave_Balance_Form.Employee==${USERID} && Month_field == '${startOfMonth()}'`
         }
-        ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
+        
+        ZOHO.CREATOR.DATA.getRecords(config2).then((response) => {
+        
+          console.log("Leave History Report:", response)
             if(response.code === 3000){
-                console.log("leave balance...:", response.data)
-                // setHistory(response.data[0]?.Leave_History)
+                const lastMonthBalance = response.data[0]
 
-                const history = response.data[0]?.Leave_History;
-
-                if(history.length > 0){
-
-                    const lastMonthBalance = history[history.length-1] 
-
-                    console.log(lastMonthBalance)
-
-                    const apiLeaveBalance = { 
+                const apiLeaveBalance = {
                         Sick: parseFloat(lastMonthBalance?.Balance_Sick_Leave) || 0, 
                         Casual: parseFloat(lastMonthBalance?.Balance_Casual_Leave) || 0, 
                         Unpaid: 100
-                    }
-
-                    setLEAVE_BALANCE(apiLeaveBalance);
                 }
-
+                setLEAVE_BALANCE(apiLeaveBalance);
+                
             }
+        
         }).catch((err) => console.error(err))
     }
+
+    useEffect(() => {
+
+      const config = {
+        report_name : "My_Leaves",
+        criteria: `Employee_Name.ID==${USERID} && Approval_status=="Approved" && From > '${endOfMonth()}' || To '${endOfMonth()}'>`
+      } 
+
+      ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
+
+        console.log("future approved leave response", response)
+
+        if(response.code === 3000){
+
+          setAllowApply(true)
+
+          console.log("Button disabling....")
+
+        }
+
+
+      }).catch((err) => console.error(err))
+
+
+    },[USERID])
 
 
     useEffect(()=>{
@@ -114,16 +142,72 @@ export default function LeaveApplyForm() {
     },[USERID])
 
 
+    useEffect(() => {
+      if(!toDate) return;
+      if(!fromDate) return;
+      if(fromDate === startOfMonth()) return;
+      if(toDate === startOfMonth()) return;
+
+        const config2 = {
+          report_name: "Leave_History_Report",
+          criteria: `Leave_Balance_Form.Employee==${USERID} && Month_field >= '${startOfMonth()}' && Month_field <= "${getMonthStartDate(inputToMMDDYYYY(toDate))}"`
+        }
+
+        console.log(startOfMonth(),inputToMMDDYYYY(fromDate), getMonthStartDate(inputToMMDDYYYY(fromDate)))
+
+        // && Month_field <= '${getMonthStartDate(fromDate)}'
+        
+        ZOHO.CREATOR.DATA.getRecords(config2).then((response) => {
+        
+          console.log("Leave Future Report:", response)
+            if(response.code === 3000){
+                const leaveBalance = response.data;
+                // console.log("Filtered:", leaveBalance)
+                const totalSickLeave = leaveBalance.reduce((sum, e) => sum + (parseFloat(e.Balance_Sick_Leave) || 0),0);
+                const totalCasualLeave = leaveBalance.reduce((sum, e) => sum + (parseFloat(e.Balance_Casual_Leave) || 0),0);
+                // console.log("totalSickLeave",totalSickLeave,totalCasualLeave)
+                const apiLeaveBalance = {
+                        Sick: totalSickLeave || 0, 
+                        Casual: totalCasualLeave || 0, 
+                        Unpaid: 100
+                }
+                setLEAVE_BALANCE(apiLeaveBalance);
+                
+            }
+        
+        }).catch((err) => {
+          console.error(err)
+          console.log(config2)
+        })
+    },[toDate])
 
 
-  const syncRows = useCallback((from, to, existingRows) => {
-    const dates = getDatesInRange(from, to);
-    if (dates.length === 0) return [];
-    return dates.map((d) => {
-      const existing = existingRows.find((r) => r.date === d);
-      return existing || { date: d, leaveType: "", session: "" };
-    });
-  }, []);
+
+
+  // const syncRows = useCallback((from, to, existingRows) => {
+  //   const dates = getDatesInRange(from, to);
+  //   if (dates.length === 0) return [];
+  //   return dates.map((d) => {
+  //     const existing = existingRows.find((r) => r.date === d);
+  //     return existing || { date: d, leaveType: "", session: "" };
+  //   });
+  // }, []);
+
+  // AFTER
+const syncRows = useCallback((from, to, existingRows) => {
+  const dates = getDatesInRange(from, to);
+  if (dates.length === 0) return [];
+  const result = [];
+  dates.forEach((d) => {
+    const existingForDate = existingRows.filter((r) => r.date === d); // finds all
+    if (existingForDate.length > 0) {
+      result.push(...existingForDate);
+    } else {
+      result.push({ date: d, leaveType: "", session: "" });
+    }
+  });
+  return result;
+}, []);
 
   useEffect(() => {
     if (fromDate && toDate && toDate >= fromDate) {
@@ -142,14 +226,48 @@ export default function LeaveApplyForm() {
     setErrors((e) => ({ ...e, toDate: "" }));
   };
 
+  // const updateRow = (i, field, val) => {
+  //   setRows((prev) => {
+  //     const next = [...prev];
+  //     next[i] = { ...next[i], [field]: val };
+  //     return next;
+  //   });
+  //   setErrors((e) => ({ ...e, [`row_${i}_${field}`]: "" }));
+  // };
+
   const updateRow = (i, field, val) => {
-    setRows((prev) => {
-      const next = [...prev];
-      next[i] = { ...next[i], [field]: val };
-      return next;
-    });
-    setErrors((e) => ({ ...e, [`row_${i}_${field}`]: "" }));
-  };
+  setRows((prev) => {
+    const next = [...prev];
+    next[i] = { ...next[i], [field]: val };
+
+    if (field === "session") {
+      const date = next[i].date;
+      const hasSibling = next.some((r, idx) => r.date === date && idx !== i);
+
+      // if (val === "First Half" || val === "Second Half") {
+      //   if (!hasSibling) {
+      //     const complement = val === "First Half" ? "Second Half" : "First Half";
+      //     // Insert sibling right after current row
+      //     next.splice(i + 1, 0, { date, leaveType: "", session: complement });
+      //   }
+      // } 
+
+      if (val === "First Half" ) {
+        const isLastDate = !next.some((r, idx) => idx !== i && r.date > date);
+        if (!hasSibling && !isLastDate) {
+          const complement = val === "First Half" ? "Second Half" : "First Half";
+          next.splice(i + 1, 0, { date, leaveType: "", session: complement });
+        }
+      } else {
+        // Switched back to Full Day or blank — remove sibling for same date
+        return next.filter((r, idx) => !(r.date === date && idx !== i));
+      }
+    }
+
+    return next;
+  });
+  setErrors((e) => ({ ...e, [`row_${i}_${field}`]: "" }));
+};
 
   const noOfDays = calcDays(rows);
   const leaveBalance = calcLeaveBalance(rows,LEAVE_BALANCE);
@@ -293,7 +411,7 @@ const handleSubmit = async () => {
             <p style={{ color: "var(--text-3)", fontSize: "0.875rem", marginBottom: "1.5rem" }}>
               Your leave request for <strong>{noOfDays} day(s)</strong> has been submitted successfully.
             </p>
-            <button className="btn-primary-custom" onClick={handleReset}>Apply Another Leave</button>
+            {/* <button className="btn-primary-custom" onClick={handleReset}>Apply Another Leave</button> */}
           </div>
         </div>
       )}
@@ -305,7 +423,12 @@ const handleSubmit = async () => {
           <p>Fill in the form below. Weekends are automatically excluded from leave days.</p>
         </div>
 
-        <div className="card-glass">
+<div className="card-glass">
+{allowApply && (
+  <div className="alert-custom alert-danger m-2">
+    You have an approved leave scheduled in the future. Please cancel it before applying for a new leave.
+  </div>
+)}
 
           {/* ── Date Range + Balance ── */}
           <div className="card-section">
@@ -358,15 +481,22 @@ const handleSubmit = async () => {
                   <thead>
                     <tr>
                       <th>Type</th>
-                      {displayTypes.map((t) => <th key={t}>{t}</th>)}
+                      {displayTypes.map((t) => (
+                        <th key={t}>{t}</th>
+                      ))}
+
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td>Available</td>
-                      {displayTypes.map((t) => (
-                        <td key={t}>{leaveBalance[t]?.available ?? 0}</td>
-                      ))}
+                      {displayTypes.map((t) => {
+                        if (t === "Unpaid") {
+                          return <td key={t}>-</td>;
+                        }
+
+                        return <td key={t}>{leaveBalance[t]?.available ?? 0}</td>;
+                      })}
                     </tr>
                     <tr className="row-taken">
                       <td>Leave Taken</td>
@@ -379,6 +509,9 @@ const handleSubmit = async () => {
                     <tr className="row-remaining">
                       <td>Remaining</td>
                       {displayTypes.map((t) => {
+                        if(t === "Unpaid"){
+                          return <td key={t}>-</td>;
+                        }
                         const rem = leaveBalance[t]?.remaining ?? 0;
                         return (
                           <td key={t} className={rem < 0 ? "negative" : ""}>{rem.toFixed(1)}</td>
@@ -413,7 +546,7 @@ const handleSubmit = async () => {
                       const dateObj = new Date(row.date + "T00:00:00");
                       const dayName = dateObj.toLocaleDateString("en-US", { weekday: "short" });
                       return (
-                        <tr key={row.date} className="subform-row">
+                        <tr key={`${row.date}-${i}`}  className="subform-row">
                           <td><div className="row-num">{i + 1}</div></td>
                           <td>
                             <div className="date-chip">
@@ -542,20 +675,27 @@ const handleSubmit = async () => {
     ⚠ {apiError}
   </div>
 )}
+
+
+
           <div className="card-section" style={{ background: "var(--surface-2)", display: "flex", gap: "0.75rem", justifyContent: "flex-end", flexWrap: "wrap" }}>
             <button className="btn-secondary-custom" onClick={handleReset}>Reset Form</button>
-           <button
-                className="btn-primary-custom"
-                onClick={handleSubmit}
-                disabled={rows.length === 0 || rangeError || loading}
-                style={{
-                    opacity: rows.length === 0 || rangeError || loading ? 0.5 : 1,
-                    cursor: rows.length === 0 || rangeError || loading ? "not-allowed" : "pointer"
-                }}
+            <button
+                  className="btn-primary-custom"
+                  onClick={handleSubmit}
+                  disabled={allowApply || rows.length === 0 || rangeError || loading}
+                  style={{
+                      opacity: allowApply || rows.length === 0 || rangeError || loading ? 0.5 : 1,
+                      cursor: allowApply || rows.length === 0 || rangeError || loading ? "not-allowed" : "pointer"
+                  }}
             >
-                {loading ? "Submitting..." : "Submit Leave Application →"}
+                  {loading ? "Submitting..." : "Submit Leave Application →"}
+                  
             </button>
+            
           </div>
+
+          
 
         </div>
       </div>

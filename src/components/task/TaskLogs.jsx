@@ -2,9 +2,11 @@ import {useState, useEffect} from 'react'
 import { convertTo24Hour,calculateWorkedTime } from '../../utils/logsUtils';
 import { inputToMMDDYYYY,isFuture, MMDDYYYY_TO_YYYYMMDD } from '../../utils/dateUtils';
 import ConfirmDialog from './ConfirmDialog';
+import { useUser } from '../../context/UserContext';
 
 const TaskLogs = ({selectedEvent,setIsLogAvailable}) => {
 
+    const {USERID} = useUser();
 
     const [logs, setLogs] = useState([]);
     const [isAdding, setIsAdding] = useState(false);
@@ -65,7 +67,7 @@ const TaskLogs = ({selectedEvent,setIsLogAvailable}) => {
     const fetchLogsByDate = async (date) => {
         const config = {
             report_name: "All_Logs", // your report link name
-            criteria: `(Date_field == "${date}" && Task!=null)`
+            criteria: `(Date_field == "${date}" && Task!=null && Task.Assignee == ${USERID})`
         };
 
         try {
@@ -88,8 +90,13 @@ const TaskLogs = ({selectedEvent,setIsLogAvailable}) => {
     };
 
     const getCurrentTimeInMinutes = () => {
-        const now = new Date();
-        return now.getHours() * 60 + now.getMinutes();
+        const indiaTime = new Date().toLocaleString("en-US", {
+            timeZone: "Asia/Kolkata",
+        });
+
+        const date = new Date(indiaTime);
+
+        return date.getHours() * 60 + date.getMinutes();
     };
 
     const isToday = (dateStr) => {

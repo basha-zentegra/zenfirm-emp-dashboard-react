@@ -1,6 +1,7 @@
 import {useState,useEffect} from 'react'
 import { useUser } from '../../context/UserContext'
 import '../../css/leave.css'
+import { startOfMonth } from '../../utils/dateUtils'
 
 
 
@@ -50,28 +51,34 @@ const LeaveHistory = () => {
                 <tr>
                     <th>#</th>
                     <th>Month</th>
-                    <th>Eligible Casual</th>
                     <th>Eligible Sick</th>
-                    <th>Used Casual</th>
+                    <th>Eligible Casual</th>
+                    
                     <th>Used Sick</th>
-                    <th>Balance Casual</th>
+                    <th>Used Casual</th>
+                    
                     <th>Balance Sick</th>
+                    <th>Balance Casual</th>
+                    
                     <th>LOP</th>
                 </tr>
                 </thead>
 
                 <tbody>
                 {history?.map((e, index) => (
-                    <tr key={e.ID || index}>
-                    <td>{index + 1}</td>
-                    <td>{e.Month_field}</td>
-                    <td>{e.Eligible_Casual_Leave}</td>
-                    <td>{e.Eligible_Sick_Leave}</td>
-                    <td>{e.Used_Casual_Leave}</td>
-                    <td>{e.Used_Sick_Leave}</td>
-                    <td className={e.Balance_Casual_Leave === "0.00" ? "text-danger fw-semibold" : ""}>{e.Balance_Casual_Leave}</td>
-                    <td className={e.Balance_Sick_Leave === "0.00" ? "text-danger fw-semibold" : ""}>{e.Balance_Sick_Leave}</td>
-                    <td>{e.LOP}</td>
+                    <tr key={e.ID || index} className={`${e.Month_field === startOfMonth() ? 'table-success' : ''}`}>
+                        <td>{index + 1}</td>
+                        <td>{e.Month_field}</td>
+                        <td>{e.Eligible_Sick_Leave}</td>
+                        <td>{e.Eligible_Casual_Leave}</td>
+                        
+                        <td>{e.Used_Sick_Leave}</td>
+                        <td>{e.Used_Casual_Leave}</td>
+                        
+                        <td className={e.Balance_Sick_Leave === "0.00" ? "text-danger fw-semibold" : ""}>{e.Balance_Sick_Leave}</td>
+                        <td className={e.Balance_Casual_Leave === "0.00" ? "text-danger fw-semibold" : ""}>{e.Balance_Casual_Leave}</td>
+                        
+                        <td>{e.LOP}</td>
                     </tr>
                 ))}
                 </tbody>

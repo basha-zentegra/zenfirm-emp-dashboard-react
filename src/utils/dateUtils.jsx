@@ -71,3 +71,35 @@ export function isFuture(targetDate) {
 
   return target > today;
 }
+
+export const startOfMonth = () => {
+  const d = new Date();
+  return `${String(d.getMonth() + 1).padStart(2, "0")}-01-${d.getFullYear()}`;
+};
+
+export const endOfMonth = () => {
+  const d = new Date();
+  const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+
+  return `${String(lastDay.getMonth() + 1).padStart(2, "0")}-${String(
+    lastDay.getDate()
+  ).padStart(2, "0")}-${lastDay.getFullYear()}`;
+};
+
+export function getMonthStartDate(dateString) {
+  const [month, , year] = dateString.split("-");
+  return `${month}-01-${year}`;
+}
+
+export const isFutureDate = (dateString) => {
+  if (!dateString) return false;
+
+  const [month, day, year] = dateString.split("-").map(Number);
+
+  const inputDate = new Date(year, month - 1, day);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Ignore time
+
+  return inputDate > today;
+};

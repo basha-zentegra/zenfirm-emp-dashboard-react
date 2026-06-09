@@ -1,20 +1,8 @@
 import {useState, useEffect} from 'react'
 import { useUser } from '../../context/UserContext';
+import { isFutureDate } from '../../utils/dateUtils';
 
 
-const getLeaveType = (sick, casual) => {
-
-  const sickLeave = parseFloat(sick);
-  const casualLeave = parseFloat(casual);
-
-//   if (isNaN(sickLeave) || isNaN(casualLeave)) return "No Data";
-
-  if (sickLeave >= casualLeave) {
-    return "Sick";
-  } else {
-    return "Casual";
-  }
-};
 
   const getStatusBadge = (status) => {
     const base = "badge px-3 py-2 fw-medium";
@@ -24,6 +12,8 @@ const getLeaveType = (sick, casual) => {
         return <span className={`${base} bg-approved text-success`}>● Approved</span>;
       case "Rejected":
         return <span className={`${base} bg-danger-subtle text-danger`}>● Declined</span>;
+      case "Revoked":
+        return <span className={`${base} bg-danger-subtle text-danger`}>● Revoked</span>;
       default:
         return <span className={`${base} bg-warning-subtle text-warning`}>● Pending</span>;
     }
@@ -56,6 +46,28 @@ const MyLeaveRequests = () => {
     fetchLeaves();
   }, []);
 
+  const handleAction = (id, action) => {
+
+        var config = {
+                report_name: "My_Leaves",
+                id: id,
+                payload: {
+                  data: {
+                    Approval_status: action,
+                  }
+                }
+        };
+
+        ZOHO.CREATOR.DATA.updateRecordById(config).then(function (response) {
+          console.log(response);
+          if (response.code == 3000) {
+              setLeaves((prev) => prev.map((leave) => leave.ID === id ? { ...leave, Approval_status: "Revoked"} : leave));
+          } 
+        }).catch(e => console.warn(e))
+
+    
+  };
+
 
   return (
     <div className="container mt-5">
@@ -73,7 +85,7 @@ const MyLeaveRequests = () => {
                   <th className="text-muted fw-normal">Duration</th>
                   <th className="text-muted fw-normal">Status</th>
                   <th className="text-muted fw-normal">Message</th>
-                  {/* <th></th> */}
+                  <th></th>
                 </tr>
               </thead>
 
@@ -86,39 +98,39 @@ const MyLeaveRequests = () => {
                     <td>{leave?.No_Of_Days_Leave}</td>
                     <td className="">{getStatusBadge(leave?.Approval_status)}</td>
                     <td>{leave?.Comments}</td>
+                    
 
-                    {/* <td className="text-end">
-                      <div className="dropdown">
-                        <button
-                          className="btn btn-sm btn-light"
-                          data-bs-toggle="dropdown"
-                        >
-                          ⋮
-                        </button>
+                    <td className="text-end">
+                      
 
-                        <ul className="dropdown-menu dropdown-menu-end shadow-sm">
-                          <li>
-                            <button
-                              className="dropdown-item"
-                              onClick={() => handleAction(leave.ID, "Approved")}
-                              disabled={leave?.Approval_status !== ""}
-                            >
-                              ✅ Approve
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              className="dropdown-item text-danger"
-                              onClick={() => handleAction(leave.ID, "Rejected")}
-                              disabled={leave?.Approval_status !== ""}
-                            >
-                              ❌ Reject
-                            </button>
-                          </li>
-                          
-                        </ul>
-                      </div>
-                    </td> */}
+                      {leave?.Approval_status === "Approved" && isFutureDate(leave?.From) && (
+                        <div className="dropdown">
+                          <button
+                            className="btn btn-sm btn-light"
+                            data-bs-toggle="dropdown"
+                            disabled={leave?.Approval_status === "" || leave?.Approval_status === "Rejected"}
+                          >
+                            ⋮
+                          </button>
+
+                          <ul className="dropdown-menu dropdown-menu-end shadow-sm">
+                            
+                            <li>
+                              <button
+                                className="dropdown-item text-danger"
+                                onClick={() => handleAction(leave.ID, "Revoked")}
+                                style={{opacity: leave?.Approval_status !== "Approved" ? '0.5' : '1'}}
+                              >
+                                <i class="bi bi-backspace-reverse"></i> Revoke
+                              </button>
+                            </li>
+                            
+                          </ul>
+                        </div>
+                      )}
+
+
+                    </td>
                   </tr>
                 ))}
               </tbody>
