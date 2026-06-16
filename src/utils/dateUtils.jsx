@@ -103,3 +103,31 @@ export const isFutureDate = (dateString) => {
 
   return inputDate > today;
 };
+
+export function getDayName(dateString) {
+    if(!dateString) return "-";
+
+    // Expecting MM-DD-YYYY format
+    const [month, day, year] = dateString.split("-").map(Number);
+
+    if(!month || !day || !year) return "-";
+
+    // Create date object (month is 0-based in JavaScript)
+    const date = new Date(year, month - 1, day);
+
+    const days = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
+    ];
+
+    return days[date.getDay()];
+}
+
+// Example usage
+console.log(getDayName("06-16-2026")); // Tuesday
+console.log(getDayName("12-25-2026")); // Friday

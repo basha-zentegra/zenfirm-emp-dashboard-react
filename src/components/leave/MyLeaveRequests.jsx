@@ -1,6 +1,7 @@
 import {useState, useEffect} from 'react'
 import { useUser } from '../../context/UserContext';
 import { isFutureDate } from '../../utils/dateUtils';
+import { formattedDate } from '../../config';
 
 
 
@@ -13,7 +14,7 @@ import { isFutureDate } from '../../utils/dateUtils';
       case "Rejected":
         return <span className={`${base} bg-danger-subtle text-danger`}>● Declined</span>;
       case "Revoked":
-        return <span className={`${base} bg-danger-subtle text-danger`}>● Revoked</span>;
+        return <span className={`${base} bg-primary-subtle text-primary`}>● Revoked</span>;
       default:
         return <span className={`${base} bg-warning-subtle text-warning`}>● Pending</span>;
     }
@@ -24,6 +25,7 @@ const MyLeaveRequests = () => {
     const {USERID} = useUser();
 
     const [leaves, setLeaves] = useState([]);
+    const [longLeaves, setLongLeaves] = useState([]);
 
   const config = {report_name: "My_Leaves", criteria: `Employee_Name.ID ==${USERID}`}
 
@@ -44,6 +46,25 @@ const MyLeaveRequests = () => {
     };
 
     fetchLeaves();
+  }, []);
+
+    useEffect(() => {
+    const fetchLongLeaves = async () => {
+      try {
+        const res = await ZOHO.CREATOR.DATA.getRecords({report_name: "Long_Leave_Report", criteria: `Employee.ID ==${USERID} && From > '${formattedDate}'`})
+
+        console.log("Long Leave",res)
+
+        if(res.code == 3000){
+            setLongLeaves(res.data);
+        }
+
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchLongLeaves();
   }, []);
 
   const handleAction = (id, action) => {
@@ -90,6 +111,20 @@ const MyLeaveRequests = () => {
               </thead>
 
               <tbody>
+                {longLeaves.map(leave => (
+
+                  <tr key={leave.ID} className="tr-hight">
+                    <td className="fw-medium">{leave?.Employee?.Name || "Name"}</td>
+                    <td>Long Leave</td>
+                    <td><small className="text-muted">{leave?.From} to {leave?.To}</small></td>
+                    <td>{leave?.No_of_Days_Leave}</td>
+                    <td className="">{getStatusBadge(leave?.Approval_Status)}</td>
+                    <td>{leave?.Reason}</td>
+                    <td></td>
+                    
+                  </tr>
+
+                )) }
                 {leaves.map((leave) => (
                   <tr key={leave.ID} className="tr-hight">
                     <td className="fw-medium">{leave?.Employee_Name?.Name || "Name"}</td>

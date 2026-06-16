@@ -348,10 +348,10 @@ const Home = () => {
 
         <div className="col-6">
             <div className="card border-0 rounded-4 shadow-sm" style={{height: "500px"}}>
-              <span className='cardsHeader ms-3 mt-2'>BTR Events - {myTodayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Business Tax Filing").length}</span>
+              <span className='cardsHeader ms-3 mt-2'>BTR Events - {myTodayTasks.filter(e => e["Project_Name.Project_Group1"]?.Project_Group === "Business Tax Filing").length}</span>
               <div className="card-body scroll-karo" >
                 
-                    {myTodayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Business Tax Filing").map(e => {
+                    {myTodayTasks.filter(e => e["Project_Name.Project_Group1"]?.Project_Group === "Business Tax Filing").map(e => {
                       return(
                         <div key={e.ID} className={` tasklist card mb-3 border-0 rounded-3 shadow-sm  ${getPriorityBorder(e.Task_Priority)}`}>
                          
@@ -375,10 +375,10 @@ const Home = () => {
 
         <div className="col-6">
             <div className="card border-0 rounded-4 shadow-sm" style={{height: "500px"}}>
-              <span className='cardsHeader ms-3 mt-2'>ITR Events - {myTodayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Individual Tax Filing").length}</span>
+              <span className='cardsHeader ms-3 mt-2'>ITR Events - {myTodayTasks.filter(e => e["Project_Name.Project_Group1"]?.Project_Group === "Individual Tax Filing").length}</span>
               <div className="card-body scroll-karo" >
                 
-                    {myTodayTasks.filter(e => e["Project_Name.Project_Group1"].Project_Group === "Individual Tax Filing").map(e => {
+                    {myTodayTasks.filter(e => e["Project_Name.Project_Group1"]?.Project_Group === "Individual Tax Filing").map(e => {
                       return(
                         <div key={e.ID} className={` tasklist card mb-3 border-0 rounded-3 shadow-sm  ${getPriorityBorder(e.Task_Priority)}`}>
                          

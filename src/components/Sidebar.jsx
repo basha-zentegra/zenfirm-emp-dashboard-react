@@ -87,6 +87,14 @@ const Sidebar = ({userEmail}) => {
       </Link>
     </li>
 
+    {/* <li>
+      <Link  to="/logs" onClick={() => handleClick(6)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Timesheet">
+
+        <i className={`sidebar-icon bi-stopwatch-fill fs-5 ${activeId === 6 ? "text-zen" : "text-secondary"}`} ></i>
+          
+      </Link>
+    </li> */}
+
     <li>
       <Link  to="/kanban" onClick={() => handleClick(3)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="ZenBoards">
 

@@ -6,6 +6,7 @@ import LeaveManagement from '../components/leave/LeaveManagement';
 import MyLeaveRequests from '../components/leave/MyLeaveRequests';
 import LeaveApplyForm from '../components/leave/Leaveapplyform';
 import AllEmpLeaveBalance from '../components/leave/AllEmpLeaveBalance';
+import Holidays from '../components/leave/Holidays';
 
 const Attendance = () => {
 
@@ -85,6 +86,15 @@ const Attendance = () => {
                 </button>
               </li>
 
+              <li className="nav-item">
+                <button
+                  className={`nav-link ${activeTab === "holidays" ? "active" : ""}`}
+                  onClick={() => setActiveTab("holidays")}
+                >
+                  Holidays
+                </button>
+              </li>
+
             </ul>
 
             {/* Content */}
@@ -95,6 +105,10 @@ const Attendance = () => {
               {activeTab === "leave-approvals" && <LeaveManagement/>}
 
               {activeTab === "credit-history" && <LeaveHistory  />}
+
+              {activeTab === "holidays" && <Holidays  />}
+
+              {/* <Holidays /> */}
 
             </div>
           </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import '../../css/leaveapplayform.css'
-import { inputToMMDDYYYY } from "../../utils/dateUtils";
+import { inputToMMDDYYYY, MMDDYYYY_TO_YYYYMMDD } from "../../utils/dateUtils";
 
 import { useUser } from "../../context/UserContext";
 import { startOfMonth,getMonthStartDate,endOfMonth } from "../../utils/dateUtils";
@@ -13,18 +13,47 @@ const today = new Date();
 const fmt = (d) => d.toISOString().split("T")[0];
 const todayStr = fmt(today);
 
-function getDatesInRange(from, to) {
+let domain = 'https://creatorapp.zoho.in/zentegraindia/zenfirm/';
+
+// function getDatesInRange(from, to) {
+//   if (!from || !to) return [];
+//   const dates = [];
+//   const cur = new Date(from);
+//   const end = new Date(to);
+//   while (cur <= end) {
+//     const day = cur.getDay();
+//     if (day !== 0 && day !== 6) {
+//       dates.push(fmt(new Date(cur)));
+//     }
+//     cur.setDate(cur.getDate() + 1);
+//   }
+//   return dates;
+// }
+
+function getDatesInRange(from, to, holidays = []) {
   if (!from || !to) return [];
+
+  const holidaySet = new Set(holidays);
   const dates = [];
   const cur = new Date(from);
   const end = new Date(to);
+
   while (cur <= end) {
     const day = cur.getDay();
-    if (day !== 0 && day !== 6) {
-      dates.push(fmt(new Date(cur)));
+    const dateStr = fmt(cur);
+
+    const isWeekend = day === 0 || day === 6;
+    const isHoliday = holidaySet.has(dateStr);
+
+    if (!isWeekend && !isHoliday) {
+      dates.push(dateStr);
     }
+
     cur.setDate(cur.getDate() + 1);
   }
+
+  console.log("Excluded dates", dates)
+
   return dates;
 }
 
@@ -65,7 +94,7 @@ const parseDate = (dateStr) => {
 
 export default function LeaveApplyForm() {
 
-    const {USERID} = useUser();
+    const {userEmail, USERID} = useUser();
 
     const [fromDate, setFromDate] = useState();
     const [toDate, setToDate] = useState();
@@ -84,6 +113,38 @@ export default function LeaveApplyForm() {
 
 
 
+        const [holidays, setHolidays] = useState([]);
+
+      useEffect(() => {
+        const fetchLeaves = async () => {
+          try {
+            const res = await ZOHO.CREATOR.DATA.getRecords({report_name: "Office_Holiday__List", criteria: `Even_Type == "Holiday"`})
+    
+            console.log(res)
+    
+            if(res.code == 3000){
+                const holidayArray = res.data.map(e => MMDDYYYY_TO_YYYYMMDD(e.Date_field))
+                console.log(holidayArray)
+                setHolidays(holidayArray);
+            }
+    
+          } catch (err) {
+            console.error(err);
+          }
+        };
+    
+        fetchLeaves();
+      }, []);
+
+      useEffect(()=>{
+
+        if(userEmail.includes("@zentegra.com")){
+          domain = 'https://creatorapp.zoho.in/zentegraindia/zenfirm/';
+        }else{
+          domain = 'https://zenfirm.zohocreatorportal.in/';
+        }
+
+      },[userEmail])
 
     function fetchLeaveHistory(){
 
@@ -114,7 +175,7 @@ export default function LeaveApplyForm() {
 
       const config = {
         report_name : "My_Leaves",
-        criteria: `Employee_Name.ID==${USERID} && Approval_status=="Approved" && From > '${endOfMonth()}' || To '${endOfMonth()}'>`
+        criteria: `Employee_Name.ID==${USERID} && Approval_status=="Approved" && From > '${endOfMonth()}' || To > '${endOfMonth()}'>`
       } 
 
       ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
@@ -153,7 +214,7 @@ export default function LeaveApplyForm() {
           criteria: `Leave_Balance_Form.Employee==${USERID} && Month_field >= '${startOfMonth()}' && Month_field <= "${getMonthStartDate(inputToMMDDYYYY(toDate))}"`
         }
 
-        console.log(startOfMonth(),inputToMMDDYYYY(fromDate), getMonthStartDate(inputToMMDDYYYY(fromDate)))
+        // console.log(startOfMonth(),inputToMMDDYYYY(fromDate), getMonthStartDate(inputToMMDDYYYY(fromDate)))
 
         // && Month_field <= '${getMonthStartDate(fromDate)}'
         
@@ -195,7 +256,8 @@ export default function LeaveApplyForm() {
 
   // AFTER
 const syncRows = useCallback((from, to, existingRows) => {
-  const dates = getDatesInRange(from, to);
+  const dates = getDatesInRange(from, to, holidays);
+  console.log("Dates", dates )
   if (dates.length === 0) return [];
   const result = [];
   dates.forEach((d) => {
@@ -206,8 +268,9 @@ const syncRows = useCallback((from, to, existingRows) => {
       result.push({ date: d, leaveType: "", session: "" });
     }
   });
+  console.log("SyncRows", result)
   return result;
-}, []);
+}, [holidays]);
 
   useEffect(() => {
     if (fromDate && toDate && toDate >= fromDate) {
@@ -272,7 +335,7 @@ const syncRows = useCallback((from, to, existingRows) => {
   const noOfDays = calcDays(rows);
   const leaveBalance = calcLeaveBalance(rows,LEAVE_BALANCE);
 
-  console.log(leaveBalance)
+  // console.log(leaveBalance)
 
   const shownTypes = LEAVE_TYPES.filter((lt) => lt !== "Unpaid");
   const usedTypes = [...new Set(rows.filter((r) => r.leaveType).map((r) => r.leaveType))];
@@ -385,7 +448,7 @@ const handleSubmit = async () => {
     setSuccess(false);
   };
 
-  const displayDates = getDatesInRange(fromDate, toDate);
+  const displayDates = getDatesInRange(fromDate, toDate, holidays);
   const rangeError = fromDate && toDate && toDate < fromDate;
 
   const hasAnyLeave = LEAVE_TYPES.some(
@@ -420,7 +483,10 @@ const handleSubmit = async () => {
         <div className="leave-header">
           <div className="breadcrumb-bar">Leave Tracker &rsaquo; <span>Apply Leave</span></div>
           <h1>Apply for Leave</h1>
-          <p>Fill in the form below. Weekends are automatically excluded from leave days.</p>
+          <p>Fill in the form below. Weekends and Holidays are automatically excluded from leave days.</p>
+          <p><a href={`${domain}#Form:Long_Leave`} target="_blank" >Click Here</a> to Apply Long Leave.</p>
+          
+
         </div>
 
 <div className="card-glass">
@@ -595,7 +661,31 @@ const handleSubmit = async () => {
                               onChange={(e) => updateRow(i, "session", e.target.value)}
                             >
                               <option value="">— Select —</option>
-                              {SESSION_OPTIONS.map((s) => (
+                              {/* {SESSION_OPTIONS.map((s) => (
+                                <option key={s} value={s}>{s}</option>
+                              ))} */}
+                              {/* {SESSION_OPTIONS.filter((s) => {
+                                console.log("-->", row.leaveType, s)
+                                if (s !== "Full Day") return true; // always show half-day options
+                                const remaining = leaveBalance[row.leaveType]?.remaining + 1 ?? 1;
+                                return remaining >= 1; // only show Full Day if at least 1 day remains
+                              }).map((s) => (
+                                <option key={s} value={s}>{s}</option>
+                              ))} */}
+                              {SESSION_OPTIONS.filter((s) => {
+                                if (s !== "Full Day") return true;
+                                if (!row.leaveType) return true;
+
+                                // How much is this row itself contributing to the balance calc
+                                const ownContribution = row.session === "Full Day" ? 1
+                                  : (row.session === "First Half" || row.session === "Second Half") ? 0.5
+                                  : 0;
+
+                                // Add it back to get remaining excluding this row
+                                const remainingExcludingThisRow = (leaveBalance[row.leaveType]?.remaining + 1 ?? 1) + ownContribution;
+
+                                return remainingExcludingThisRow >= 1;
+                              }).map((s) => (
                                 <option key={s} value={s}>{s}</option>
                               ))}
                             </select>
