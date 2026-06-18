@@ -56,7 +56,7 @@ const LeaveManagement = () => {
       useEffect(() => {
       const fetchLongLeaves = async () => {
         try {
-          const res = await ZOHO.CREATOR.DATA.getRecords({report_name: "Long_Leave_Report"})
+          const res = await ZOHO.CREATOR.DATA.getRecords({report_name: "Team_Long_Leave_Report"})
   
           console.log("Long Leave",res)
   
@@ -356,6 +356,11 @@ const lastItem = history?.[history.length - 1];
           <small className="text-muted">Message</small>
           <div>{selectedLeave?.Reason}</div>
         </div>
+
+        <div className="col-md-6">
+          <small className="text-muted">Approve/Rejected by</small>
+          <div>{selectedLeave?.Approved_by?.Name || "-"}</div>
+        </div>
       </div>
     </div>
   </div>
@@ -591,6 +596,11 @@ const lastItem = history?.[history.length - 1];
         <div className="col-md-6">
           <small className="text-muted">Message</small>
           <div>{selectedLeave?.Comments}</div>
+        </div>
+
+        <div className="col-md-6">
+          <small className="text-muted">Approve/Rejected by</small>
+          <div>{selectedLeave?.Approved_by?.Name || "-"}</div>
         </div>
       </div>
     </div>

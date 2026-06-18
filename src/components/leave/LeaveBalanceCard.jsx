@@ -2,24 +2,42 @@ import {useState,useEffect} from "react";
 import { useUser } from "../../context/UserContext";
 import { startOfMonth } from "../../utils/dateUtils";
 
-const LeaveBalanceCard = () => {
+const LeaveBalanceCard = ({setError}) => {
 
-      const [history, setHistory] = useState([])
       const {USERID} = useUser()
       const [currentData, setCurrentData] = useState({});
   
       useEffect(()=>{
+
+          function fetchLeaveHistory(){
+
+              const config2 = {
+                      report_name: "Leave_History_Report",
+                      criteria: `Leave_Balance_Form.Employee==${USERID} && Month_field == '${startOfMonth()}'`
+              }
+
+              ZOHO.CREATOR.DATA.getRecords(config2).then((response) => {
+              
+                console.log("Leave History Report:", response)
+                  if(response.code === 3000){
+                      setCurrentData(response.data[0])
+                      setError(false)
+                      
+                  }
+              
+              }).catch((err) =>{
+
+                console.error(err)
+                setError(true)
+
+              } )
+          }
   
           fetchLeaveHistory()
   
       },[])
 
-      // useEffect(()=>{
-      //   setCurrentData(history[history.length -1])
 
-      //   console.log(history[history.length -1])
-  
-      // },[history])
 
   const data = [
     {
@@ -42,40 +60,7 @@ const LeaveBalanceCard = () => {
     },
   ];
 
-      function fetchLeaveHistory(){
-        // const config = {
-        //         report_name: "All_Leave_Balances",
-        //         criteria: `Employee.ID==${USERID}`
-        // }
-        
-        // ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
-        
-        //     if(response.code === 3000){
-        //         console.log("Leave History:", response.data)
-        //         setHistory(response.data[0]?.Leave_History)
-                
-        //     }
-        
-        // }).catch((err) => console.error(err))
 
-        const config2 = {
-                report_name: "Leave_History_Report",
-                criteria: `Leave_Balance_Form.Employee==${USERID} && Month_field == '${startOfMonth()}'`
-        }
-
-        // console.log(startOfMonth())
-        
-        ZOHO.CREATOR.DATA.getRecords(config2).then((response) => {
-        
-          console.log("Leave History Report:", response)
-            if(response.code === 3000){
-                // console.log("Leave History Report:", response.data)
-                setCurrentData(response.data[0])
-                
-            }
-        
-        }).catch((err) => console.error(err))
-    }
 
   return (
     <div className="container py-4">

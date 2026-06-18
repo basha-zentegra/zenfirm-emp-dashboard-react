@@ -106,6 +106,7 @@ const MyLeaveRequests = () => {
                   <th className="text-muted fw-normal">Duration</th>
                   <th className="text-muted fw-normal">Status</th>
                   <th className="text-muted fw-normal">Message</th>
+                  <th className="text-muted fw-normal">Approved by</th>
                   <th></th>
                 </tr>
               </thead>
@@ -120,6 +121,8 @@ const MyLeaveRequests = () => {
                     <td>{leave?.No_of_Days_Leave}</td>
                     <td className="">{getStatusBadge(leave?.Approval_Status)}</td>
                     <td>{leave?.Reason}</td>
+                    <td>{leave?.Approved_by?.Name || ""}</td>
+                    
                     <td></td>
                     
                   </tr>
@@ -133,6 +136,7 @@ const MyLeaveRequests = () => {
                     <td>{leave?.No_Of_Days_Leave}</td>
                     <td className="">{getStatusBadge(leave?.Approval_status)}</td>
                     <td>{leave?.Comments}</td>
+                    <td>{leave?.Approved_by?.Name || ""}</td>
                     
 
                     <td className="text-end">

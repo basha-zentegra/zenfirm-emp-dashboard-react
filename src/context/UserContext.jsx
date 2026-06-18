@@ -11,6 +11,7 @@ export const UserProvider = ({ children }) => {
   const [ORG, setORG] = useState("");
   const [nmgEmp, setNmgEmp] = useState([])
   const [empName, setEmpName] = useState("");
+  const [isManager, setIsManager] = useState(false);
 
   const [AllEmployees, setAllEmployees] = useState(null);
 
@@ -38,6 +39,10 @@ export const UserProvider = ({ children }) => {
           setUserID(response.data[0].ID)
           setEmpName(response.data[0]?.Name)
           setORG(response.data[0]?.Organization?.zc_display_value || "None")
+          if(response.data[0]?.Is_Manager==="True"){
+            setIsManager(true)
+          }
+          
         })
         .catch((err) => console.error(err))
   
@@ -133,7 +138,7 @@ export const UserProvider = ({ children }) => {
     }, [userEmail])
 
   return (
-    <UserContext.Provider value={{ userEmail, USERID, projects, orgEmp, ORG, nmgEmp, empName, AllEmployees}}>
+    <UserContext.Provider value={{ userEmail, USERID, projects, orgEmp, ORG, nmgEmp, empName, AllEmployees, isManager}}>
       {children}
     </UserContext.Provider>
   );

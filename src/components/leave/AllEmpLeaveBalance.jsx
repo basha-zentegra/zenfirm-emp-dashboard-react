@@ -1,20 +1,24 @@
 import {useEffect, useState} from 'react'
+import { startOfMonth } from "../../utils/dateUtils";
 
-const AllEmpLeaveBalance = () => {
+const  AllEmpLeaveBalance = () => {
 
     const [leaves, setLeaves] = useState([]);
 
 
 
     function fetchLeaves(){
+
         const config = {
-          report_name: "All_Leave_Balances",
+          report_name: "Leave_History_Report",
+          criteria: `Month_field=='${startOfMonth()}'`
 
         }
+
         ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
             if(response.code === 3000){
                 const leaveRes = response.data;
-                console.log(leaveRes)
+                // console.log(leaveRes)
                 setLeaves(leaveRes);
             }
             
@@ -28,78 +32,62 @@ const AllEmpLeaveBalance = () => {
     },[])
 
 
-
-
-
   return (
-    <div className=''>
+    <div>
 
-    {/* <h1>ALL EMP LEAVE BALANCE</h1>
-        {leaves.map(e => {
-           
 
-            const balSick = e.Leave_History[e?.Leave_History.length-1] || {}
-
-            
-
-            return( 
-                <p>{e.Employee?.Name} - {balSick.Balance_Casual_Leave || "0"} - {balSick.Balance_Sick_Leave || "0"}</p>
-
-            )
-        }
-            
-
-        )} */}
-
-<div className="container mt-4">
-  <div className="card shadow border-0">
+<div className="container mt-5">
+  <div className="card shadow-sm border-0">
     
-    {/* Header */}
-    <div className="card-header  ">
-      <h3 className="mb-0 text-center">ALL EMPLOYEE LEAVE BALANCE</h3>
-    </div>
 
     {/* Table */}
-    <div className="card-body p-0">
-      <table className="table table-hover table-striped mb-0">
-        <thead className="table-dark">
-          <tr>
-            <th>#</th>
-            <th>Employee Name</th>
-            <th>Casual Leave</th>
-            <th>Sick Leave</th>
-          </tr>
-        </thead>
+    <div className="card-body">
 
-        <tbody>
-          {leaves.map((e, index) => {
-            const balSick =
-              e?.Leave_History?.[e.Leave_History.length - 1] || {};
+      <h5 className="mb-4 fw-semibold">ALL EMPLOYEE LEAVE BALANCE</h5>
 
-            return (
-              <tr key={e.id || index}>
-                <td>{index + 1}</td>
+      <div className="table-responsive">
+        <table className="table table-hover align-middle leave-request-table">
+          <thead className="text-muted my-thead text-uppercase">
+            <tr className='text-muted'>
+              <th className='text-muted fw-normal'>#</th>
+              <th className='text-muted fw-normal'>Employee Name</th>
+              <th  className='text-muted fw-normal'>Casual Leave</th>
+              <th className='text-muted fw-normal'>Sick Leave</th>
+            </tr>
+          </thead>
 
-                <td className="fw-semibold">
-                  {e?.Employee?.Name || "N/A"}
-                </td>
+          <tbody>
+            {leaves.map((e, index) => {
 
-                <td>
-                  <span className="badge text-dark  px-3 py-2">
-                    {balSick?.Balance_Casual_Leave || "-"}
-                  </span>
-                </td>
+              console.log(e)
 
-                <td>
-                  <span className="badge  text-dark px-3 py-2">
-                    {balSick?.Balance_Sick_Leave || "-"}
-                  </span>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+              
+
+              return (
+                <tr key={e.id || index}>
+                  <td>{index + 1}</td>
+
+                  <td className="fw-semibold">
+                    {e?.["Leave_Balance_Form.Employee"]?.Name || "N/A"}
+                  </td>
+
+                  <td>
+                    <span className="badge text-dark  px-3 py-2">
+                      {e?.Balance_Casual_Leave || "-"}
+                    </span>
+                  </td>
+
+                  <td>
+                    <span className="badge  text-dark px-3 py-2">
+                      {e?.Balance_Sick_Leave || "-"}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
