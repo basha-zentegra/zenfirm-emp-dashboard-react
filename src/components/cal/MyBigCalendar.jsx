@@ -31,7 +31,7 @@ const MyBigCalendar = () => {
 
     const [startEnd, setStartEnd] = useState({});
 
-    const {USERID} = useUser();
+    const {USERID, Work_Shift} = useUser();
 
     const [allTask, setAllTask] = useState([]);
 
@@ -57,6 +57,17 @@ const MyBigCalendar = () => {
           })
           .catch((err) => console.error(err))
     }
+
+    useEffect(()=> {
+
+        console.log(Work_Shift)
+
+        if(Work_Shift!=="NMG US-SHIFT") return;
+
+        setCalStart(new Date(1970, 0, 1, 8, 0))
+        setCalEnd(new Date(1970, 0, 1, 19, 59))
+
+    },[Work_Shift])
 
 
     useEffect(() => {

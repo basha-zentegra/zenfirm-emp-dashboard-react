@@ -18,7 +18,7 @@ const LeaveBalanceCard = ({setError}) => {
 
               ZOHO.CREATOR.DATA.getRecords(config2).then((response) => {
               
-                console.log("Leave History Report:", response)
+                console.log("Leave History Report: leavebalance card--->", response)
                   if(response.code === 3000){
                       setCurrentData(response.data[0])
                       setError(false)
@@ -63,7 +63,7 @@ const LeaveBalanceCard = ({setError}) => {
 
 
   return (
-    <div className="container py-4">
+    <div className="container py-2">
       <div className="row g-4">
         {data.map((item, index) => (
           <div className="col-md-6" key={index}>

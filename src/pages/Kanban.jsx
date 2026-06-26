@@ -299,6 +299,9 @@ const handleDragEnd = (result) => {
 
           <div className='card-body scroll-karo' style={{ background: colIndex % 2 === 0 ? '#e2e7ee' : '#ebeff9' }}>
             {/* ✅ Sort by Kanban_Order */}
+            <div className='text-center mb-2'>
+              <button onClick={() => handleAddTask(list)} className='btn bg-white'>+</button>
+            </div>
             {kanbanTasks
               .filter(task => task.Kanban_Status === list)
               .sort((a, b) => a.Kanban_Order - b.Kanban_Order)
@@ -329,9 +332,7 @@ const handleDragEnd = (result) => {
                 </Draggable>
               ))}
             {provided.placeholder}
-            <div className='text-center'>
-              <button onClick={() => handleAddTask(list)} className='btn bg-white'>+</button>
-            </div>
+
           </div>
         </div>
       )}

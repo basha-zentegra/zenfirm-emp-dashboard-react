@@ -345,6 +345,27 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
 
         <tr>
           <th style={{ width: "7%" }}>
+            <i class="bi bi-link-45deg"></i>
+          </th>
+          <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
+            URL
+          </th>
+          <td style={{ width: "58%" }}>
+            {selectedEvent?.URL && (
+              <span >
+                <a className="text-decoration-none text-zen fw-medium" href={selectedEvent?.URL} target='_blank'>{selectedEvent?.URL || "-"}</a>
+              </span>
+            )}
+
+             {!selectedEvent?.URL && (
+                <span className='text-muted'>-</span>
+             )}
+            
+          </td>
+        </tr>
+
+        <tr>
+          <th style={{ width: "7%" }}>
             <i className="bi bi-record-circle"></i>
           </th>
           <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>

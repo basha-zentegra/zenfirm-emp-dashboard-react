@@ -50,16 +50,20 @@ const Sidebar = ({userEmail}) => {
     <>
     
 <div className="d-flex flex-column flex-shrink-0 p-3  vh-100 sidebar">
-  <span
+  {/* <span
     
     className="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none"
   >
     
-    {/* <span className="fs-4">ZenFirm</span> */}
-    <img style={{width:"50px"}} src="https://blogger.googleusercontent.com/img/a/AVvXsEhSNlyKoRigIvA0SewRbl6twztGq-Z1e-pYyb1NN8e4X47M-Qv2pf2ZPHELxIYBlQgrun3bIlRVdpRYhc3ymIhPHuuDdZNGXyGI-uwgYU7VUUra5NCybVlaBHKyJImCkDIgLGcx3LkYd-4VCcR_KnF5gEDcHTrW7wxEQ2skRrHsRqZodKLKVbBtrbucwvE" alt="" />
-  </span>
 
-  <hr />
+    <img style={{width:"50px"}} src="https://blogger.googleusercontent.com/img/a/AVvXsEhSNlyKoRigIvA0SewRbl6twztGq-Z1e-pYyb1NN8e4X47M-Qv2pf2ZPHELxIYBlQgrun3bIlRVdpRYhc3ymIhPHuuDdZNGXyGI-uwgYU7VUUra5NCybVlaBHKyJImCkDIgLGcx3LkYd-4VCcR_KnF5gEDcHTrW7wxEQ2skRrHsRqZodKLKVbBtrbucwvE" alt="" />
+  </span> */}
+
+<div className='' style={{position:"absolute", left:"5px"}}>
+    <span className='small'>Zen</span><span className='small text-zen fw-semibold'>Firm</span>
+</div>
+
+  <hr  className='mt-4'/>
 
   <ul className="nav nav-pills flex-column mb-auto">
     <li className="nav-item">
@@ -72,7 +76,7 @@ const Sidebar = ({userEmail}) => {
 
 
     <li>
-      <Link  to="/calendar" onClick={() => handleClick(2)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Calendar">
+      <Link  to="/calendar" onClick={() => handleClick(2)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="ZenCalendar">
         {/* <i className="bi bi-journal-bookmark fs-5"></i> */}
         <i className={`sidebar-icon bi bi-calendar-week fs-5 ${activeId === 2 ? "text-zen" : "text-secondary"}`} ></i>
           
@@ -80,7 +84,7 @@ const Sidebar = ({userEmail}) => {
     </li>
 
     <li>
-      <Link  to="/attendance" onClick={() => handleClick(5)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Leave Tracker">
+      <Link  to="/attendance" onClick={() => handleClick(5)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="ZenLeave">
 
         <i className={`sidebar-icon bi-cloud-moon-fill fs-5 ${activeId === 5 ? "text-zen" : "text-secondary"}`} ></i>
           
@@ -131,7 +135,7 @@ const Sidebar = ({userEmail}) => {
 
   <hr />
 
-    <p>V 1.1.8</p>
+    <p>V 1.2.1</p>
 
   {/* <div className="dropdown">
     <a

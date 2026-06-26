@@ -20,6 +20,8 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks, boardMembers = []}) =
     const myProjects = projects || [];
 
     const [selectedProject, setSelectedProject] = useState(null);
+
+    const [errors, setErrors ] = useState({})
   
     const [taskData, setTaskData] = useState({
       Task_Name: "",
@@ -32,7 +34,8 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks, boardMembers = []}) =
       Kanban_Status: list,
       Budgeted_Time: "1h 0m",
       Zenboards: selectedBoard?.ID,
-      Due_Date: ""
+      Due_Date: "",
+      URL:""
     });
 
     useEffect(()=>{
@@ -64,7 +67,7 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks, boardMembers = []}) =
       }, [selectedBoard]);
 
   
-    console.log(taskData)
+    // console.log(taskData)
   
 
     const handleChange = (e) => {
@@ -73,7 +76,27 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks, boardMembers = []}) =
         ...prev,
         [name]: value,
       }));
+
+      if (name === "URL") {
+        validateURL(value);
+      }
     };
+
+const validateURL = (value) => {
+  if (!value.trim()) {
+    setErrors((prev) => ({ ...prev, URL: "" }));
+    return true; // empty is allowed
+  }
+
+  try {
+    new URL(value);
+    setErrors((prev) => ({ ...prev, URL: "" }));
+    return true;
+  } catch {
+    setErrors((prev) => ({ ...prev, URL: "Please enter a valid URL" }));
+    return false;
+  }
+};
   
     const closeOffCanvas = () => {
       const element = document.getElementById("addtaskoffcanvaskanban");
@@ -120,7 +143,8 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks, boardMembers = []}) =
                   Task_Description:taskData.Task_Description,
                   Kanban_Status:taskData.Kanban_Status
                 };
-                setKanbanTasks(prev => [...prev, newEvent]);
+                // setKanbanTasks(prev => [...prev, newEvent]);
+                setKanbanTasks(prev => [newEvent, ...prev]);
                 setTaskData((prev) => ({
                   ...prev,
                   Task_Name: "",
@@ -130,6 +154,7 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks, boardMembers = []}) =
                   Due_Date:"",
                   Task_Date:""
                 }));
+                setErrors({})
                 closeOffCanvas()
                 setIsSubmitting(false)
                 setSelectedProject(null)
@@ -222,19 +247,6 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks, boardMembers = []}) =
             </th>
             <td style={{ width: "58%" }}>
 
-              {/* <select
-                className="form-control"
-                name="Project_Name"
-                value={taskData.Project_Name}
-                onChange={handleChange}
-              >
-                <option selected disabled value="">Select Project</option>
-                {myProjects.map((project) => (
-                  <option key={project.ID} value={project.ID}>
-                    {project.Project_Name}
-                  </option>
-                ))}
-              </select> */}
               <ProjectSelect onProjectChange={onProjectChange} selectedProject={selectedProject} />
 
 
@@ -258,6 +270,27 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks, boardMembers = []}) =
                 onChange={handleChange}
                 
               ></textarea>
+            </td>
+          </tr>
+
+          <tr>
+            <th style={{ width: "7%" }}>
+              <i class="bi bi-link-45deg"></i>
+            </th>
+            <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
+              URL
+            </th>
+            <td style={{ width: "58%" }}>
+              <input 
+                className={`form-control ${errors.URL ? "is-invalid" : ""}`} 
+                name="URL"
+                value={taskData.URL}
+                onChange={handleChange}
+                
+              />
+               {errors.URL && (
+                  <div className="text-danger mt-1">{errors.URL}</div>
+                )}
             </td>
           </tr>
   

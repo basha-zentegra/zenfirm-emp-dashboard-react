@@ -4,7 +4,14 @@ import { startOfMonth } from "../../utils/dateUtils";
 const  AllEmpLeaveBalance = () => {
 
     const [leaves, setLeaves] = useState([]);
+    const [search, setSearch] = useState("");
 
+    const filteredLeaves = leaves.filter((leave) => {
+      const employeeName =
+        leave?.["Leave_Balance_Form.Employee"]?.Name || "";
+
+      return employeeName.toLowerCase().includes(search.toLowerCase());
+    });
 
 
     function fetchLeaves(){
@@ -17,8 +24,11 @@ const  AllEmpLeaveBalance = () => {
 
         ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
             if(response.code === 3000){
-                const leaveRes = response.data;
-                // console.log(leaveRes)
+                
+                const leaveRes = [...response.data].sort((a, b) =>
+                  a?.["Leave_Balance_Form.Employee"]?.Name.localeCompare(b?.["Leave_Balance_Form.Employee"]?.Name)
+                );
+
                 setLeaves(leaveRes);
             }
             
@@ -36,14 +46,29 @@ const  AllEmpLeaveBalance = () => {
     <div>
 
 
-<div className="container mt-5">
+<div className="container mt-3">
   <div className="card shadow-sm border-0">
     
 
     {/* Table */}
     <div className="card-body">
 
-      <h5 className="mb-4 fw-semibold">ALL EMPLOYEE LEAVE BALANCE</h5>
+      
+
+<div className="row mb-3">
+  <div className="col-md-9">
+    <h5 className="mb-4 fw-semibold">All Employee Leave Balance</h5>
+  </div>
+  <div className="col-md-3">
+    <input
+      type="text"
+      className="form-control"
+      placeholder="Search employee..."
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+    />
+  </div>
+</div>
 
       <div className="table-responsive">
         <table className="table table-hover align-middle leave-request-table">
@@ -57,11 +82,7 @@ const  AllEmpLeaveBalance = () => {
           </thead>
 
           <tbody>
-            {leaves.map((e, index) => {
-
-              console.log(e)
-
-              
+            {filteredLeaves.map((e, index) => {              
 
               return (
                 <tr key={e.id || index}>

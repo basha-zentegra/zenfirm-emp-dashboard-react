@@ -7,10 +7,12 @@ import MyLeaveRequests from '../components/leave/MyLeaveRequests';
 import LeaveApplyForm from '../components/leave/Leaveapplyform';
 import AllEmpLeaveBalance from '../components/leave/AllEmpLeaveBalance';
 import Holidays from '../components/leave/Holidays';
+import AllLeaves from '../components/leave/AllLeaves';
+import AllLongLeaves from '../components/leave/AllLongLeaves';
 
 const Attendance = () => {
 
-  const {USERID, isManager} = useUser();
+  const {USERID, isManager, isHR} = useUser();
 
   const [showForm, setShowForm] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
@@ -43,7 +45,7 @@ const Attendance = () => {
       )}
       
 
-      <div className="d-flex justify-content-end p-3">
+      <div className="d-flex justify-content-end p-2">
 
         <button className='btn btn-sm btn-primary' disabled={error} onClick={() => setShowForm(prev => !prev)}>
           
@@ -56,14 +58,9 @@ const Attendance = () => {
       {!showForm && (
         <section>
           <LeaveBalanceCard setError={setError} />
-          {/* <div className="d-flex justify-content-end">
-            <button className='btn btn-sm' onClick={() => setShowHistory(prev => !prev)}>Show History</button>
-          </div> */}
 
 
-
-
-          <div className=" mt-4">
+          <div className="mt-3">
             {/* Tabs */}
             <ul className="nav nav-tabs border-0">
 
@@ -109,7 +106,7 @@ const Attendance = () => {
                 </button>
               </li>
 
-              {isManager && (
+              {isHR && (
 
                 <li className="nav-item">
                   <button
@@ -121,6 +118,34 @@ const Attendance = () => {
                 </li>
 
               )}
+
+              {isHR && (
+
+                <li className="nav-item">
+                  <button
+                    className={`nav-link ${activeTab === "all-leaves" ? "active" : ""}`}
+                    onClick={() => setActiveTab("all-leaves")}
+                  >
+                    All Leaves
+                  </button>
+                </li>
+
+              )}
+
+              {isHR && (
+
+                <li className="nav-item">
+                  <button
+                    className={`nav-link ${activeTab === "all-long-leaves" ? "active" : ""}`}
+                    onClick={() => setActiveTab("all-long-leaves")}
+                  >
+                    All long Leaves
+                  </button>
+                </li>
+
+              )}
+
+              
 
             </ul>
 
@@ -137,6 +162,11 @@ const Attendance = () => {
 
               {activeTab === "all-emp-balance" && <AllEmpLeaveBalance  />}
 
+              {activeTab === "all-leaves" && <AllLeaves  />}
+
+              {activeTab === "all-long-leaves" && <AllLongLeaves  />}
+
+
               
 
             </div>
@@ -151,31 +181,10 @@ const Attendance = () => {
       
       {showForm && (
 
-        // <iframe height='700px' width='100%' frameborder='0' allowTransparency='true' scrolling='auto' src={`https://creatorapp.zohopublic.in/zentegraindia/zenfirm/form-embed/Request_Leave/gfykTe4xO2Dpgd9RfbbaBtrT411kNv1DP5SWsTRZqfsjvGYAj7Q3fBdWMYSJEmhT58mmJ1vm1Wn5k04DBWk3YKvdwMrNOrA7F6vJ?Employee_Name=${USERID}`}></iframe>
 
         <LeaveApplyForm />
 
       )}
-
-      {/* {isManager && (
-
-        <div className="text-center my-4">
-          <span 
-            className='small me-5 cursor-pointer' 
-            onClick={()=>setShowAllEmp(p=>!p)}
-          >All Employee Leave Balance 
-          {!showAllEmp && (<i class="bi bi-chevron-double-down ms-2"></i>)}
-          {showAllEmp && (<i class="bi bi-chevron-double-up ms-2"></i>)}
-          </span>
-        </div>
-
-      )}
-
-      
-
-      {showAllEmp && (
-        <AllEmpLeaveBalance />
-      )} */}
 
       
 

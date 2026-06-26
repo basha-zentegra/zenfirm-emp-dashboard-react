@@ -18,7 +18,8 @@ const EditTask = ({selectedEvent,setEdit,fetchTasks, boardMembers = []}) => {
         Task_Date: zohoToInput(selectedEvent?.Task_Date) || "",
         Assignee: selectedEvent?.Assignee?.ID || "",
         Budgeted_Time: selectedEvent?.Budgeted_Time || "",
-        Due_Date: zohoToInput(selectedEvent?.Due_Date) || ""
+        Due_Date: zohoToInput(selectedEvent?.Due_Date) || "",
+        URL: selectedEvent?.URL || "",
     });
 
     useEffect(() => {
@@ -32,7 +33,8 @@ const EditTask = ({selectedEvent,setEdit,fetchTasks, boardMembers = []}) => {
                 Assignee: selectedEvent?.Assignee?.ID || "",
                 Budgeted_Time: selectedEvent?.Budgeted_Time || "",
                 Due_Date: zohoToInput(selectedEvent?.Due_Date) || "",
-                Task_Status: selectedEvent?.Task_Status || ""
+                Task_Status: selectedEvent?.Task_Status || "",
+                URL: selectedEvent?.URL || "",
             });
         }
     }, [selectedEvent]);
@@ -166,6 +168,26 @@ const EditTask = ({selectedEvent,setEdit,fetchTasks, boardMembers = []}) => {
                 className='form-control' 
                 name="Task_Description"
                 value={taskData.Task_Description}
+                onChange={handleChange}
+                
+              ></textarea>
+
+          </td>
+        </tr>
+
+        <tr>
+          <th style={{ width: "7%" }}>
+            <i class="bi bi-link-45deg"></i>
+          </th>
+          <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
+            URL
+          </th>
+          <td style={{ width: "58%" }}>
+
+            <textarea 
+                className='form-control' 
+                name="URL"
+                value={taskData.URL}
                 onChange={handleChange}
                 
               ></textarea>

@@ -45,8 +45,15 @@ export function inputToMMDDYYYY(dateString) {
 }
 
 export function MMDDYYYY_TO_YYYYMMDD(dateStr) {
+  if (!dateStr) return "";
   const [month, day, year] = dateStr.split("-");
   return `${year}-${month}-${day}`;
+}
+
+export function MMDDYYYY_TO_DDMMYYYY(dateStr) {
+  if (!dateStr) return "";
+  const [month, day, year] = dateStr.split("-");
+  return `${day}-${month}-${year}`;
 }
 
 export function zohoToInput(dateString) {
@@ -127,7 +134,3 @@ export function getDayName(dateString) {
 
     return days[date.getDay()];
 }
-
-// Example usage
-console.log(getDayName("06-16-2026")); // Tuesday
-console.log(getDayName("12-25-2026")); // Friday

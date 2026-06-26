@@ -12,6 +12,8 @@ export const UserProvider = ({ children }) => {
   const [nmgEmp, setNmgEmp] = useState([])
   const [empName, setEmpName] = useState("");
   const [isManager, setIsManager] = useState(false);
+  const [isHR, setIsHR] = useState(false);
+  const [Work_Shift, setWork_Shift] = useState("");
 
   const [AllEmployees, setAllEmployees] = useState(null);
 
@@ -39,8 +41,12 @@ export const UserProvider = ({ children }) => {
           setUserID(response.data[0].ID)
           setEmpName(response.data[0]?.Name)
           setORG(response.data[0]?.Organization?.zc_display_value || "None")
+          setWork_Shift(response.data[0]?.Work_Shift?.Shift_Name)
           if(response.data[0]?.Is_Manager==="True"){
             setIsManager(true)
+          }
+          if(response.data[0]?.Is_HR==="True"){
+            setIsHR(true)
           }
           
         })
@@ -138,7 +144,7 @@ export const UserProvider = ({ children }) => {
     }, [userEmail])
 
   return (
-    <UserContext.Provider value={{ userEmail, USERID, projects, orgEmp, ORG, nmgEmp, empName, AllEmployees, isManager}}>
+    <UserContext.Provider value={{ userEmail, USERID, projects, orgEmp, ORG, nmgEmp, empName, AllEmployees, isManager,isHR, Work_Shift}}>
       {children}
     </UserContext.Provider>
   );

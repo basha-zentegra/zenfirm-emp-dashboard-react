@@ -38,7 +38,7 @@ const LeaveHistory = () => {
 
 
   return (
-    <div className="container mt-5">
+    <div className="container mt-3">
       <div className="card shadow-sm border-0">
 
         <div className="card-body">

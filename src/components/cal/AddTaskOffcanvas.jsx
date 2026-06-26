@@ -19,7 +19,7 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
 
 
 
-  // console.log(startEnd.start, startEnd.end,USERID )
+  console.log(startEnd.start, startEnd.end, USERID )
 
     function formatDateToMMDDYYYY(dateInput) {
       if(!dateInput){
@@ -44,6 +44,15 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
         const minutes = String(date.getMinutes()).padStart(2, "0");
 
         return `${hours}:${minutes}`;
+  }
+
+  function createDateFromDateAndTime(dateStr, timeStr) {
+    if (!dateStr || !timeStr) return null;
+
+    const [month, day, year] = dateStr.split("-").map(Number);
+    const [hours, minutes] = timeStr.split(":").map(Number);
+
+    return new Date(year, month - 1, day, hours, minutes);
   }
 
   // const {USERID} = useUser();
@@ -132,6 +141,8 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
+    console.log(name, value )
+
     // setTaskData((prev) => ({
     //   ...prev,
     //   [name]: type === "checkbox" ? checked : value,
@@ -192,8 +203,8 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
               const newEvent = {
                 id: response.data.ID,
                 title:taskData.Task_Name,
-                start:startEnd.start,
-                end:startEnd.end,
+                start: createDateFromDateAndTime(taskData.Task_Date, taskData.Start_Time),
+                end: createDateFromDateAndTime(taskData.Task_Date, taskData.End_Time),
                 priority: taskData.Task_Priority.toLowerCase(),
                 projectName: projectName,
                 resourceId: taskData?.Assignee ||  "unassigned",
@@ -383,15 +394,32 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
           <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
             Time
           </th>
-          <td id="endDate" style={{ width: "58%" }}>
-            <input 
+          <td id="endDate" className='d-flex justify-content-between' style={{ width: "58%" }}>
+            {/* <input 
               type='text'
               className='form-control' 
               name="Start_Time"
               value={taskData.Start_Time + " - " + taskData.End_Time}
               onChange={handleChange}
               disabled
+            /> */}
+
+            <input 
+              type="time"
+              className='form-control' 
+              name="Start_Time"
+              value={taskData.Start_Time}
+              onChange={handleChange}
             />
+
+            <input 
+              type="time"
+              className='form-control' 
+              name="End_Time"
+              value={taskData.End_Time}
+              onChange={handleChange}
+            />
+              
           </td>
         </tr>
 
