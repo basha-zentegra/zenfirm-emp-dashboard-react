@@ -185,3 +185,8 @@
     transform: rotate(360deg) scale(50);
   }
 }
+
+.very-small{
+  font-size: 10px;
+  margin-bottom: auto;
+}

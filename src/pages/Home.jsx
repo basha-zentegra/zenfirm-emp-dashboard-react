@@ -5,10 +5,11 @@ import { formattedDate } from '../config'
 import HomePunch from '../components/punch/HomePunch'
 import OffcanvasTaskDetails from '../components/cal/OffcanvasTaskDetails'
 import { getPriorityBorder } from '../utils/uiUtils'
+import WorkdayTracker from '../components/punch/Workdaytracker'
 
 const Home = () => {
 
-  const { USERID } = useUser();
+  const { USERID, ORG } = useUser();
 
   const [UID, setUID] = useState(USERID);
 
@@ -247,22 +248,6 @@ const Home = () => {
 
 <div className='row g-4 '>
 
-
-        {/* <div className="col-6">
-            <div className="card" style={{height: "500px"}}>
-              <span className='cardsHeader ms-3 mt-2'>My Punch-in Report</span>
-              <div className="card-body scroll-karo">
-
-
-
-                    <HomePunch />
-
-                
-
-              </div>
-            </div>
-        </div> */}
-
         <div className="col-12">
             <div className="card border-0 rounded-4 shadow-sm overflow-hidden biometric-card ">
 
@@ -288,6 +273,12 @@ const Home = () => {
               </div>
             </div>
         </div>
+
+        {/* <WorkdayTracker/> */}
+
+        {/* <div className="col-6">
+          <WorkdayTracker/>
+        </div> */}
 
         <div className="col-6">
             <div className="card border-0 rounded-4 shadow-sm" style={{height: "500px"}}>
@@ -345,8 +336,11 @@ const Home = () => {
             </div>
         </div>
 
+        
 
-        <div className="col-6">
+
+        {ORG === "NMG" && (
+          <div className="col-6">
             <div className="card border-0 rounded-4 shadow-sm" style={{height: "500px"}}>
               <span className='cardsHeader ms-3 mt-2'>BTR Events - {myTodayTasks.filter(e => e["Project_Name.Project_Group1"]?.Project_Group === "Business Tax Filing").length}</span>
               <div className="card-body scroll-karo" >
@@ -372,8 +366,12 @@ const Home = () => {
               </div>
             </div>
         </div>
+        )}
 
-        <div className="col-6">
+
+        {ORG === "NMG" && (
+
+          <div className="col-6">
             <div className="card border-0 rounded-4 shadow-sm" style={{height: "500px"}}>
               <span className='cardsHeader ms-3 mt-2'>ITR Events - {myTodayTasks.filter(e => e["Project_Name.Project_Group1"]?.Project_Group === "Individual Tax Filing").length}</span>
               <div className="card-body scroll-karo" >
@@ -399,6 +397,12 @@ const Home = () => {
               </div>
             </div>
         </div>
+
+        )}
+
+        
+
+        
 
 
 </div>

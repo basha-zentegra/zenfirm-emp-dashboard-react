@@ -49,7 +49,7 @@ const Sidebar = ({userEmail}) => {
   return (
     <>
     
-<div className="d-flex flex-column flex-shrink-0 p-3  vh-100 sidebar">
+<div className="d-flex flex-column flex-shrink-0 p-3  vh-100 sidebar ">
   {/* <span
     
     className="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none"

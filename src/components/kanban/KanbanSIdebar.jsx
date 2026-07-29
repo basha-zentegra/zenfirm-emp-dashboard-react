@@ -2,13 +2,15 @@ import {useState, useEffect, forwardRef, useImperativeHandle} from 'react'
 import { useUser } from '../../context/UserContext'
 import NewOffcanvass from './NewOffcanvass'
 
-const KanbanSIdebar = forwardRef(({ setSelectedBoard }, ref) => {
+const KanbanSIdebar = forwardRef(({ setSelectedBoard, boardMembers, onFilter }, ref) => {
 
     const [zenBoards, setZenBoards] = useState([])
 
     const [activeBoardId, setActiveBoardId] = useState(null)
 
     const [editZenBoard, setEditZenBoard] = useState(null)
+
+    const [showFilter, setShowFilter] = useState(false)
 
     const handleClick = (board) => {
         setSelectedBoard(board)
@@ -74,7 +76,20 @@ const KanbanSIdebar = forwardRef(({ setSelectedBoard }, ref) => {
 
   return (
     <div className='m-3 me-1'>
-        <h6 className='text-primary text-uppercase'>ZenBoard <i onClick={() => handleNewKanbanOffcanvass()} class="bi bi-plus-square-fill cursor-pointer ms-2 shadow-lg"></i></h6>
+        <h6 className='text-primary text-uppercase'>
+          ZenBoard 
+          <i onClick={() => handleNewKanbanOffcanvass()} class="bi bi-plus-square-fill cursor-pointer ms-2 shadow-lg"></i>
+          <i class="bi bi-funnel-fill ms-3" onClick={() => setShowFilter(p => !p)}></i>
+
+          {showFilter && (
+            <select className='form-control form-control-sm my-2' name="" id="" onChange={(e) => onFilter(e.target.value)}>
+              <option selected value="all">All</option>
+              {boardMembers.map(e => (<option value={e.ID}>{e.Name}</option>))}
+            </select>
+          )}
+          
+          
+        </h6>
 
         {Object.keys(groupedBoards).map((category) => {
         const isOpen = openCategories[category];

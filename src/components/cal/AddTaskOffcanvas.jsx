@@ -1,11 +1,12 @@
-import {useState,useEffect} from 'react'
+import {useState,useEffect, useMemo} from 'react'
 import { useUser } from '../../context/UserContext';
 import { formattedDate } from '../../config';
 import { APP_NAME } from '../../config';
 import ProjectSelect from '../projects/ProjectSelect';
+import Select from 'react-select';
 
 const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) => {
-  const {USERID, projects, empName, orgEmp} = useUser();
+  const {USERID, projects, empName, orgEmp, isManager} = useUser();
 
   const myProjects = projects || [];
 
@@ -19,7 +20,7 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
 
 
 
-  console.log(startEnd.start, startEnd.end, USERID )
+  // console.log(startEnd.start, startEnd.end, USERID )
 
     function formatDateToMMDDYYYY(dateInput) {
       if(!dateInput){
@@ -70,9 +71,40 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
     Repeat: false,
     Repeat_Type: "",
     Repeating_Times: "",
-    Milestone_Name: ""
+    Milestone_Name: "",
+    Other_Assignees: []
     // resources: resourceID ||
   });
+
+
+    const [allEmp, setAllEmp] = useState([]);
+
+    const memberOptions = useMemo(() => {
+      return allEmp?.map(e => ({value: e?.ID, label: e?.Name})) || [];
+    }, [allEmp]);
+
+    useEffect(() => {
+
+      if(!isManager) return;
+
+      const fetchEmployees = async () => {
+        try {
+          const response = await ZOHO.CREATOR.DATA.getRecords({
+            report_name: "My_Team_Employees",
+          });
+
+          if (response.code === 3000) {
+            setAllEmp(response.data.filter(emp => emp.Email));
+          } else {
+            console.log(response);
+          }
+        } catch (err) {
+          console.error(err);
+        } 
+      };
+
+      fetchEmployees();    
+    }, [isManager])
 
 
   useEffect(()=> {
@@ -167,18 +199,18 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
 
   };
 
-  useEffect(() => {
-    console.log(taskData);
+  // useEffect(() => {
+  //   console.log(taskData);
 
-    // if(taskData.Repeat == true){
-    //   taskData.Repeating_Times = 1
-    //   taskData.Repeat_Type = "Daily"
-    // }else{
-    //   taskData.Repeating_Times = ""
-    //   taskData.Repeat_Type = ""
-    // }
+  //   // if(taskData.Repeat == true){
+  //   //   taskData.Repeating_Times = 1
+  //   //   taskData.Repeat_Type = "Daily"
+  //   // }else{
+  //   //   taskData.Repeating_Times = ""
+  //   //   taskData.Repeat_Type = ""
+  //   // }
 
-  }, [taskData]);
+  // }, [taskData]);
 
   const closeOffCanvas = () => {
     const element = document.getElementById("addtaskoffcanvas");
@@ -197,8 +229,8 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
           }
       };
       ZOHO.CREATOR.DATA.addRecords(config).then(function (response) {
+          console.log("Add Event",response);
           if (response.code == 3000) {
-              console.log(response);
               console.log(taskData)
               const newEvent = {
                 id: response.data.ID,
@@ -220,7 +252,8 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
                 Repeat:false,
                 Repeat_Type:"",
                 Repeating_Times:"",
-                Milestone_Name:""
+                Milestone_Name:"",
+                Other_Assignees: []
               }));
               closeOffCanvas()
               setIsSubmitting(false)
@@ -250,12 +283,16 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
 
   return (
     <>
-<div className="offcanvas offcanvas-end" tabIndex="-1" id="addtaskoffcanvas" aria-labelledby="taskOffcanvasLable" style={{width: "800px"}}>
+<div className="offcanvas offcanvas-end" tabIndex="-1" id="addtaskoffcanvas" aria-labelledby="taskOffcanvasLable" 
+style={{width: "800px",
+  backgroundColor:"rgba(255, 255, 255, 0.06)",
+border:"rgba(255, 255, 255, 0.14)"
+}}>
 
   <div className="offcanvas-body">
    
 
-<div className="card">
+<div className="card shadow-shopify border-0 rounded-4">
   <div className="card-body">
       <div className='text-end' style={{position:"absolute", top:"15px", right:"15px"}}>
           <button type="button"  className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
@@ -270,7 +307,7 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
 
         <tr>
           <th style={{ width: "7%" }}>
-            <i className="bi bi-card-heading"></i>
+            <i className="bi bi-clipboard-check"></i>
           </th>
           <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
             Task Name <span className='text-danger'>*</span>
@@ -288,7 +325,7 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
 
         <tr>
           <th style={{ width: "7%" }}>
-            <i className="bi bi-journal"></i>
+            <i className="bi bi-card-heading"></i>
           </th>
           <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
             Project Name <span className='text-danger'>*</span>
@@ -302,7 +339,7 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
 
         <tr>
           <th style={{ width: "7%" }}>
-            <i className="bi bi-journal"></i>
+            <i className="bi bi-signpost"></i>
           </th>
           <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
             Phase Name 
@@ -344,6 +381,7 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
               name="Task_Description"
               value={taskData.Task_Description}
               onChange={handleChange}
+              row="1"
               
             ></textarea>
           </td>
@@ -395,18 +433,11 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
             Time
           </th>
           <td id="endDate" className='d-flex justify-content-between' style={{ width: "58%" }}>
-            {/* <input 
-              type='text'
-              className='form-control' 
-              name="Start_Time"
-              value={taskData.Start_Time + " - " + taskData.End_Time}
-              onChange={handleChange}
-              disabled
-            /> */}
+
 
             <input 
               type="time"
-              className='form-control' 
+              className='form-control me-3' 
               name="Start_Time"
               value={taskData.Start_Time}
               onChange={handleChange}
@@ -473,9 +504,37 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
           </td>
         </tr>
 
-        <tr className=''>
+        {isManager && (
+
+          <tr>
+
+              <th style={{ width: "7%" }}>
+                <i class="bi bi-people"></i>
+              </th>
+              <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
+                Other Assignees
+              </th>
+              <td>
+                <Select 
+                  
+                  options={memberOptions} 
+                  isMulti 
+                  value={memberOptions.filter(option =>
+                    (taskData.Other_Assignees || []).includes(option.value)
+                  )}
+                  onChange={(selected) => setTaskData({...taskData,Other_Assignees: selected ? selected.map(opt => opt.value) : []})}
+                  className="basic-multi-select"
+                  classNamePrefix="select"
+                  placeholder="Select members..."
+                />
+              </td>
+          </tr>
+
+        )}
+
+        {/* <tr className=''>
           <th style={{ width: "7%" }}>
-            <i className="bi bi-person"></i>
+            <i class="bi bi-person-check"></i>
           </th>
           <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
             Assigned By
@@ -491,7 +550,7 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
               
             />
           </td>
-        </tr>
+        </tr> */}
 
         <tr className=''>
           <th style={{ width: "7%" }}>
@@ -561,49 +620,9 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
 
                 </div>
 
-
-              
-
-
             </div>
             )}
 
-            
-
-          </td>
-        </tr>
-
-        {/* <tr className=''>
-          <th style={{ width: "7%" }}>
-            <i class="bi bi-suitcase-lg"></i>
-          </th>
-          <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
-            Add To Meeting
-          </th>
-          <td style={{ width: "58%" }}> 
-             <div className="form-check form-switch">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                role="switch"
-                name="Repeat"
-                // checked={taskData.Repeat}
-                // onChange={handleChange}
-              />
-            </div>
-          </td>
-        </tr> */}
-
-
-      <tr>
-          <th style={{ width: "7%" }}>
-            
-          </th>
-          <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
-            <button className='btn btn-primary ' disabled={isSubmitting} onClick={handleSubmit}>{isSubmitting ? "Saving..." : "Submit"}</button>
-          </th>
-          <td style={{ width: "58%" }}> 
-             
           </td>
         </tr>
 
@@ -612,6 +631,10 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
     </table>
   </div>
 </div>
+
+<button className='btn glass text-primary mt-3' disabled={isSubmitting} onClick={handleSubmit}>
+  <span className='text-primary py-2  px-4'>{isSubmitting ? "Saving..." : "Submit"}</span>
+</button>
 
   </div>
 </div>

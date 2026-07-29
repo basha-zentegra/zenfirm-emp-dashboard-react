@@ -15,7 +15,7 @@ const Kanban = () => {
 
     const sidebarRef = useRef();
 
-    const {empName} = useUser()
+    const {USERID, empName} = useUser()
 
     const handleSomeAction = () => {
       console.log("CALLING FETCHBOARDS IN KANBAN PARENT")
@@ -56,6 +56,7 @@ const Kanban = () => {
         }
 
         if(selectedBoard?.Associate_Members.length > 0){
+          console.log("BOARD MEMBERS:" ,selectedBoard?.Associate_Members )
           setBoardMembers(selectedBoard?.Associate_Members)
         }else{
           setBoardMembers([])
@@ -262,7 +263,12 @@ const handleDragEnd = (result) => {
         .sort((a, b) => a.Kanban_Order - b.Kanban_Order); // Sort by order field
     }; 
 
+    const [empFilter, setEmpFilter] = useState('all')
 
+    const onFilter = (value) => {
+      console.log(value)
+      setEmpFilter(value)
+    }
 
 
   return (
@@ -272,7 +278,7 @@ const handleDragEnd = (result) => {
 
         <aside className='bg-white vh-100 w-350px border border-start-0 scroll-karo'>
 
-          <KanbanSIdebar ref={sidebarRef} setSelectedBoard={setSelectedBoard}/>
+          <KanbanSIdebar ref={sidebarRef} setSelectedBoard={setSelectedBoard}  boardMembers={boardMembers} onFilter={onFilter}/>
 
         </aside>
 
@@ -303,7 +309,7 @@ const handleDragEnd = (result) => {
               <button onClick={() => handleAddTask(list)} className='btn bg-white'>+</button>
             </div>
             {kanbanTasks
-              .filter(task => task.Kanban_Status === list)
+              .filter(task => task.Kanban_Status === list && (empFilter === "all" || String(task.Assignee?.ID) === empFilter))
               .sort((a, b) => a.Kanban_Order - b.Kanban_Order)
               .map((task, taskIndex) => (
                 <Draggable

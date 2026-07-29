@@ -118,7 +118,7 @@ const AllLongLeaves = () => {
     
     
     <div className="d-flex justify-content-between">
-      <h5 className="mb-4 fw-semibold">All Long Leaves</h5>
+      <h5 className="mb-4 fw-semibold">All Planned Leaves</h5>
     
     {/* <div >
       <select

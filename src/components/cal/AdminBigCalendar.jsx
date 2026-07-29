@@ -47,14 +47,13 @@ const AdminBigCalendar = () => {
 
     useEffect(() => {
         if (!USERID) return
+        if (!formatDateToMMDDYYYY(currentDate)) return
     
         const config = {
           app_name: APP_NAME,
           report_name: "Task_Report",
-          criteria: `Task_Date!=null && Start_Time!=null`,
+          criteria: `Task_Date='${formatDateToMMDDYYYY(currentDate)}' && Start_Time!=null`,
           max_records : 1000,
-          // sort_by: "Task_Date",     // field name
-          // sort_order: "dsc"
           
         }
     
@@ -67,38 +66,66 @@ const AdminBigCalendar = () => {
                 setAllTask(taskRes)
               
             }
+            console.log("response", response)
             
         }).catch((err) => console.error(err))
     
-    }, [USERID])
+    }, [USERID, currentDate])
 
-  let allEmployees = AllEmployees || orgEmp || [];
 
   // ─────────────────────────────────────────────
   // RESOURCES (Employees)
   // ─────────────────────────────────────────────
 
-  const resources = useMemo(() => {
-    if (!allEmployees || allEmployees.length === 0) {
-      // Fallback demo resources
-      return [
-        { resourceId: "emp1", resourceTitle: "John Doe", role: "Developer", avatar: "", color: "#3498db" },
-        { resourceId: "emp2", resourceTitle: "Jane Smith", role: "Designer", avatar: "", color: "#e74c3c" },
-        { resourceId: "emp3", resourceTitle: "Mike Johnson", role: "Manager", avatar: "", color: "#2ecc71" },
-        { resourceId: "emp4", resourceTitle: "Sarah Williams", role: "QA Engineer", avatar: "", color: "#9b59b6" },
-      ];
-    }
+const colors = ["#3498db", "#e74c3c", "#2ecc71", "#9b59b6", "#f39c12", "#1abc9c", "#e67e22", "#34495e"];
+const [employees, setEmployees] = useState([]);
 
-    const colors = ["#3498db", "#e74c3c", "#2ecc71", "#9b59b6", "#f39c12", "#1abc9c", "#e67e22", "#34495e"];
-    return allEmployees.map((emp, index) => ({
-      resourceId: emp.ID || emp.id || `emp_${index}`,
-      resourceTitle: emp.Name || emp.Name || `Employee ${index + 1}`,
-      role: "NA",
+useEffect(() => {
+  if (AllEmployees?.length > 0) {
+    const updated = AllEmployees.map((emp, index) => ({
+      resourceId: emp.ID,
+      resourceTitle: emp.Name,
+      role: emp?.Role?.Role || "NA",
       avatar: "",
       email: emp.Email || "",
       color: colors[index % colors.length],
     }));
-  }, [allEmployees]);
+    setEmployees(updated);
+    return;
+  }
+
+  ZOHO.CREATOR.DATA.getRecords({report_name: "My_Team_Employees",})
+    .then((response) => {
+      console.log(response);
+
+      if (response.code === 3000) {
+        const teamEmp = response.data.map((emp, index) => ({
+          resourceId: emp.ID || emp.id || `emp_${index}`,
+          resourceTitle: emp.Name || emp.Name || `Employee ${index + 1}`,
+          role: emp?.Role?.Role || "NA",
+          avatar: "",
+          email: emp.Email || "",
+          color: colors[index % colors.length],
+        }));
+        setEmployees(teamEmp);
+      }
+    }).catch((err) => {
+      console.error(err);
+
+      setEmployees([
+          { resourceId: "emp1", resourceTitle: "John Doe", role: "Developer", avatar: "", color: "#3498db" },
+          { resourceId: "emp2", resourceTitle: "Jane Smith", role: "Designer", avatar: "", color: "#e74c3c" },
+          { resourceId: "emp3", resourceTitle: "Mike Johnson", role: "Manager", avatar: "", color: "#2ecc71" },
+          { resourceId: "emp4", resourceTitle: "Sarah Williams", role: "QA Engineer", avatar: "", color: "#9b59b6" },
+        ]);
+    });
+}, [AllEmployees]);
+
+  const resources = useMemo(() => {
+
+      return employees;
+            
+  }, [employees]);
 
   // Filtered resources based on selection
   const filteredResources = useMemo(() => {
@@ -581,6 +608,29 @@ const AdminBigCalendar = () => {
   
        const [open, setOpen] = useState(false);
 
+useEffect(() => {
+  const label = document.querySelector(".rbc-toolbar-label");
+  if (!label) return;
+
+  // Remove previous badge
+  const existing = label.querySelector(".weekend-badge");
+  if (existing) {
+    existing.remove();
+  }
+
+  const isWeekend =
+    currentDate.getDay() === 0 || currentDate.getDay() === 6;
+
+  label.classList.toggle("weekend-label", isWeekend);
+
+  if (isWeekend) {
+    const badge = document.createElement("span");
+    badge.className = "weekend-badge";
+    badge.textContent = "Weekend";
+    label.appendChild(badge);
+  }
+}, [currentDate]);
+
   return (
     <div className="me-1" style={{ marginLeft: "80px" }}>
 
@@ -815,7 +865,7 @@ const AdminBigCalendar = () => {
           }
           view={currentView}
           onView={setCurrentView}
-          views={["day", "week"]}
+          views={["day"]}
           date={currentDate}
           onNavigate={(date) => setCurrentDate(date)}
           style={{ height: "calc(100vh )", width: "100%" }}
@@ -867,14 +917,13 @@ const AdminBigCalendar = () => {
 
             {open && (
                 <div className="border-secondary-subtle border rounded-bottom-4 bg-whit p-2 text-muted" style={{background:"#fcf8ff"}}>
-                    {/* <button className="d-non btn btn-s  text-dark" onClick={handle24HrsView} ><i class="bi bi-clock-history me-2"></i> 24Hrs View</button> <br /> */}
-                    {/* <Link  to="admincalendar"><button className="btn text-muted fw-semibold"><i class="bi bi-people-fill me-2"></i> Team Calendar</button></Link> <br /> */}
+                    
                     <button className="d-non btn text-muted fw-semibold" onClick={handle24HrsView} ><i class="bi bi-clock-history me-2"></i> 24Hrs View</button> <br />
                 </div>
             )}
 
             <div>
-                <button className="btn btn-sm bg-zen text-white rounded-3" onClick={() => setOpen(!open)}>
+                <button className="btn btn-sm btn-dark text-white rounded-3" onClick={() => setOpen(!open)}>
                   {open ? (<i class="bi bi-chevron-double-up"></i>) : (<i class="bi bi-chevron-double-down"></i>)}
               </button>
             </div>

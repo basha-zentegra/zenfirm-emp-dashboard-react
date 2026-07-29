@@ -172,8 +172,8 @@ const renderPreviewContent = (file) => {
 };
 
   return (
-    <div className="container">
-      <div className="card shadow-sm border-0 mb-4 mt-3">
+    <div className="">
+      <div className="card shadow-shopify border-0 mb-4 mt-3 rounded-4">
         <div className="card-body">
 
             {/* <p className="lead fs-5 text-center text-info">Our Team is working on it!</p> */}

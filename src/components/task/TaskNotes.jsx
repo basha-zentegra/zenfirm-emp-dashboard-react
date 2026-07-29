@@ -63,8 +63,8 @@ const TaskNotes = ({selectedEvent}) => {
     //                 Added_by: USERID
 
   return (
-    <div className='container'>
-        <div className="card shadow-sm border-0 mb-4 mt-3">
+    <div className=''>
+        <div className="card shadow-shopify border-0 mb-4 mt-3 rounded-4">
             <div className="card-body">
                 <ul className="list-group">
                     {notes.map((note, index) => (

@@ -117,3 +117,38 @@ p{
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
 }
+
+.weekend-label {
+  color: #333;
+}
+
+.weekend-badge {
+  background-color: #ff7575;
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  margin-left: 6px;
+  padding: 3px 6px;
+  border-radius: 6px;
+}
+
+.shadow-shopify{
+    box-shadow: rgba(0, 0, 0, 0.189) 0px 5px 15px 0px;
+    
+}
+
+.offcanvas-backdrop {
+  background-color: rgba(34, 23, 75, 0.169) !important;
+  backdrop-filter: blur(4px) saturate(110%);
+}
+
+.offcanvas-backdrop.show {
+  opacity: 1 !important;
+}
+
+
+.offcanvas-body{
+  scrollbar-width: none;
+
+  -ms-overflow-style: none;
+}

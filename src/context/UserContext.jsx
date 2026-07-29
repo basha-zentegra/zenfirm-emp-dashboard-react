@@ -6,6 +6,7 @@ const UserContext = createContext(null);
 export const UserProvider = ({ children }) => {
   const [userEmail, setUserEmail] = useState("");
   const [USERID, setUserID] = useState("");
+  const [USEROBJ, setUserObj] = useState("");
   const [projects, setProjects] = useState("");
   const [orgEmp, setOrgEmp] = useState([]);
   const [ORG, setORG] = useState("");
@@ -39,6 +40,7 @@ export const UserProvider = ({ children }) => {
       ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
           console.log("Employee Data:", response)
           setUserID(response.data[0].ID)
+          setUserObj(response.data[0])
           setEmpName(response.data[0]?.Name)
           setORG(response.data[0]?.Organization?.zc_display_value || "None")
           setWork_Shift(response.data[0]?.Work_Shift?.Shift_Name)
@@ -65,7 +67,7 @@ export const UserProvider = ({ children }) => {
       }
   
       ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
-        console.log("My Associated Project:", response.data)
+        // console.log("My Associated Project:", response.data)
         setProjects(response.data)
       })
       .catch((err) => console.error(err))
@@ -81,7 +83,7 @@ export const UserProvider = ({ children }) => {
   
       ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
         if(response.code === 3000){
-          console.log("All Organization Employees:", response.data)
+          // console.log("All Organization Employees:", response.data)
           setOrgEmp(response.data)
         } else{
           console.log(response)
@@ -100,7 +102,7 @@ export const UserProvider = ({ children }) => {
       }
   
       ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
-        console.log("NMG Employees:", response)
+        // console.log("NMG Employees:", response)
         if(response.code === 3000){
 
           setNmgEmp(response.data.map(e => e?.Name))
@@ -144,7 +146,7 @@ export const UserProvider = ({ children }) => {
     }, [userEmail])
 
   return (
-    <UserContext.Provider value={{ userEmail, USERID, projects, orgEmp, ORG, nmgEmp, empName, AllEmployees, isManager,isHR, Work_Shift}}>
+    <UserContext.Provider value={{ userEmail, USERID, projects, orgEmp, ORG, nmgEmp, empName, AllEmployees, isManager,isHR, Work_Shift,USEROBJ}}>
       {children}
     </UserContext.Provider>
   );

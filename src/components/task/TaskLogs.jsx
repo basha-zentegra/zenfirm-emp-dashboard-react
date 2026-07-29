@@ -4,7 +4,7 @@ import { inputToMMDDYYYY,isFuture, MMDDYYYY_TO_YYYYMMDD } from '../../utils/date
 import ConfirmDialog from './ConfirmDialog';
 import { useUser } from '../../context/UserContext';
 
-const TaskLogs = ({selectedEvent,setIsLogAvailable}) => {
+const TaskLogs = ({selectedEvent, setIsLogAvailable, setSelectedEvent}) => {
 
     const {USERID} = useUser();
 
@@ -21,22 +21,25 @@ const TaskLogs = ({selectedEvent,setIsLogAvailable}) => {
         Date_field: new Date().toISOString().split("T")[0],
         Work_Started: "",
         Work_Ended: "", 
-        Task: ""
+        Task: "",
+        Description:""
     });
 
     useEffect(() => {
         if(logs.length > 0) {
-            // alert("Log is available  ;)")
+
             setIsLogAvailable(true)
-            console.log("Log is available  ;)")
+
         }else{
-            // alert("Logs is not available :( ")
+            
             setIsLogAvailable(false)
-            console.log("Logs is not available :(")
+            
         }
     },[logs])
 
     useEffect(()=> {
+
+        console.log("Selected event", selectedEvent)
 
         if(!selectedEvent) return;
 
@@ -47,6 +50,7 @@ const TaskLogs = ({selectedEvent,setIsLogAvailable}) => {
             Work_Started: convertTo24Hour(selectedEvent?.Start_Time) || "",
             Work_Ended: convertTo24Hour(selectedEvent?.End_Time) || "",
             Task: selectedEvent?.ID,
+            Description:""
         })
 
         if(isFuture(selectedEvent?.Task_Date) || selectedEvent?.Task_Status === "Completed" || selectedEvent?.Task_Status === "Approved"){
@@ -175,11 +179,23 @@ const TaskLogs = ({selectedEvent,setIsLogAvailable}) => {
                     ID: response.data.ID
                  }])
 
+                 const newLog = {...manualLog,
+                    Date_field:inputToMMDDYYYY(manualLog.Date_field),
+                    Hours_Worked: calculateWorkedTime(manualLog.Work_Started, manualLog.Work_Ended),
+                    ID: response.data.ID
+                 }
+
+                    setSelectedEvent(prev => ({
+                        ...prev,
+                        Logs: [...(prev.Logs || []), newLog],
+                    }));
+
                     setManualLog({
                         Date_field: MMDDYYYY_TO_YYYYMMDD(selectedEvent?.Task_Date),
                         Work_Started: convertTo24Hour(selectedEvent?.Start_Time) || "",
                         Work_Ended: convertTo24Hour(selectedEvent?.End_Time) || "",
                         Task: selectedEvent?.ID,
+                        Description:""
                     })
                 
             }
@@ -210,6 +226,10 @@ const TaskLogs = ({selectedEvent,setIsLogAvailable}) => {
 
             const newUpdated = logs.filter((log) => log.ID !== logToDelete);
             setLogs(newUpdated)
+            setSelectedEvent(prev => ({
+                        ...prev,
+                        Logs: newUpdated,
+                    }));
 
             setShowConfirm(false);
             setLogToDelete(null);
@@ -233,8 +253,8 @@ const TaskLogs = ({selectedEvent,setIsLogAvailable}) => {
   return (
     <>
 
-<section className="container">     
-<div className="card shadow-sm border-0 mb-4 mt-3">
+<section className="">     
+<div className="card shadow-shopify border-0 mb-4 mt-3 rounded-4">
   <div className="card-body">
 
             <div>
@@ -244,6 +264,8 @@ const TaskLogs = ({selectedEvent,setIsLogAvailable}) => {
                     <th className='text-muted'>Date</th>
                     <th className='text-muted'>Start Time</th>
                     <th className='text-muted'>End Time</th>
+                    
+                    <th className='text-muted'>Description</th>
                     <th className='text-muted'>Worked</th>
                   </tr>
                 </thead>
@@ -253,6 +275,7 @@ const TaskLogs = ({selectedEvent,setIsLogAvailable}) => {
                       <td>{log.Date_field}</td>
                       <td>{log.Work_Started}</td>
                       <td>{log.Work_Ended}</td>
+                      <td style={{width:"25%"}} className='small text-muted'>{log.Description || ""}</td>
                       <td>{log.Hours_Worked}</td>
                       <td><i className="bi bi-trash text-danger cursor-pointer" onClick={() => handleDeleteClick(log.ID)}></i></td>
                     </tr>
@@ -263,7 +286,7 @@ const TaskLogs = ({selectedEvent,setIsLogAvailable}) => {
                         <td>
                             <input
                                 type="date"
-                                className='form-control'
+                                className='form-control form-control-sm'
                                 max={new Date().toISOString().split("T")[0]}
                                 value={manualLog.Date_field}
                                 onChange={(e) =>
@@ -275,7 +298,7 @@ const TaskLogs = ({selectedEvent,setIsLogAvailable}) => {
                         <td>
                             <input
                                 type="time"
-                                className='form-control'
+                                className='form-control form-control-sm'
 
                                 value={manualLog.Work_Started}
                                 onChange={(e) =>
@@ -287,7 +310,7 @@ const TaskLogs = ({selectedEvent,setIsLogAvailable}) => {
                         <td>
                             <input
                                 type="time"
-                                className='form-control'
+                                className='form-control form-control-sm'
 
                                 value={manualLog.Work_Ended}
                                 onChange={(e) =>
@@ -297,7 +320,21 @@ const TaskLogs = ({selectedEvent,setIsLogAvailable}) => {
                         </td>
 
                         <td>
-                            <button className='btn btn-sm' onClick={submitManualLog}>Submit</button>
+                            <textarea 
+                                name="" 
+                                id=""
+                                className='form-control form-control-sm'
+                                rows="1"
+
+                                value={manualLog.Description}
+                                onChange={(e) =>
+                                    setManualLog({ ...manualLog, Description: e.target.value })
+                                }
+                            ></textarea>
+                        </td>
+
+                        <td>
+                            <button className='btn btn-sm' onClick={submitManualLog}><i class="bi bi-arrow-right-circle-fill"></i></button>
                         </td>
                     </tr>
                   )}
@@ -305,8 +342,8 @@ const TaskLogs = ({selectedEvent,setIsLogAvailable}) => {
                   {!isAdding && (
 
                     <tr>
-                        <td className='text-center' colSpan="4">
-                            <button className="btn btn-link text-decoration-none mt-2" onClick={startAdding} disabled={isFutureTask} ><i className="bi bi-plus-circle me-1"></i> Add Log</button>
+                        <td className='text-center' colSpan="5">
+                            <button className="btn btn-link text-decoration-none mt-2 btn-sm p-0" onClick={startAdding} disabled={isFutureTask} ><i className="bi bi-plus-circle me-1"></i> Add Log</button>
                         </td>
                     </tr>
 

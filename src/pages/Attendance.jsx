@@ -110,10 +110,12 @@ const Attendance = () => {
 
                 <li className="nav-item">
                   <button
-                    className={`nav-link ${activeTab === "all-emp-balance" ? "active" : ""}`}
+                    className={`nav-link position-relative ${activeTab === "all-emp-balance" ? "active" : ""}`}
                     onClick={() => setActiveTab("all-emp-balance")}
                   >
-                    All Emp Balance
+                    Emp Balance
+                    <i class="bi bi-shield-lock-fill position-absolute text-warning" 
+                    style={{ fontSize: "10px", top: "2px", right: "4px" }}></i>
                   </button>
                 </li>
 
@@ -123,10 +125,12 @@ const Attendance = () => {
 
                 <li className="nav-item">
                   <button
-                    className={`nav-link ${activeTab === "all-leaves" ? "active" : ""}`}
+                    className={`nav-link position-relative ${activeTab === "all-leaves" ? "active" : ""}`}
                     onClick={() => setActiveTab("all-leaves")}
                   >
-                    All Leaves
+                     Leaves
+                    <i class="bi bi-shield-lock-fill position-absolute text-warning" 
+                    style={{ fontSize: "10px", top: "2px", right: "4px" }}></i>
                   </button>
                 </li>
 
@@ -136,10 +140,12 @@ const Attendance = () => {
 
                 <li className="nav-item">
                   <button
-                    className={`nav-link ${activeTab === "all-long-leaves" ? "active" : ""}`}
+                    className={`nav-link position-relative ${activeTab === "all-long-leaves" ? "active" : ""}`}
                     onClick={() => setActiveTab("all-long-leaves")}
                   >
-                    All long Leaves
+                     Planed Leaves 
+                    <i class="bi bi-shield-lock-fill position-absolute text-warning" 
+                    style={{ fontSize: "10px", top: "2px", right: "4px" }}></i>
                   </button>
                 </li>
 

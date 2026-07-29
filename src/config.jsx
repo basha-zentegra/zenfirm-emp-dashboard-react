@@ -13,5 +13,5 @@ export const CURRENTDATETIME = new Date().toLocaleString('en-US', {
   hour12: true
 }).replace(',', '').replace(/\//g, "-")
 
-console.log(CURRENTDATETIME);
-// "02-04-2026 04:24:30 PM"
+
+export const TESTING_USERS = ["basha@zenfirm.app","manikandan@zenfirm.app", "faiyas@zenfirm.app", "mani@zenfirm.app", "akash@zenfirm.app", "sanket@zenfirm.app", "ajay@zenfirm.app", "bhagyaraj@zenfirm.app", "abdul@zenfirm.app", "srinivasa@zenfirm.app","nithish@zenfirm.app","rudresh@zenfirm.app"];

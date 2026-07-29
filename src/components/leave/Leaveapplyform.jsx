@@ -484,12 +484,18 @@ const handleSubmit = async () => {
           <div className="breadcrumb-bar">Leave Tracker &rsaquo; <span>Apply Leave</span></div>
           <h1>Apply for Leave</h1>
           <p>Fill in the form below. Weekends and Holidays are automatically excluded from leave days.</p>
-          <p><a href={`${domain}#Form:Long_Leave`} target="_blank" >Click Here</a> to Apply Long Leave.</p>
+          {/* <p><a href={`${domain}#Form:Long_Leave`} target="_blank" >Click Here</a> to Apply Planned Leave.</p> */}
           
 
         </div>
 
+<section className="text-end long-leave-section">
+  <a className="text-decoration-none text-dark bg-warning-subtle px-2 rounded-3 py-1 border border-warning" href={`${domain}#Form:Long_Leave`} target="_blank" >Click me to Apply Planned Leave </a>
+   <img className="car-image ms-3" src="https://cdn-icons-png.flaticon.com/128/2832/2832064.png" width="40px" alt="" />
+</section>
 <div className="card-glass">
+
+
 {allowApply && (
   <div className="alert-custom alert-danger m-2">
     You have an approved leave scheduled in the future. Please cancel it before applying for a new leave.
@@ -497,6 +503,7 @@ const handleSubmit = async () => {
 )}
 
           {/* ── Date Range + Balance ── */}
+          
           <div className="card-section">
             <div className="section-label">Leave Period</div>
             <div className="row g-4">

@@ -31,7 +31,7 @@ const MyBigCalendar = () => {
 
     const [startEnd, setStartEnd] = useState({});
 
-    const {USERID, Work_Shift} = useUser();
+    const {USERID, Work_Shift, isManager} = useUser();
 
     const [allTask, setAllTask] = useState([]);
 
@@ -376,15 +376,21 @@ const MyBigCalendar = () => {
 
             {open && (
                 <div className="border-secondary-subtle border rounded-bottom-4 bg-whit p-2 text-muted" style={{background:"#fcf8ff"}}>
-                    {/* <button className="d-non btn btn-s  text-dark" onClick={handle24HrsView} ><i class="bi bi-clock-history me-2"></i> 24Hrs View</button> <br /> */}
+
+                {isManager && (
+                    <>
+                        <Link  to="admincalendar"><button className="btn text-muted fw-semibold"><i class="bi bi-people-fill me-2"></i> Team Calendar</button></Link> <br />
+                    </>
+                )}
+                    
                     <button className="d-non btn text-muted fw-semibold" onClick={handleUnScheduled}><i class="bi bi-hourglass-top me-2"></i> Unscheduled</button> <br />
-                    <Link  to="admincalendar"><button className="btn text-muted fw-semibold"><i class="bi bi-people-fill me-2"></i> Team Calendar</button></Link> <br />
+                    
                     <button className="d-non btn text-muted fw-semibold" onClick={handle24HrsView} ><i class="bi bi-clock-history me-2"></i> 24Hrs View</button> <br />
                 </div>
             )}
 
             <div>
-                <button className="btn btn-sm bg-zen text-white rounded-3" onClick={() => setOpen(!open)}>
+                <button className="btn btn-sm btn-dark text-white rounded-2" onClick={() => setOpen(!open)}>
                 {open ? (<i class="bi bi-chevron-double-up"></i>) : (<i class="bi bi-chevron-double-down"></i>)}
             </button>
             </div>

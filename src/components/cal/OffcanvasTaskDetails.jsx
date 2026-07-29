@@ -202,16 +202,38 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
       });
     }
 
+useEffect(() => {
+  const offcanvas = document.getElementById("offcanvasRight");
+
+  const handleHidden = () => {
+    setEdit(false);
+    setActiveTab("logs")
+  };
+
+  offcanvas?.addEventListener("hidden.bs.offcanvas", handleHidden);
+
+  return () => {
+    offcanvas?.removeEventListener("hidden.bs.offcanvas", handleHidden);
+  };
+}, []);
+
+const [activeTab, setActiveTab] = useState("logs");
+
+
 
   return (
     <>
-<div className="offcanvas offcanvas-end" tabIndex="-1" id="offcanvasRight" aria-labelledby="taskOffcanvasLable" style={{width: "800px"}}>
+<div className="offcanvas offcanvas-end" tabIndex="-1" id="offcanvasRight" aria-labelledby="taskOffcanvasLable" 
+style={{width: "800px", 
+backgroundColor:"rgba(255, 255, 255, 0.06)",
+border:"rgba(255, 255, 255, 0.14)"
+}}>
   <div className="offcanvas-header pb-0">
 
 
     {showAction && !admin && (
-      <div className='d-flex w-100 justify-content-between align-items-center'>
-        <div className='card w-2 p-2 px-3 rounded-3 d-inline g-3'>
+      <div className='d-flex w-100 justify-content-between align-items-center mb-1'>
+        <div className='card border-0 shadow-shopify w-2 p-2 px-3 rounded-3 d-inline g-3 glassdiv'>
 
         {showCompleteBtn && (
           <i onClick={completeTask} class="bi bi-check-square-fill fs-5 text-success me-4 cursor-pointer"></i>
@@ -240,7 +262,7 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
    
 
 
-<div className="card">
+<div className="card shadow-shopify border-0 rounded-4 " >
   <div className="card-body">
     <div className='text-end' style={{position:"absolute", top:"15px", right:"15px"}}>
           <button id='taskdetailsclsbtn' type="button"  className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
@@ -506,7 +528,7 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
 
         {/* <h3 className="mb-4">Individual Tax Filing</h3> */}
 
-
+{/* 
         <ul className="nav nav-tabs nav-pills border-bottom-0" id="myTab" role="tablist">
           
           <li className="nav-item" role="presentation">
@@ -517,6 +539,7 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
                     type="button">
               Logs
             </button>
+            
           </li>
 
           <li className="nav-item" role="presentation">
@@ -551,10 +574,10 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
           </li>
 
 
-        </ul>
+        </ul> */}
 
 
-        <div className="tab-content">
+        {/* <div className="tab-content">
 
           <div className="tab-pane fade show active" id="logs" >
             <TaskLogs  selectedEvent={selectedEvent} setIsLogAvailable={setIsLogAvailable}/>
@@ -571,13 +594,89 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
 
           <div className="tab-pane fade" id="attachments">
             
-            {/* <TaskNotes selectedEvent={selectedEvent} /> */}
             <TaskAttachments  selectedEvent={selectedEvent} /> 
           </div>
 
          
 
-        </div>
+        </div> */}
+
+{/* <section className='glassbody'>
+  <div className="button-wrap">
+  <button className='glass'>
+    <span>Generate</span>
+  </button>
+  <div class="button-shadow"></div>
+</div>
+</section> */}
+
+
+
+<ul className="nav nav-tabs nav-pills border-bottom-0 bg-whit rounded-3 p-2 shadow-shopify glassdiv">
+  <li className="glassbody me-3">
+    {/* <div className="button-wrap"> */}
+      <button
+        className={`btn  ${activeTab === "logs" ? "glass" : ""}`}
+        onClick={() => setActiveTab("logs")}
+      >
+        <span>Logs</span>
+      </button>
+    {/* </div> */}
+    
+  </li>
+
+  <li className="glassbody me-3">
+    <button
+      className={`btn  ${activeTab === "checklist" ? "glass" : ""}`}
+      onClick={() => setActiveTab("checklist")}
+    >
+      <span>Checklist</span>
+    </button>
+  </li>
+
+  <li className="glassbody me-3">
+    <button
+      className={`btn  ${activeTab === "notes" ? "glass" : ""}`}
+      onClick={() => setActiveTab("notes")}
+    >
+      <span>Notes</span>
+    </button>
+  </li>
+
+  <li className="glassbody me-3">
+    <button
+      className={`btn  ${activeTab === "attachments" ? "glass" : ""}`}
+      onClick={() => setActiveTab("attachments")}
+    >
+      <span>Attachments</span>
+    </button>
+  </li>
+</ul>
+
+
+<div className="tab-content mt-3">
+  {activeTab === "logs" && (
+    <TaskLogs
+      selectedEvent={selectedEvent}
+      setIsLogAvailable={setIsLogAvailable}
+      setSelectedEvent={setSelectedEvent}
+    />
+  )}
+
+  {activeTab === "checklist" && (
+    <ChecklistManager selectedEvent={selectedEvent} />
+  )}
+
+  {activeTab === "notes" && (
+    <TaskNotes selectedEvent={selectedEvent} />
+  )}
+
+  {activeTab === "attachments" && (
+    <TaskAttachments selectedEvent={selectedEvent} />
+  )}
+</div>
+
+
 
         {showConfirm && (
             <ConfirmDialog confirmDelete={confirmDelete} cancelDelete={cancelDelete} />

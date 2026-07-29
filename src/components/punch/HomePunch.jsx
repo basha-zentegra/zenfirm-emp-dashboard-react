@@ -2,6 +2,8 @@ import {useEffect, useState, useMemo, useRef} from 'react'
 import { APP_NAME } from '../../config'
 import { formattedDate } from '../../config'
 import { useUser } from '../../context/UserContext'
+import WorkdayTracker from './Workdaytracker';
+import { TESTING_USERS } from '../../config';
 
 
 
@@ -226,7 +228,7 @@ function getTimeDifference(startTime, endTime) {
 //COMPONENT FUNCTION
 const HomePunch = ({triggerApi}) => {
 
-const {USERID, ORG} = useUser();
+const {USERID, ORG, userEmail} = useUser();
 
 const [punch, setPunch] = useState([])
 
@@ -271,6 +273,10 @@ useEffect(() => {
   workedRef.current = worked;
 }, [worked]);
 
+const [passingToCalculate, setPassingToCalculate] = useState(null);
+
+const hasBreakInitialized = useRef(false);
+
 useEffect(() => {
   if (!isIn || !currentInTime) return;
 
@@ -288,6 +294,21 @@ useEffect(() => {
 
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
+
+
+    // const pass = `${hours}${String(minutes).padStart(2, "0")}`;
+
+
+
+    if (!hasBreakInitialized.current) {
+      
+          const formattedTime = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+          setPassingToCalculate(formattedTime)
+          hasBreakInitialized.current = true;
+    }
+
+    // console.log("Number(pass)", Number(pass))
+
 
 
     setLiveWorked(`${hours}h ${minutes}m`);
@@ -336,6 +357,7 @@ useEffect(()=>{
   
   setTimeout(() => {
     fetchBiometricData()
+    hasBreakInitialized.current = false
   }, 2000);
   
 },[triggerApi])
@@ -422,6 +444,10 @@ useEffect(()=>{
                     </div>
                 </div>
               </div>
+              {TESTING_USERS.includes(userEmail) && (
+                <WorkdayTracker input={passingToCalculate}/>
+              )}
+              
             </div>
         </div>
 
@@ -433,37 +459,3 @@ export default HomePunch
 
 
 
-// <div className='d-flex justify-content-center text-center'>
-//             <div className="card w-50 p-3 rounded-4" style={{background:"#f3fffc", border:"#139a74",boxShadow: "0 0 0 0.4px #139a74"}}>
-//               <p className='mb-2'>Hours Worked</p>
-//               <h4  className='fw-normal mb-2' style={{color:"#139a74"}}>{displayWorked}</h4>
-//               <div>
-//                   <div className="progress" style={{height:"10px"}}>
-//                       <div className="progress-bar progress-bar-striped bg-success" style={{ width: `${workPercentage}%` }}></div>
-//                   </div>
-//               </div>
-//             </div>
-//         </div>
-
-
-//         <table className='table'>
-//                 <thead>
-//                     <tr>
-//                         <th className='text-center text-uppercase text-muted'>In</th>
-//                         <th className='text-center text-uppercase text-muted'>Out</th>
-//                         <th className='text-center text-uppercase text-muted'>Worked</th>
-//                     </tr>
-//                 </thead>
-                        
-//                 <tbody>
-//                     {arrangedPunches.map((e, i) => (
-//                         <tr key={`${e.inTime}-${e.outTime}-${i}`}>
-//                         <td className='text-center'>{e.inTime}</td>
-//                         <td className='text-center'>{e.outTime}</td>
-//                         <td className='text-center workedtd'>
-//                             {calculateWorkedTime(e.inTime, e.outTime)}
-//                         </td>
-//                         </tr>
-//                     ))}
-//                 </tbody>
-//         </table>

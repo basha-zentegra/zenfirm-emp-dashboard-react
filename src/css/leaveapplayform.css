@@ -36,10 +36,11 @@
           max-width: 1050px;
           margin: 0 auto;
           padding: 2rem 1rem 4rem;
+          padding-top: 0px;
         }
 
         .leave-header {
-          margin-bottom: 2rem;
+          /* margin-bottom: 2rem; */
         }
 
         .leave-header h1 {
@@ -380,3 +381,41 @@
           .card-section { padding: 1.25rem 1rem; }
           .summary-bar { gap: 0.75rem; }
         }
+
+
+
+.long-leave-section:hover .car-image{
+
+ -webkit-animation: slide-out-right 1s cubic-bezier(0.550, 0.085, 0.680, 0.530) both;
+	        animation: slide-out-right 2s cubic-bezier(0.550, 0.085, 0.680, 0.530) both;
+}
+
+/**
+ * ----------------------------------------
+ * animation slide-out-right
+ * ----------------------------------------
+ */
+@-webkit-keyframes slide-out-right {
+  0% {
+    -webkit-transform: translateX(0);
+            transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    -webkit-transform: translateX(1000px);
+            transform: translateX(1000px);
+    opacity: 0;
+  }
+}
+@keyframes slide-out-right {
+  0% {
+    -webkit-transform: translateX(0);
+            transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    -webkit-transform: translateX(1000px);
+            transform: translateX(1000px);
+    opacity: 0;
+  }
+}

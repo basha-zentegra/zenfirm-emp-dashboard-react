@@ -185,14 +185,14 @@ const toggleItem = (listId, itemId) => {
 
 
   return (
-    <div className="container py-4">
+    <div className=" py-">
       {checklists.map((list) => {
         const completedCount = list.items.filter(i => i.completed).length;
 
         return (
           <div
             key={list.id}
-            className="card shadow-sm border-0 mb-4"
+            className="card shadow-shopify border-0 mb-4 rounded-4"
             style={{ borderRadius: "14px" }}
           >
             <div className="card-body">

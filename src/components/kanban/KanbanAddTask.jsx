@@ -1,4 +1,4 @@
-import {useState,useEffect} from 'react'
+import {useState,useEffect, useMemo} from 'react'
 import { useUser } from '../../context/UserContext';
 import { formattedDate } from '../../config';
 import { APP_NAME } from '../../config';
@@ -14,7 +14,7 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks, boardMembers = []}) =
     //     return null;
     // }
 
-    const {USERID, projects, orgEmp,empName} = useUser();
+    const {USERID, projects, orgEmp,empName, isManager} = useUser();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const myProjects = projects || [];
@@ -35,7 +35,8 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks, boardMembers = []}) =
       Budgeted_Time: "1h 0m",
       Zenboards: selectedBoard?.ID,
       Due_Date: "",
-      URL:""
+      URL:"",
+      Other_Assignees: []
     });
 
     useEffect(()=>{
@@ -152,7 +153,8 @@ const validateURL = (value) => {
                   Assignee: USERID,
                   Project_Name:"",
                   Due_Date:"",
-                  Task_Date:""
+                  Task_Date:"",
+                  Other_Assignees: []
                 }));
                 setErrors({})
                 closeOffCanvas()
@@ -174,10 +176,44 @@ const validateURL = (value) => {
       setIsSubmitting(true); // 🔒 disable button
       addEvent()
     }
+
+
+        const [allEmp, setAllEmp] = useState([]);
+    
+        const memberOptions = useMemo(() => {
+          return allEmp?.map(e => ({value: e?.ID, label: e?.Name})) || [];
+        }, [allEmp]);
+    
+        useEffect(() => {
+    
+          if(!isManager) return;
+    
+          const fetchEmployees = async () => {
+            try {
+              const response = await ZOHO.CREATOR.DATA.getRecords({
+                report_name: "My_Team_Employees",
+              });
+    
+              if (response.code === 3000) {
+                setAllEmp(response.data.filter(emp => emp.Email));
+              } else {
+                console.log(response);
+              }
+            } catch (err) {
+              console.error(err);
+            } 
+          };
+    
+          fetchEmployees();    
+        }, [isManager])
   
     return (
       <>
-  <div className="offcanvas offcanvas-end" tabIndex="-1" id="addtaskoffcanvaskanban" aria-labelledby="taskOffcanvasLable" style={{width: "800px"}}>
+  <div className="offcanvas offcanvas-end" tabIndex="-1" id="addtaskoffcanvaskanban" aria-labelledby="taskOffcanvasLable" 
+  style={{width: "800px",
+      backgroundColor:"rgba(255, 255, 255, 0.06)",
+border:"rgba(255, 255, 255, 0.14)"
+  }}>
     {/* <div className="offcanvas-header">
       <h5 className="offcanvas-title" id="taskOffcanvasLable"></h5>
       <button type="button" onClick={closeButton} className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
@@ -185,7 +221,7 @@ const validateURL = (value) => {
     <div className="offcanvas-body scroll-karo">
       
   
-  <div className="card">
+  <div className="card shadow-shopify border-0 rounded-4">
     <div className="card-body">
 
       <div className='text-end' style={{position:"absolute", top:"15px", right:"15px"}}>
@@ -202,7 +238,7 @@ const validateURL = (value) => {
   
           <tr>
             <th style={{ width: "7%" }}>
-              <i className="bi bi-card-heading"></i>
+              <i className="bi bi-clipboard-check"></i>
             </th>
             <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
               Task Name <span className='text-danger'>*</span>
@@ -240,7 +276,7 @@ const validateURL = (value) => {
   
           <tr>
             <th style={{ width: "7%" }}>
-              <i className="bi bi-journal"></i>
+              <i className="bi bi-card-heading"></i>
             </th>
             <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
               Project Name <span className='text-danger'>*</span>
@@ -334,7 +370,7 @@ const validateURL = (value) => {
 
           <tr>
             <th style={{ width: "7%" }}>
-              <i className="bi bi-calendar-check"></i>
+              <i className="bi bi-calendar-x"></i>
             </th>
             <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
               Due Date 
@@ -353,7 +389,7 @@ const validateURL = (value) => {
 
           <tr>
             <th style={{ width: "7%" }}>
-              <i className="bi bi-calendar-check"></i>
+              <i class="bi bi-bar-chart-steps"></i>
             </th>
             <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
               Kanban Status
@@ -440,7 +476,36 @@ const validateURL = (value) => {
             </td>
           </tr>
 
-          <tr className=''>
+
+        {/* {isManager && (
+
+          <tr>
+
+              <th style={{ width: "7%" }}>
+                <i class="bi bi-people"></i>
+              </th>
+              <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
+                Other Assignees
+              </th>
+              <td>
+                <Select 
+                  
+                  options={memberOptions} 
+                  isMulti 
+                  value={memberOptions.filter(option =>
+                    (taskData.Other_Assignees || []).includes(option.value)
+                  )}
+                  onChange={(selected) => setTaskData({...taskData,Other_Assignees: selected ? selected.map(opt => opt.value) : []})}
+                  className="basic-multi-select"
+                  classNamePrefix="select"
+                  placeholder="Select members..."
+                />
+              </td>
+          </tr>
+
+        )} */}
+
+          {/* <tr className=''>
             <th style={{ width: "7%" }}>
               <i className="bi bi-person"></i>
             </th>
@@ -456,10 +521,10 @@ const validateURL = (value) => {
                 disabled
               />
             </td>
-          </tr>
+          </tr> */}
   
   
-          <tr>
+          {/* <tr>
             <th style={{ width: "7%" }}>
               
             </th>
@@ -469,13 +534,22 @@ const validateURL = (value) => {
             <td style={{ width: "58%" }}> 
                
             </td>
-          </tr>
+          </tr> */}
   
   
         </tbody>
       </table>
     </div>
   </div>
+
+  <button className='btn glass text-primary mt-3 ' disabled={isSubmitting} onClick={handleSubmit}>
+     <span className='text-primary py-2  px-4'>{isSubmitting ? "Saving..." : "Submit"}</span>
+    
+    </button>
+
+  {/* <button className='btn glass text-primary mt-3' disabled={isSubmitting} onClick={handleSubmit}>
+  <span className='text-primary py-2  px-4'>{isSubmitting ? "Saving..." : "Submit"}</span>
+</button> */}
   
     </div>
   </div>
