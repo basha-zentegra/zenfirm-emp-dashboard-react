@@ -19,9 +19,11 @@ import Attendance from './pages/Attendance'
 import IPRestricted from './components/ui/IPRestricted'
 import AllEmpLeaveBalance from './components/leave/AllEmpLeaveBalance'
 import Logs from './pages/Logs'
+import useAutoReload from './hooks/useAutoReload'
 
 function App() {
 
+   useAutoReload();
 
   const { userEmail, USERID } = useUser();
 

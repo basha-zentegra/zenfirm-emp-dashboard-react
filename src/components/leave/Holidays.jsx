@@ -35,7 +35,7 @@ const Holidays = () => {
         {/* {holidays.map( e => (<p key={e.ID}>{e.Event_Name}</p>) )} */}
 
     <div className="container mt-3">
-      <div className="card shadow-sm border-0">
+      <div className="card shadow-sm border-0 rounded-4">
         <div className="card-body">
           <h5 className="mb-4 fw-semibold">Holidays</h5>
 

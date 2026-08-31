@@ -1,37 +1,9 @@
 import { useState, useEffect } from "react";
 import { useUser } from "../../context/UserContext";
 import { inputToMMDDYYYY,MMDDYYYY_TO_YYYYMMDD, startOfMonth, endOfMonth, getDayName } from "../../utils/dateUtils";
+import { getStatusBadge } from "../../utils/uiUtils";
 
-const getStatusBadge = (status) => {
-  const base = "badge px-3 py-2 fw-medium";
 
-  switch (status) {
-    case "Approved":
-      return (
-        <span className={`${base} bg-approved text-success`}>
-          ● Approved
-        </span>
-      );
-    case "Rejected":
-      return (
-        <span className={`${base} bg-danger-subtle text-danger`}>
-          ● Declined
-        </span>
-      );
-    case "Revoked":
-      return (
-        <span className={`${base} bg-primary-subtle text-primary`}>
-          ● Revoked
-        </span>
-      );
-    default:
-      return (
-        <span className={`${base} bg-warning-subtle text-warning`}>
-          ● Pending
-        </span>
-      );
-  }
-};
 
 const AllLeaves = () => {
   const { USERID } = useUser();
@@ -110,7 +82,7 @@ const AllLeaves = () => {
 
   return (
     <div className="container mt-3">
-      <div className="card shadow-sm border-0">
+      <div className="card shadow-sm border-0 rounded-4">
         <div className="card-body">
 
 
@@ -127,7 +99,7 @@ const AllLeaves = () => {
     <option value="Approved">Approved</option>
     <option value="Revoked">Revoked</option>
     <option value="Rejected">Rejected</option>
-    <option value="">Pending</option>
+    <option value="Pending">Pending</option>
   </select>
   </div>
 </div>

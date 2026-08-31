@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import { useUser } from '../context/UserContext'
 import LeaveBalanceCard from '../components/leave/LeaveBalanceCard';
 import LeaveHistory from '../components/leave/LeaveHistory';
@@ -9,10 +9,11 @@ import AllEmpLeaveBalance from '../components/leave/AllEmpLeaveBalance';
 import Holidays from '../components/leave/Holidays';
 import AllLeaves from '../components/leave/AllLeaves';
 import AllLongLeaves from '../components/leave/AllLongLeaves';
+import { startOfMonth, endOfMonth } from '../utils/dateUtils';
 
 const Attendance = () => {
 
-  const {USERID, isManager, isHR} = useUser();
+  const {USERID, isManager, isHR, thisMonthLongLeave = [], setThisMonthLongLeave} = useUser();
 
   const [showForm, setShowForm] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
@@ -23,6 +24,9 @@ const Attendance = () => {
   const [showAllEmp, setShowAllEmp] = useState(false)
 
   const [error, setError] = useState(false);
+
+  const [longLeaveDates, setLongLeaveDates] = useState({start:"", end:"", reason:"", status:""})
+
 
   return (
     <div className='leaveapplyformbody'  style={{ marginLeft: "70px"}}>
@@ -47,10 +51,10 @@ const Attendance = () => {
 
       <div className="d-flex justify-content-end p-2">
 
-        <button className='btn btn-sm btn-primary' disabled={error} onClick={() => setShowForm(prev => !prev)}>
+        <button className={`action-btn btn-sm ${showForm ? "btn-red" : "btn-blue"}`} disabled={error} onClick={() => {setShowForm(prev => !prev); setLongLeaveDates({start:"", end:"", reason:"", status:""})}}>
           
-          {!showForm && ("Apply Leave")}
-          {showForm && ("X")}
+
+          {!showForm && ("Apply Leave")} {showForm && ("Close")}
         </button>
         
       </div>
@@ -62,14 +66,14 @@ const Attendance = () => {
 
           <div className="mt-3">
             {/* Tabs */}
-            <ul className="nav nav-tabs border-0">
+            <ul className="nav nav-tabs border-0 mx-2">
 
               <li className="nav-item">
                 <button
-                  className={`nav-link ${activeTab === "my-requests" ? "active" : ""}`}
+                  className={`btn ${activeTab === "my-requests" ? "action-btn btn-purple" : ""}`}
                   onClick={() => setActiveTab("my-requests")}
                 >
-                  My Requests
+                  <span>My Requests</span>
                 </button>
               </li>
 
@@ -77,10 +81,10 @@ const Attendance = () => {
 
                 <li className="nav-item">
                   <button
-                    className={`nav-link ${activeTab === "leave-approvals" ? "active" : ""}`}
+                    className={`btn ${activeTab === "leave-approvals" ? "action-btn btn-purple" : ""}`}
                     onClick={() => setActiveTab("leave-approvals")}
                   >
-                    Leave Approvals
+                    <span>Leave Approvals</span>
                   </button>
                 </li>
 
@@ -90,19 +94,19 @@ const Attendance = () => {
 
               <li className="nav-item">
                 <button
-                  className={`nav-link ${activeTab === "credit-history" ? "active" : ""}`}
+                  className={`btn ${activeTab === "credit-history" ? "action-btn btn-purple" : ""}`}
                   onClick={() => setActiveTab("credit-history")}
                 >
-                  Credit History
+                  <span>Credit History</span>
                 </button>
               </li>
 
               <li className="nav-item">
                 <button
-                  className={`nav-link ${activeTab === "holidays" ? "active" : ""}`}
+                  className={`btn ${activeTab === "holidays" ? "action-btn btn-purple" : ""}`}
                   onClick={() => setActiveTab("holidays")}
                 >
-                  Holidays
+                  <span>Holidays</span>
                 </button>
               </li>
 
@@ -110,10 +114,10 @@ const Attendance = () => {
 
                 <li className="nav-item">
                   <button
-                    className={`nav-link position-relative ${activeTab === "all-emp-balance" ? "active" : ""}`}
+                    className={`btn position-relative ${activeTab === "all-emp-balance" ? "action-btn btn-purple" : ""}`}
                     onClick={() => setActiveTab("all-emp-balance")}
                   >
-                    Emp Balance
+                    <span>Emp Balance</span>
                     <i class="bi bi-shield-lock-fill position-absolute text-warning" 
                     style={{ fontSize: "10px", top: "2px", right: "4px" }}></i>
                   </button>
@@ -125,10 +129,10 @@ const Attendance = () => {
 
                 <li className="nav-item">
                   <button
-                    className={`nav-link position-relative ${activeTab === "all-leaves" ? "active" : ""}`}
+                    className={`btn position-relative ${activeTab === "all-leaves" ? "action-btn btn-purple" : ""}`}
                     onClick={() => setActiveTab("all-leaves")}
                   >
-                     Leaves
+                     <span>Leaves</span>
                     <i class="bi bi-shield-lock-fill position-absolute text-warning" 
                     style={{ fontSize: "10px", top: "2px", right: "4px" }}></i>
                   </button>
@@ -140,10 +144,10 @@ const Attendance = () => {
 
                 <li className="nav-item">
                   <button
-                    className={`nav-link position-relative ${activeTab === "all-long-leaves" ? "active" : ""}`}
+                    className={`btn position-relative ${activeTab === "all-long-leaves" ? "action-btn btn-purple" : ""}`}
                     onClick={() => setActiveTab("all-long-leaves")}
                   >
-                     Planed Leaves 
+                     <span>Planed Leaves </span>
                     <i class="bi bi-shield-lock-fill position-absolute text-warning" 
                     style={{ fontSize: "10px", top: "2px", right: "4px" }}></i>
                   </button>
@@ -188,9 +192,39 @@ const Attendance = () => {
       {showForm && (
 
 
-        <LeaveApplyForm />
+        <LeaveApplyForm longLeaveDates={longLeaveDates}/>
 
       )}
+
+      <div className="toast-container mt-5">
+        
+        {!showForm && thisMonthLongLeave?.map(e => {
+          return (
+            <div className='toast1 bg-zen-subtle text-dark px-4 cursor-pointer' onClick={() => {
+                    setShowForm(true); 
+                    setLongLeaveDates({start:e.From, end:e.To, reason:e.Reason, status:"Approved"})
+                    setThisMonthLongLeave([])
+                  
+                  } }>
+
+              <div className="toast1-icon">
+                <img src="https://cdn-icons-png.flaticon.com/128/2832/2832064.png" width="30px" alt="" />
+              </div>
+
+              <div className="toast1-content">
+                <div className="toast1-title">
+                  
+                  Convert your Planned leave
+                  
+                </div>
+                <div>Click here and convert your {Math.floor(e.No_of_Days_Leave)} days of planned leave From {e.From} To {e.To}</div>
+              </div>
+
+            </div>
+            
+          )
+        })}
+      </div>
 
       
 

@@ -48,12 +48,24 @@ const ProjectSelect = ({onProjectChange, selectedProject}) => {
       placeholder="Search project..."
       onChange={onProjectChange}
       defaultOptions={false}
-        noOptionsMessage={({ inputValue }) =>
-            inputValue.length < 3
-            ? "Type at least 3 characters to search"
-            : "No projects found"
-        }
-        loadingMessage={() => "Searching projects..."}
+      noOptionsMessage={({ inputValue }) =>
+          inputValue.length < 3
+          ? "Type at least 3 characters to search"
+          : "No projects found"
+      }
+      loadingMessage={() => "Searching projects..."}
+      styles={{
+        control: (baseStyles, state) => ({
+          ...baseStyles,
+          borderColor: state.isFocused ? "#754ffe95" : baseStyles.borderColor,
+          boxShadow: state.isFocused ? "0 0 0 0.25rem #e3dcff" : "none",
+          "&:hover": {
+            borderColor: "none",
+          },
+        }),
+      }}
+      
+      
     />
 
   )

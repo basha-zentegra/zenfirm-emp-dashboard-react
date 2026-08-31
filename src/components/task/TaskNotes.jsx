@@ -1,7 +1,7 @@
 import {useState,useEffect} from 'react'
 import { useUser } from '../../context/UserContext';
 
-const TaskNotes = ({selectedEvent}) => {
+const TaskNotes = ({selectedEvent, setEvents}) => {
 
     const {USERID} = useUser()
 
@@ -47,9 +47,13 @@ const TaskNotes = ({selectedEvent}) => {
                 console.log(response);
                     const updated = {
                         ID:response?.data?.ID,
-                        Note: newNote.trim()
+                        Note: newNote.trim(),
+                        Added_by: {Name:"you", ID: "123",zc_display_value: "you"}
                     }
                     setNotes(prev => [...prev, updated ])
+                    setEvents(prev => 
+                      prev.map(event => event.ID === selectedEvent.ID ? {...event, Notes: [...event.Notes, updated]} : event )
+                    )
                     setNewNote("");
                     setIsAdding(false);
             }
@@ -69,7 +73,7 @@ const TaskNotes = ({selectedEvent}) => {
                 <ul className="list-group">
                     {notes.map((note, index) => (
                         <li key={index} className="list-group-item">
-                            {note?.Note}
+                            {note?.Note} <small style={{fontSize:"10px"}} className='text-muted'>~{note?.Added_by?.Name || "someone"}</small>
                         </li>
                     ))}
                 </ul>

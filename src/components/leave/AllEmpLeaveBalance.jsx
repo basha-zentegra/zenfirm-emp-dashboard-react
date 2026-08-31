@@ -80,7 +80,7 @@ const AllEmpLeaveBalance = () => {
   return (
     <div>
       <div className="container mt-3">
-        <div className="card shadow-sm border-0">
+        <div className="card shadow-sm border-0 rounded-4">
           <div className="card-body">
             <div className="row mb-3">
               <div className="col-md-9">

@@ -4,6 +4,12 @@ import { formattedDate } from '../../config';
 import { APP_NAME } from '../../config';
 import ProjectSelect from '../projects/ProjectSelect';
 import Select from 'react-select';
+import { formatDate } from 'date-fns';
+import { taskDuration, taskDurationHHMM } from '../../utils/taskUtils';
+import TaskSelect from '../projects/TaskSelect';
+
+
+
 
 const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) => {
   const {USERID, projects, empName, orgEmp, isManager} = useUser();
@@ -15,6 +21,7 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
   const [assigneName, setAssigneeName] = useState(null);
 
   const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedTask, setSelectedTask] = useState(null);
 
   const [phase, setPhase] = useState([])
 
@@ -72,9 +79,17 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
     Repeat_Type: "",
     Repeating_Times: "",
     Milestone_Name: "",
-    Other_Assignees: []
+    Other_Assignees: [],
+    Budgeted_Time: taskDuration(startEnd.start, startEnd.end),
     // resources: resourceID ||
   });
+
+  const [existingTaskData,setExistingTaskData] = useState({
+    Task: "",
+    Start_Time: formatTimeToHHMM(startEnd.start),
+    End_Time:  formatTimeToHHMM(startEnd.end),
+    Task_Date: formatDateToMMDDYYYY(startEnd.start),
+  })
 
 
     const [allEmp, setAllEmp] = useState([]);
@@ -134,13 +149,30 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
 
   // console.log(taskData)
     const onProjectChange = (selectedOption) => {
-      console.log(selectedOption)
+      
       setSelectedProject(selectedOption)
       setTaskData((prev) => ({
         ...prev,
         Project_Name:selectedOption.value
       }))
     }
+
+    
+
+    const onTaskChange = (selectedOption) => {
+
+      setSelectedTask(selectedOption)
+      setExistingTaskData((prev) => ({
+        ...prev,
+        Task:selectedOption.value
+      }))
+
+    }
+
+
+    useEffect(() => {
+      console.log(existingTaskData)
+    },[existingTaskData])
 
 
 
@@ -158,13 +190,23 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
         Start_Time: formatTimeToHHMM(startEnd.start),
         End_Time: formatTimeToHHMM(startEnd.end),
         Task_Date: formatDateToMMDDYYYY(startEnd.start),
+        Budgeted_Time: taskDuration(startEnd.start, startEnd.end),
         Assignee: newAssignee
       }));
+
+      setExistingTaskData((prev) => ({
+        ...prev,
+        Start_Time: formatTimeToHHMM(startEnd.start),
+        End_Time: formatTimeToHHMM(startEnd.end),
+        Task_Date: formatDateToMMDDYYYY(startEnd.start),
+      }))
 
       const employee = orgEmp.find(e => e.ID === newAssignee);
       setAssigneeName(employee?.Name || "NA");
 
       // setAssigneeName(orgEmp.find(e => e.ID === taskData.Assignee).Name)
+
+      console.log("startEnd", startEnd, taskDuration(startEnd.start, startEnd.end))
       
     }
   }, [startEnd]);
@@ -195,9 +237,23 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
       return updated;
     });
 
+    if(name === "Start_Time"){
+      setTaskData((p) => ({...p, Budgeted_Time: taskDurationHHMM(value, taskData.End_Time)}))
+    }
+
+    if(name === "End_Time"){
+      setTaskData((p) => ({...p, Budgeted_Time: taskDurationHHMM( taskData.Start_Time, value)}))
+    }
+
     
 
   };
+
+  useEffect(() => {
+
+
+
+  },[formatDate.Start_Time, formatDate.End_Time])
 
   // useEffect(() => {
   //   console.log(taskData);
@@ -281,13 +337,63 @@ const AddTaskOffcanvas = ({startEnd, setEvents, fetchTasks, resourceID = null}) 
     addEvent()
   }
 
+  const handleExistingSubmit = () => {
+    if(!existingTaskData.Task){
+      alert("Task Name is Mandatory")
+      return
+    }
+    setIsSubmitting(true);
+    var config = {
+          form_name: "Multiple_Tasks",
+          payload: {
+              data: existingTaskData
+          }
+      };
+      ZOHO.CREATOR.DATA.addRecords(config).then(function (response) {
+          console.log("Adding Multiple Event",response);
+          if (response.code == 3000) {
+              // console.log(taskData)
+              const newEvent = {
+                id: response.data.ID,
+                title: selectedTask?.label || "N/A",
+                start: createDateFromDateAndTime(existingTaskData.Task_Date, existingTaskData.Start_Time),
+                end: createDateFromDateAndTime(existingTaskData.Task_Date, existingTaskData.End_Time),
+                priority: "multiple",
+                projectName: selectedProject.label || "NA",
+                multipleTask: true,
+                taskId: existingTaskData.Task
+                // resourceId: taskData?.Assignee ||  "unassigned",
+                // assigneeName: taskData?.Assignee || eve?.Assignee_Name || "",
+              };
+              setEvents(prev => [...prev, newEvent]);
+              setExistingTaskData({Task: "",
+                Start_Time: formatTimeToHHMM(startEnd.start),
+                End_Time:  formatTimeToHHMM(startEnd.end),
+                Task_Date: formatDateToMMDDYYYY(startEnd.start)
+              })
+              closeOffCanvas()
+              setIsSubmitting(false)
+              setSelectedTask(null)
+              setExistingTask(false)
+              setSelectedProject(null)
+              
+
+          } else{
+            console.log(response);
+          }
+      }).catch(e => console.log(e))
+
+  }
+
+  const [existingTask, setExistingTask] = useState(false);
+
   return (
     <>
-<div className="offcanvas offcanvas-end" tabIndex="-1" id="addtaskoffcanvas" aria-labelledby="taskOffcanvasLable" 
-style={{width: "800px",
-  backgroundColor:"rgba(255, 255, 255, 0.06)",
-border:"rgba(255, 255, 255, 0.14)"
-}}>
+  <div className="offcanvas offcanvas-end" tabIndex="-1" id="addtaskoffcanvas" aria-labelledby="taskOffcanvasLable" 
+  style={{width: "800px",
+    backgroundColor:"rgba(255, 255, 255, 0.06)",
+  border:"rgba(255, 255, 255, 0.14)"
+  }}>
 
   <div className="offcanvas-body">
    
@@ -298,11 +404,30 @@ border:"rgba(255, 255, 255, 0.14)"
           <button type="button"  className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
 
       </div>
-    <div className="py-2 mb-2">
-      <h5 className="text-primary">Add Task Details</h5>
+    <div className="py-2 mb-2 d-flex">
+      <h5 className="text-zen-gradient me-5">Add Task Details</h5>
+      
+
+      <div className="form-check form-switch">
+        <input
+          className="form-check-input custom-switch"
+          type="checkbox"
+          role="switch"
+          checked={existingTask}
+          onChange={(e) => setExistingTask(e.target.checked)}
+        />
+
+        <label className="form-check-label text-zen-gradient">
+          Existing Task
+        </label>
+      </div>
+      
     </div>
 
-    <table className="table table-borderless" style={{ tableLayout: "fixed" }}>
+  {!existingTask && (
+    <>
+
+      <table className="table table-borderless" style={{ tableLayout: "fixed" }}>
       <tbody>
 
         <tr>
@@ -430,11 +555,12 @@ border:"rgba(255, 255, 255, 0.14)"
             <i className="bi bi-clock"></i>
           </th>
           <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
-            Time
+            Time 
           </th>
-          <td id="endDate" className='d-flex justify-content-between' style={{ width: "58%" }}>
+          <td className='' style={{ width: "58%" }}>
 
 
+<div className=" d-flex justify-content-between ">
             <input 
               type="time"
               className='form-control me-3' 
@@ -445,11 +571,17 @@ border:"rgba(255, 255, 255, 0.14)"
 
             <input 
               type="time"
-              className='form-control' 
+              className='form-control me-3' 
               name="End_Time"
               value={taskData.End_Time}
               onChange={handleChange}
             />
+
+
+            <div style={{width:"200px"}} className='d-flex align-items-center' >
+              <p className='badge bg-primary p-1 small' >{taskData.Budgeted_Time}</p>
+            </div>
+</div>
               
           </td>
         </tr>
@@ -526,6 +658,16 @@ border:"rgba(255, 255, 255, 0.14)"
                   className="basic-multi-select"
                   classNamePrefix="select"
                   placeholder="Select members..."
+                  styles={{
+                    control: (baseStyles, state) => ({
+                      ...baseStyles,
+                      borderColor: state.isFocused ? "#754ffe95" : baseStyles.borderColor,
+                      boxShadow: state.isFocused ? "0 0 0 0.25rem #e3dcff" : "none",
+                      "&:hover": {
+                        borderColor: "none",
+                      },
+                    }),
+                  }}
                 />
               </td>
           </tr>
@@ -626,15 +768,65 @@ border:"rgba(255, 255, 255, 0.14)"
           </td>
         </tr>
 
+        
+
 
       </tbody>
     </table>
+
+    <button className='action-btn btn-purple ms-3 my-2' disabled={isSubmitting} onClick={handleSubmit}>
+          {isSubmitting ? "Saving..." : "Submit"}
+    </button>
+
+
+    </>
+  )}
+
+
+  {existingTask && (
+    <div className=''>
+      <table className='table table-borderless'>
+        <tbody>
+          <tr>
+            <th style={{ width: "7%" }}>
+              <i className="bi bi-card-heading"></i>
+            </th>
+            <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
+              Project Name <span className='text-danger'>*</span>
+            </th>
+            <td style={{ width: "58%" }}>
+
+                <ProjectSelect onProjectChange={onProjectChange} selectedProject={selectedProject}/>
+
+            </td>
+          </tr>
+          <tr>
+              <th style={{ width: "7%" }}>
+                <i class="bi bi-clipboard-check"></i>
+              </th>
+              <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
+                Task Name<span className='text-danger'>*</span>
+              </th>
+              <td>
+                <TaskSelect onTaskChange={onTaskChange} selectedTask={selectedTask} selectedProject={selectedProject} />
+              </td>
+          </tr>
+        </tbody> 
+      </table>
+
+      <button className='action-btn btn-purple ms-3 my-2' disabled={isSubmitting} onClick={handleExistingSubmit}>
+          {isSubmitting ? "Saving..." : "Submit"}
+      </button>
+    </div>
+  )}
+    
+    
   </div>
 </div>
 
-<button className='btn glass text-primary mt-3' disabled={isSubmitting} onClick={handleSubmit}>
-  <span className='text-primary py-2  px-4'>{isSubmitting ? "Saving..." : "Submit"}</span>
-</button>
+
+
+<br /><br /><br />
 
   </div>
 </div>

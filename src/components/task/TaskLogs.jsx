@@ -1,10 +1,10 @@
-import {useState, useEffect} from 'react'
+import {useState, useEffect, use, useRef } from 'react'
 import { convertTo24Hour,calculateWorkedTime } from '../../utils/logsUtils';
-import { inputToMMDDYYYY,isFuture, MMDDYYYY_TO_YYYYMMDD } from '../../utils/dateUtils';
+import { inputToMMDDYYYY,isFuture, MMDDYYYY_TO_YYYYMMDD, formatTime12 } from '../../utils/dateUtils';
 import ConfirmDialog from './ConfirmDialog';
 import { useUser } from '../../context/UserContext';
 
-const TaskLogs = ({selectedEvent, setIsLogAvailable, setSelectedEvent}) => {
+const TaskLogs = ({selectedEvent, setIsLogAvailable, setSelectedEvent, mLog=null, completeTask=null}) => {
 
     const {USERID} = useUser();
 
@@ -22,7 +22,9 @@ const TaskLogs = ({selectedEvent, setIsLogAvailable, setSelectedEvent}) => {
         Work_Started: "",
         Work_Ended: "", 
         Task: "",
-        Description:""
+        Description:"",
+        Started:"",
+        Ended:""
     });
 
     useEffect(() => {
@@ -39,19 +41,40 @@ const TaskLogs = ({selectedEvent, setIsLogAvailable, setSelectedEvent}) => {
 
     useEffect(()=> {
 
-        console.log("Selected event", selectedEvent)
+        // console.log("Selected event", selectedEvent)
 
         if(!selectedEvent) return;
 
         setLogs(selectedEvent?.Logs || [])
 
-        setManualLog({
-            Date_field: MMDDYYYY_TO_YYYYMMDD(selectedEvent?.Task_Date),
-            Work_Started: convertTo24Hour(selectedEvent?.Start_Time) || "",
-            Work_Ended: convertTo24Hour(selectedEvent?.End_Time) || "",
-            Task: selectedEvent?.ID,
-            Description:""
-        })
+        if(mLog){
+            setManualLog({
+                Date_field: MMDDYYYY_TO_YYYYMMDD(mLog?.Task_Date),
+                Work_Started: mLog?.Start_Time || "",
+                Work_Ended: mLog?.End_Time || "",
+                Task: selectedEvent?.ID,
+                Description:"",
+                Employee: USERID,
+                Started:"",
+                Ended:""
+            })
+
+        }else{
+
+            setManualLog({
+                Date_field: MMDDYYYY_TO_YYYYMMDD(selectedEvent?.Task_Date),
+                Work_Started: convertTo24Hour(selectedEvent?.Start_Time) || "",
+                Work_Ended: convertTo24Hour(selectedEvent?.End_Time) || "",
+                Task: selectedEvent?.ID,
+                Description:"",
+                Employee: USERID,
+                Started:"",
+                Ended:""
+            })
+
+        }
+
+        
 
         if(isFuture(selectedEvent?.Task_Date) || selectedEvent?.Task_Status === "Completed" || selectedEvent?.Task_Status === "Approved"){
             setIsAdding(false)
@@ -71,7 +94,7 @@ const TaskLogs = ({selectedEvent, setIsLogAvailable, setSelectedEvent}) => {
     const fetchLogsByDate = async (date) => {
         const config = {
             report_name: "All_Logs", // your report link name
-            criteria: `(Date_field == "${date}" && Task!=null && Task.Assignee == ${USERID})`
+            criteria: `(Date_field == "${date}" && Task!=null && Employee == ${USERID})`
         };
 
         try {
@@ -139,11 +162,15 @@ const TaskLogs = ({selectedEvent, setIsLogAvailable, setSelectedEvent}) => {
 
         // 🚨 Step A: Fetch existing logs
         const existingLogs = await fetchLogsByDate(formattedDate);
+        console.log("existingLogs", existingLogs)
 
         // 🚨 Step B: Check overlap
         const hasOverlap = existingLogs.some(log => {
-            const existingStart = timeToMinutes(convertTo24Hour(log.Work_Started));
-            const existingEnd = timeToMinutes(convertTo24Hour(log.Work_Ended));
+            console.log(log?.Started.split(" ").slice(1).join(" "), log?.Ended.split(" ").slice(1).join(" "))
+            const existingStart = timeToMinutes(convertTo24Hour(log?.Started.split(" ").slice(1).join(" ")));
+            const existingEnd = timeToMinutes(convertTo24Hour(log?.Ended.split(" ").slice(1).join(" ")));
+
+            console.log(existingStart, existingEnd)
 
             return isOverlapping(newStart, newEnd, existingStart, existingEnd);
         });
@@ -153,15 +180,18 @@ const TaskLogs = ({selectedEvent, setIsLogAvailable, setSelectedEvent}) => {
             return;
         }
 
+        const { Work_Started, Work_Ended, ...updatedData } = manualLog;
+
 
         var config = {
             form_name: "Logs",
             payload: {
                 data: {
-                    ...manualLog,
+                    ...updatedData,
                     Date_field:inputToMMDDYYYY(manualLog.Date_field),
                     Hours_Worked: calculateWorkedTime(manualLog.Work_Started, manualLog.Work_Ended),
-                    
+                    Started:`${inputToMMDDYYYY(manualLog.Date_field)} ${manualLog.Work_Started}`,
+                    Ended:`${inputToMMDDYYYY(manualLog.Date_field)} ${manualLog.Work_Ended}`,
 
                 }
             }
@@ -176,27 +206,37 @@ const TaskLogs = ({selectedEvent, setIsLogAvailable, setSelectedEvent}) => {
                 setLogs(prev => [...prev, {...manualLog,
                     Date_field:inputToMMDDYYYY(manualLog.Date_field),
                     Hours_Worked: calculateWorkedTime(manualLog.Work_Started, manualLog.Work_Ended),
-                    ID: response.data.ID
+                    ID: response.data.ID,
+                    Started:`${inputToMMDDYYYY(manualLog.Date_field)} ${formatTime12(manualLog.Work_Started)}`,
+                    Ended:`${inputToMMDDYYYY(manualLog.Date_field)} ${formatTime12(manualLog.Work_Ended)}`,
                  }])
 
                  const newLog = {...manualLog,
                     Date_field:inputToMMDDYYYY(manualLog.Date_field),
                     Hours_Worked: calculateWorkedTime(manualLog.Work_Started, manualLog.Work_Ended),
-                    ID: response.data.ID
+                    ID: response.data.ID,
+                    Started:`${inputToMMDDYYYY(manualLog.Date_field)} ${formatTime12(manualLog.Work_Started)}`,
+                    Ended:`${inputToMMDDYYYY(manualLog.Date_field)} ${formatTime12(manualLog.Work_Ended)}`,
                  }
 
+                 if(setSelectedEvent){
                     setSelectedEvent(prev => ({
                         ...prev,
                         Logs: [...(prev.Logs || []), newLog],
                     }));
+                 }
+                    
 
                     setManualLog({
                         Date_field: MMDDYYYY_TO_YYYYMMDD(selectedEvent?.Task_Date),
                         Work_Started: convertTo24Hour(selectedEvent?.Start_Time) || "",
                         Work_Ended: convertTo24Hour(selectedEvent?.End_Time) || "",
                         Task: selectedEvent?.ID,
-                        Description:""
+                        Description:"",
+                        Employee:USERID
                     })
+
+                    setShowComplete(true)
                 
             }
         });
@@ -226,10 +266,13 @@ const TaskLogs = ({selectedEvent, setIsLogAvailable, setSelectedEvent}) => {
 
             const newUpdated = logs.filter((log) => log.ID !== logToDelete);
             setLogs(newUpdated)
-            setSelectedEvent(prev => ({
+            if(setSelectedEvent){
+                setSelectedEvent(prev => ({
                         ...prev,
                         Logs: newUpdated,
                     }));
+            }
+            
 
             setShowConfirm(false);
             setLogToDelete(null);
@@ -249,12 +292,86 @@ const TaskLogs = ({selectedEvent, setIsLogAvailable, setSelectedEvent}) => {
         setShowConfirm(true);
     };
 
+    const [showComplete, setShowComplete] = useState(false)
+
+const completeBannerRef = useRef(null);
+
+useEffect(() => {
+  const handleClickOutside = (event) => {
+    if ( showComplete && completeBannerRef.current && !completeBannerRef.current.contains(event.target) ) {
+      setShowComplete(false);
+    }
+  };
+
+  document.addEventListener("mousedown", handleClickOutside);
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, [showComplete]);
+
 
   return (
     <>
 
-<section className="">     
+<section className="" ref={completeBannerRef}>     
 <div className="card shadow-shopify border-0 mb-4 mt-3 rounded-4">
+    
+
+
+{showComplete && (
+    <section className='px-3 pt-3'>
+    <div
+     
+     className="complete-task-banner d-flex align-items-center justify-content-between gap-3 px-4 py-2 mb-3 bg-zen-subtle border rounded-4 shadow-sm">
+  <div className="d-flex align-items-center gap-3">
+    <div
+      className="d-flex align-items-center justify-content-center bg-warning-subtle text-warning rounded-circle"
+      style={{ width: "42px", height: "42px" }}
+    >
+      <i className="bi bi-question-circle-fill fs-5"></i>
+    </div>
+
+    <div>
+      <div className="fw-semibold text-dark">Complete Task?</div>
+      <small className="text-muted">
+        Do you want to mark this task as completed?
+      </small>
+    </div>
+  </div>
+
+  <div className="d-flex gap-2">
+    <button
+      type="button"
+      className="action-btn btn-slate btn-sm px-3"
+      onClick={() => setShowComplete(false)}
+    >
+      No
+    </button>
+
+    <button
+      type="button"
+      className="action-btn btn-green btn-sm px-3"
+      onClick={() => {
+        if(completeTask){
+            completeTask()
+            setShowComplete(false)
+        }
+        
+      }}
+    >
+      <i className="bi bi-check-lg me-1"></i>
+      Yes
+    </button>
+  </div>
+</div>
+</section>
+)}
+
+
+
+
+
   <div className="card-body">
 
             <div>
@@ -273,8 +390,8 @@ const TaskLogs = ({selectedEvent, setIsLogAvailable, setSelectedEvent}) => {
                   {logs.map((log, index) => (
                     <tr key={index}>
                       <td>{log.Date_field}</td>
-                      <td>{log.Work_Started}</td>
-                      <td>{log.Work_Ended}</td>
+                      <td><small>{log.Started.split(" ").slice(1).join(" ") || "NA"}</small></td>
+                      <td><small>{log.Ended.split(" ").slice(1).join(" ") || "NA"}</small></td>
                       <td style={{width:"25%"}} className='small text-muted'>{log.Description || ""}</td>
                       <td>{log.Hours_Worked}</td>
                       <td><i className="bi bi-trash text-danger cursor-pointer" onClick={() => handleDeleteClick(log.ID)}></i></td>

@@ -1,0 +1,167 @@
+.action-btn {
+    --start-color: #ff3b4a;
+    --end-color: #ff6a00;
+    --shadow-color: rgba(255, 94, 0, 0.35);
+    --focus-color: rgba(255, 94, 0, 0.25);
+
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 8px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(90deg, var(--start-color), var(--end-color));
+    box-shadow: 0 6px 15px var(--shadow-color);
+    transition: all .3s ease;
+}
+
+.btn-sm{
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  border-radius: 8px;
+}
+
+.action-btn:hover {
+    color: #fff;
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+    box-shadow: 0 10px 22px var(--shadow-color);
+}
+
+.action-btn:focus,
+.action-btn:active {
+    color: #fff;
+    box-shadow: 0 0 0 .2rem var(--focus-color);
+}
+
+.action-btn i,
+.action-btn .icon {
+    font-size: 14px;
+}
+
+/* Orange */
+.btn-blue {
+    --start-color: #2563eb;   /* Royal Blue */
+    --end-color: #60a5fa;     /* Sky Blue */
+    --shadow-color: rgba(37, 99, 235, 0.35);
+    --focus-color: rgba(37, 99, 235, 0.25);
+}
+
+/* Green */
+.btn-green {
+    --start-color: #16a34a;
+    --end-color: #4ade80;
+    --shadow-color: rgba(22, 163, 74, 0.35);
+    --focus-color: rgba(22, 163, 74, 0.25);
+}
+
+/* Purple */
+.btn-purple {
+    --start-color: #7c3aed;
+    --end-color: #a78bfa;
+    --shadow-color: rgba(124, 58, 237, 0.35);
+    --focus-color: rgba(124, 58, 237, 0.25);
+}
+
+/* Orange */
+.btn-orange {
+    --start-color: #ea580c;
+    --end-color: #fb923c;
+    --shadow-color: rgba(234, 88, 12, 0.35);
+    --focus-color: rgba(234, 88, 12, 0.25);
+}
+
+/* Red */
+.btn-red {
+    --start-color: #dc2626;
+    --end-color: #f87171;
+    --shadow-color: rgba(220, 38, 38, 0.35);
+    --focus-color: rgba(220, 38, 38, 0.25);
+}
+
+/* Pink */
+.btn-pink {
+    --start-color: #db2777;
+    --end-color: #f472b6;
+    --shadow-color: rgba(219, 39, 119, 0.35);
+    --focus-color: rgba(219, 39, 119, 0.25);
+}
+
+/* Teal */
+.btn-teal {
+    --start-color: #0f766e;
+    --end-color: #2dd4bf;
+    --shadow-color: rgba(15, 118, 110, 0.35);
+    --focus-color: rgba(15, 118, 110, 0.25);
+}
+
+/* Cyan */
+.btn-cyan {
+    --start-color: #0891b2;
+    --end-color: #67e8f9;
+    --shadow-color: rgba(8, 145, 178, 0.35);
+    --focus-color: rgba(8, 145, 178, 0.25);
+}
+
+/* Indigo */
+.btn-indigo {
+    --start-color: #4338ca;
+    --end-color: #818cf8;
+    --shadow-color: rgba(67, 56, 202, 0.35);
+    --focus-color: rgba(67, 56, 202, 0.25);
+}
+
+/* Brown */
+.btn-brown {
+    --start-color: #8b5e3c;
+    --end-color: #c89b6d;
+    --shadow-color: rgba(139, 94, 60, 0.35);
+    --focus-color: rgba(139, 94, 60, 0.25);
+}
+
+/* Slate */
+.btn-slate {
+    --start-color: #475569;
+    --end-color: #94a3b8;
+    --shadow-color: rgba(71, 85, 105, 0.35);
+    --focus-color: rgba(71, 85, 105, 0.25);
+}
+
+.btn-black {
+    --start-color: #000;
+    --end-color: #5a626e;
+    --shadow-color: rgba(71, 85, 105, 0.35);
+    --focus-color: rgba(71, 85, 105, 0.25);
+}
+
+/* Emerald */
+.btn-emerald {
+    --start-color: #059669;
+    --end-color: #34d399;
+    --shadow-color: rgba(5, 150, 105, 0.35);
+    --focus-color: rgba(5, 150, 105, 0.25);
+}
+
+/* Gold */
+.btn-gold {
+    --start-color: #ca8a04;
+    --end-color: #facc15;
+    --shadow-color: rgba(202, 138, 4, 0.35);
+    --focus-color: rgba(202, 138, 4, 0.25);
+}
+
+
+.text-zen-gradient {
+    /* 1. Set the gradient as the background */
+    background: linear-gradient(90deg, #7c3aed, #a78bfa) !important;
+    
+    /* 2. Clip the background to only show where the text is */
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    
+    /* 3. Make the actual text color transparent so the background shows through */
+    -webkit-text-fill-color: transparent !important;
+}

@@ -230,6 +230,16 @@ const HomePunch = ({triggerApi}) => {
 
 const {USERID, ORG, userEmail} = useUser();
 
+// const [isPopupOpen, setIsPopupOpen] = useState(false);
+
+// const openPopup = () => {
+//   setIsPopupOpen(true);
+// };
+
+// const closePopup = () => {
+//   setIsPopupOpen(false);
+// };
+
 const [punch, setPunch] = useState([])
 
 
@@ -333,7 +343,7 @@ function fetchBiometricData(){
           setPunch(punchResult)
 
           if(response.data.length > 0 && response.data[0].Check === "In"){
-            console.log("IM INNNNNNNNNNNNNNNNN")
+            
             setIsIn(true)
             setCurrentInTime(response.data[0]?.Punch_Time)
 
@@ -376,6 +386,7 @@ useEffect(()=>{
     const interval = setInterval(() => {
       fetchBiometricData();
       console.log("LIVE SINC")
+      hasBreakInitialized.current = false
     }, 90000);
 
     // Cleanup on unmount or USERID change
@@ -402,11 +413,36 @@ useEffect(()=>{
 
 
   return (
-    <div className='d-flex mt-3 align-items-center'>
+    <div className='d-fle mt-0 align-items-center'>
+
+        <div className='d-flex justify-content-start text-center w-100 align-items-center mb-0 mt-3'>
+            <div className="card border-0 w-100 p-3 rounded-4 text-center">
+              <p className='mb-1 text-uppercase fw-semibold letter-spacing-2 ' style={{color:"#8593e8"}}>Total Office Hours</p>
+              <h4  className={`fw-semibold mb-2 ${formattedDate === "08-14-2026" || formattedDate === "08-15-2026" ? 'tricolor-text' : ''}`} style={{color:"#3525cc", fontSize:"60px"}}>{displayWorked}<span className='fw-bold' style={{color:"#55cca6"}}>.</span> </h4>
+              <div className="w-75 mx-auto">
+                <div className=''>
+                    <div className="progress" style={{height:"5px"}}>
+                        <div className="progress-bar progress-bar-striped" style={{ width: `${workPercentage}%`, background:"#8593e8" }}></div>
+                    </div>
+                </div>
+              </div>
+
+              <WorkdayTracker input={passingToCalculate}/>
+
+              {/* <small onClick={openPopup}>Check Attendance</small> */} 
+              
+            </div>
+        </div>
+
+        <div className="text-center scroll-indicator">
+          <i class="bi bi-mouse-fill fs-6 d-block" style={{color:"#8593e8"}}></i>
+          <i class="bi bi-chevron-compact-down" style={{color:"#8593e8"}}></i>
+        </div>
 
       
 
-        <div className='w-100 scroll-karo' style={{height:"150px"}}>
+        <div className='w-100  mt-4' style={{scrollbarWidth:"none"}}>
+          
           <table className='table table-borderless'>
                   <thead style={{fontSize:"12px"}}>
                       <tr>
@@ -430,26 +466,48 @@ useEffect(()=>{
           </table>
         </div>
 
-        <div className="vline"> </div>
+
+{/* modal==========================  */}
+
+{/* {isPopupOpen && (
+  <div
+    className="custom-modal-overlay"
+    onClick={closePopup}
+  >
+    <div
+      className="custom-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="modal-header">
+        <h5>Leave Details</h5>
+
+        <button
+          type="button"
+          className="close-btn"
+          onClick={closePopup}
+        >
+          ✕
+        </button>
+      </div>
 
 
-        <div className='d-flex justify-content-start text-center w-75 align-items-center'>
-            <div className="card border-0 w-75 p-3 rounded-4 text-end">
-              <p className='mb-1 text-uppercase fw-semibold letter-spacing-2 ' style={{color:"#8593e8"}}>Total Office Hours</p>
-              <h4  className='fw-semibold mb-2' style={{color:"#3525cc", fontSize:"60px"}}>{displayWorked}<span className='fw-bold' style={{color:"#55cca6"}}>.</span> </h4>
-              <div className="w-75 ms-auto">
-                <div className=''>
-                    <div className="progress" style={{height:"5px"}}>
-                        <div className="progress-bar progress-bar-striped" style={{ width: `${workPercentage}%`, background:"#8593e8" }}></div>
-                    </div>
-                </div>
-              </div>
-              {TESTING_USERS.includes(userEmail) && (
-                <WorkdayTracker input={passingToCalculate}/>
-              )}
-              
-            </div>
-        </div>
+      <div className="modal-body">
+        <p>test</p>
+      </div>
+
+      <div className="modal-footer">
+        <button
+          type="button"
+          onClick={closePopup}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)} */}
+
+
 
     </div>
   )

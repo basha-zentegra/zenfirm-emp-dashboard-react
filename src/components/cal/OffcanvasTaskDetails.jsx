@@ -2,7 +2,7 @@ import {useMemo, useState,useEffect} from 'react'
 import { useUser } from '../../context/UserContext'
 import Stopwatch from '../timer/Stopwatch';
 import { formattedDate } from '../../config';
-import { isFuture } from '../../utils/dateUtils'; 
+import { isFuture, formatDateToMMDDYYYY, formatTimeToHHMM, formatTime12 } from '../../utils/dateUtils'; 
 import EditTask from './EditTask';
 import ChecklistManager from '../task/ChecklistManager';
 import TaskLogs from '../task/TaskLogs';
@@ -11,7 +11,7 @@ import TaskAttachments from '../task/TaskAttachments';
 import ConfirmDialog from '../task/ConfirmDialog';
 import ItrBtrPopup from '../task/ItrBtrPopup';
 
-const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin=false, fetchTasks, boardMembers = [] }) => {
+const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin=false, fetchTasks, boardMembers = [], eventID }) => {
 
   const {userEmail, USERID} = useUser();
 
@@ -24,6 +24,10 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
   const [showItrPopup, setShowItrPopup] = useState(false);
 
   const [isLogAvailable, setIsLogAvailable] = useState(false);
+
+  const [taskDate, setTaskDate] = useState(null)
+  const [taskStart, setTaskStart] = useState(null)
+  const [taskEnd, setTaskEnd] = useState(null)
 
 
   // Compute base URL safely
@@ -102,6 +106,33 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
     }
   },[selectedEvent])
 
+  const [mLog, setMLog] = useState(null)
+
+  useEffect(()=>{
+
+    if(!eventID){
+      setTaskDate(null)
+      setTaskStart(null);
+      setTaskEnd(null)
+      setMLog(null)
+      return;
+    };
+
+    setTaskDate(formatDateToMMDDYYYY(eventID?.start));
+    setTaskStart(formatTime12(formatTimeToHHMM(eventID?.start)));
+    setTaskEnd(formatTime12(formatTimeToHHMM(eventID?.end)))
+
+    setMLog({
+      Task_Date: formatDateToMMDDYYYY(eventID?.start),
+      Start_Time: formatTimeToHHMM(eventID?.start),
+      End_Time: formatTimeToHHMM(eventID?.end)
+    })
+
+    
+
+    console.log("MODIFIED THE TASK_DATE, ST, ET!!!!!!!")
+
+  },[eventID])
 
 
 
@@ -169,37 +200,78 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
         setShowConfirm(false);
     };
 
-    function confirmDelete(){
-      var config = {
-        report_name: "Task_Report",
-        id: selectedEvent.ID,
-      };
-      ZOHO.CREATOR.DATA.deleteRecordById(config).then(function (response) {
-        if (response.code == 3000) {
-          console.log(response);
-          // ✅ Remove the deleted task
+    function confirmDelete(){ 
 
-          if(setEvents){
-            setEvents(prev =>
-              prev.filter(e => e.id !== selectedEvent.ID)
-            );
+      if(eventID?.id){
+
+        console.log("All_Multiple_Tasks", eventID?.id)
+
+        var config = {
+          report_name: "All_Multiple_Tasks",
+          id: eventID?.id,
+        };
+        ZOHO.CREATOR.DATA.deleteRecordById(config).then(function (response) {
+          if (response.code == 3000) {
+            console.log(response);
+            // ✅ Remove the deleted task
+
+            if(setEvents){
+              setEvents(prev =>
+                prev.filter(e => e.id !== eventID?.id)
+              );
+            }
+
+            if(document.getElementById(eventID?.id)){
+              document.getElementById(eventID?.id).classList.add("d-none");
+            }
+            
+            setShowConfirm(false);
+            if(setSelectedEvent){
+              setSelectedEvent(null)
+            }
+            
+
+            document.getElementById("taskdetailsclsbtn").click()
+            
           }
+        }).catch(e => console.log(e))
 
-          if(document.getElementById(selectedEvent.ID)){
-            document.getElementById(selectedEvent.ID).classList.add("d-none");
+      }else{
+
+        var config = {
+          report_name: "Task_Report",
+          id: selectedEvent.ID,
+        };
+        ZOHO.CREATOR.DATA.deleteRecordById(config).then(function (response) {
+          if (response.code == 3000) {
+            console.log(response);
+            // ✅ Remove the deleted task
+
+            if(setEvents){
+              setEvents(prev =>
+                prev.filter(e => e.id !== selectedEvent.ID)
+              );
+            }
+
+            if(document.getElementById(selectedEvent.ID)){
+              document.getElementById(selectedEvent.ID).classList.add("d-none");
+            }
+            
+
+            setShowConfirm(false);
+            if(setSelectedEvent){
+              setSelectedEvent(null)
+            }
+            
+
+            document.getElementById("taskdetailsclsbtn").click()
+            
           }
-          
+        }).catch(e => console.log(e))
 
-          setShowConfirm(false);
-          if(setSelectedEvent){
-            setSelectedEvent(null)
-          }
-          
+      }
 
-          document.getElementById("taskdetailsclsbtn").click()
-          
-        }
-      });
+      
     }
 
 useEffect(() => {
@@ -233,7 +305,7 @@ border:"rgba(255, 255, 255, 0.14)"
 
     {showAction && !admin && (
       <div className='d-flex w-100 justify-content-between align-items-center mb-1'>
-        <div className='card border-0 shadow-shopify w-2 p-2 px-3 rounded-3 d-inline g-3 glassdiv'>
+        <div className='card border-0 shadow-shopify w-2 p-2 px-3 rounded-3 d-inline g-3'>
 
         {showCompleteBtn && (
           <i onClick={completeTask} class="bi bi-check-square-fill fs-5 text-success me-4 cursor-pointer"></i>
@@ -262,7 +334,7 @@ border:"rgba(255, 255, 255, 0.14)"
    
 
 
-<div className="card shadow-shopify border-0 rounded-4 " >
+<div className="card shadow-shopify border-0 rounded-4 eyebrow" >
   <div className="card-body">
     <div className='text-end' style={{position:"absolute", top:"15px", right:"15px"}}>
           <button id='taskdetailsclsbtn' type="button"  className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
@@ -274,10 +346,10 @@ border:"rgba(255, 255, 255, 0.14)"
         <section>
 
     <div className="py-2 mb-2">
-      <h5 className="text-primary">Task Details</h5>
+      <h5 className="text-zen-gradient">Task Details</h5>
     </div>
 
-    <table className="table table-borderless" style={{ tableLayout: "fixed" }}>
+    <table className="table table-borderless eyebrow" style={{ tableLayout: "fixed" }}>
       <tbody>
         <tr>
           <th style={{ width: "7%" }}>
@@ -393,8 +465,8 @@ border:"rgba(255, 255, 255, 0.14)"
           <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
             Status
           </th>
-          <td id="taskStatusTD" style={{ width: "58%" }}>
-            <span className={`bg-status  ${selectedEvent?.Task_Status.toLowerCase().replace(" ", "-") || "not-started"}`}>{selectedEvent?.Task_Status || "Not Started"}</span>
+          <td style={{ width: "58%" }}>
+            <span className={`bg-status  ${selectedEvent?.Task_Status?.toLowerCase()?.replace(" ", "-") || "not-started"}`}>{selectedEvent?.Task_Status || "Not Started"}</span>
           </td>
         </tr>
 
@@ -405,8 +477,8 @@ border:"rgba(255, 255, 255, 0.14)"
           <th className="fw-semibold" style={{ color: "#3e4043", width: "35%" }}>
             Task Date
           </th>
-          <td id="startDate" style={{ width: "58%" }}>
-            {selectedEvent?.Task_Date || "No Date"}
+          <td  style={{ width: "58%" }}>
+            { taskDate || selectedEvent?.Task_Date || "No Date"}
           </td>
         </tr>
 
@@ -431,7 +503,7 @@ border:"rgba(255, 255, 255, 0.14)"
           </th>
           <td id="endDate" style={{ width: "58%" }}>
             <span id="crtTime-266830000001194162">
-              {selectedEvent?.Start_Time || " "} - {selectedEvent?.End_Time || " "}
+              { taskStart || selectedEvent?.Start_Time || " "} - { taskEnd || selectedEvent?.End_Time || " "}
             </span>
           </td>
         </tr>
@@ -477,7 +549,7 @@ border:"rgba(255, 255, 255, 0.14)"
             style={{ width: "58%" }}
             id="prio-td-266830000001194162"
           >
-            <span className={`bg-status my-3 fw-bold cursor-pointer ${selectedEvent?.Task_Priority.toLowerCase() || "low"} `}>
+            <span className={`bg-status my-3 fw-bold cursor-pointer ${selectedEvent?.Task_Priority?.toLowerCase() || "low"} `}>
               {selectedEvent?.Task_Priority || "Low"}
             </span>
           </td>
@@ -601,7 +673,7 @@ border:"rgba(255, 255, 255, 0.14)"
 
         </div> */}
 
-{/* <section className='glassbody'>
+{/* <section className=''>
   <div className="button-wrap">
   <button className='glass'>
     <span>Generate</span>
@@ -612,11 +684,11 @@ border:"rgba(255, 255, 255, 0.14)"
 
 
 
-<ul className="nav nav-tabs nav-pills border-bottom-0 bg-whit rounded-3 p-2 shadow-shopify glassdiv">
-  <li className="glassbody me-3">
+<ul className="nav nav-tabs nav-pills border-bottom-0 bg-white rounded-3 p-2 shadow-shopify ">
+  <li className=" me-3">
     {/* <div className="button-wrap"> */}
       <button
-        className={`btn  ${activeTab === "logs" ? "glass" : ""}`}
+        className={`btn  ${activeTab === "logs" ? "action-btn btn-purple" : ""}`}
         onClick={() => setActiveTab("logs")}
       >
         <span>Logs</span>
@@ -625,27 +697,27 @@ border:"rgba(255, 255, 255, 0.14)"
     
   </li>
 
-  <li className="glassbody me-3">
+  <li className=" me-3">
     <button
-      className={`btn  ${activeTab === "checklist" ? "glass" : ""}`}
+      className={`btn  ${activeTab === "checklist" ? "action-btn btn-purple" : ""}`}
       onClick={() => setActiveTab("checklist")}
     >
       <span>Checklist</span>
     </button>
   </li>
 
-  <li className="glassbody me-3">
+  <li className=" me-3">
     <button
-      className={`btn  ${activeTab === "notes" ? "glass" : ""}`}
+      className={`btn  ${activeTab === "notes" ? "action-btn btn-purple" : ""}`}
       onClick={() => setActiveTab("notes")}
     >
       <span>Notes</span>
     </button>
   </li>
 
-  <li className="glassbody me-3">
+  <li className=" me-3">
     <button
-      className={`btn  ${activeTab === "attachments" ? "glass" : ""}`}
+      className={`btn  ${activeTab === "attachments" ? "action-btn btn-purple" : ""}`}
       onClick={() => setActiveTab("attachments")}
     >
       <span>Attachments</span>
@@ -660,15 +732,17 @@ border:"rgba(255, 255, 255, 0.14)"
       selectedEvent={selectedEvent}
       setIsLogAvailable={setIsLogAvailable}
       setSelectedEvent={setSelectedEvent}
+      mLog={mLog}
+      completeTask={completeTask}
     />
   )}
 
   {activeTab === "checklist" && (
-    <ChecklistManager selectedEvent={selectedEvent} />
+    <ChecklistManager selectedEvent={selectedEvent}  />
   )}
 
   {activeTab === "notes" && (
-    <TaskNotes selectedEvent={selectedEvent} />
+    <TaskNotes selectedEvent={selectedEvent} setEvents={setEvents} />
   )}
 
   {activeTab === "attachments" && (

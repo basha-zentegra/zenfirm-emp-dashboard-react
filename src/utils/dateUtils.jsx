@@ -18,6 +18,7 @@ export function parseEventDate(dateStr, timeStr) {
 
 
 export function formatDateToMMDDYYYY(dateInput) {
+  if(!dateInput) return;
     const date = new Date(dateInput);
 
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -133,4 +134,26 @@ export function getDayName(dateString) {
     ];
 
     return days[date.getDay()];
+}
+
+
+export function formatTime12(time24) {
+  const [hours, minutes] = time24.split(":").map(Number);
+
+  const period = hours >= 12 ? "PM" : "AM";
+  const hours12 = hours % 12 || 12;
+
+  return `${String(hours12).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00 ${period}`;
+}
+
+export function objectToMM_DD_YYYY(date) {
+  if (!(date instanceof Date) || isNaN(date.getTime())) {
+    return "";
+  }
+
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${month}-${day}-${year}`;
 }

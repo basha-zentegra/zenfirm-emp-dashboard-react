@@ -4,8 +4,26 @@ import { APP_NAME } from '../config'
 import { formattedDate } from '../config'
 import HomePunch from '../components/punch/HomePunch'
 import OffcanvasTaskDetails from '../components/cal/OffcanvasTaskDetails'
-import { getPriorityBorder } from '../utils/uiUtils'
+// import { getPriorityBorder } from '../utils/uiUtils'
 import WorkdayTracker from '../components/punch/Workdaytracker'
+import ToastContainer from '../components/ui/ToastContainer'
+import Announcements from '../components/home/Announcements'
+import Timesheet from '../components/home/Timesheet'
+import TodayTimesheet from '../components/home/TodayTimesheet'
+import UpcomingHolidays from '../components/home/UpcomingHolidays'
+
+export const getPriorityBorder = (priority) => {
+  switch (priority?.toLowerCase()) {
+    case "high":
+      return " bg-red text-danger";
+    case "medium":
+      return " bg-yellow text-warning";
+    case "low":
+      return " bg-green text-success";
+    default:
+      return "border-dar bg-secondary-subtl";
+  }
+};
 
 const Home = () => {
 
@@ -73,6 +91,29 @@ const Home = () => {
         console.log("Over due Tasks Data:", response.data)
         const taskRes = response.data;
         setOverDueTasks(taskRes)
+      }
+        
+      })
+      .catch((err) => console.error(err))
+
+  }, [UID])
+
+      // FETCHING PROJECTS COUNT
+      const [projectsCount, setProjectsCount] = useState("0");
+  useEffect(() => {
+    if (!UID) return
+
+    const config = {
+      report_name: "My_Team_Projects",
+    }
+
+    ZOHO.CREATOR.DATA.getRecordCount(config).then((response) => {
+      console.log("MY PROJECTS COUNT:", response)
+
+      if(response.code === 3000){
+
+        setProjectsCount(response.result.records_count)
+        
       }
         
       })
@@ -170,66 +211,147 @@ const Home = () => {
       return () => clearInterval(interval); // cleanup
     }, [isCooldownActive]);
 
+    const [toasts, setToasts] = useState([]);
+
+    const showToast = (type, message, duration = 3000) => {
+  const id = Date.now();
+
+  setToasts((prev) => [
+    ...prev,
+    { id, type, message, duration },
+  ]);
+};
+
+const removeToast = (id) => {
+  setToasts((prev) => prev.filter((t) => t.id !== id));
+};
+
+
+const TaskBadge = ({ status }) => {
+  const badgeStyles = {
+    "Not Started": {
+      bg: "not-started",
+      text: "not-started",
+      icon: "bi-hourglass",
+    },
+    "In Progress": {
+      bg: "in-progress",
+      text: "in-progress",
+      icon: "bi-stopwatch",
+    },
+    "Completed": {
+      bg: "bg-success-subtle",
+      text: "text-success",
+      icon: "bi-check-circle",
+    },
+    "Pause": {
+      bg: "pause",
+      text: "pause",
+      icon: "bi-pause-circle-fill",
+    },
+  };
+
+  const style = badgeStyles[status] || {
+    bg: "bg-light",
+    text: "text-dark",
+    icon: "bi-question-circle",
+  };
 
   return (
-    <div className=' pt-4 px-5' style={{ marginLeft: "70px", backgroundColor:"#FCF8FF" }} >
+    <div className={`badge ${style.bg} py-2 `}>
+      <i className={`bi ${style.icon} ${style.text} fw-semibold fs-6`}></i>
+    </div>
+  );
+};
+
+
+
+  return (
+    <div className=' pt-4 px-4' style={{ marginLeft: "70px", backgroundColor:"#FCF8FF" }} >
+
+      {/* <button onClick={() => showToast("success", "Project created successfully!", 10000)}>
+          Success
+        </button>
+
+        <button onClick={() => showToast("info", "Project created successfully!")}>
+          warning
+        </button> */}
+
+
+      <ToastContainer
+        toasts={toasts}
+        removeToast={removeToast}
+      />
 
 
 
 <article>
 
-<section className="app-stats pb-5 ">
-  <div className="container-flui">
-    <div className="row g-4">
+<section className="app-stats pb-2 ">
+  <div className="">
+    <div className="row row-cols-1 row-cols-md-2 row-cols-lg-5 g-2">
+
+      {/* Total Tasks */}
+      <div className="col">
+        <div className="stat-card d-flex align-items-center bg-white p-4  shadow-sm rounded-4">
+          <div className="icon-box rounded-circle d-flex align-items-center justify-content-center bg-pink-subtle" style={{ width: '50px', height: '50px' }}>
+            <i className="bi bi-card-heading fs-4 text-pink"></i>
+          </div>
+          <div className="ms-3">
+            <p className="text-uppercase small fw-semibold text-muted mb-0" >Projects</p>
+            <h3 className="fs-4 fw-bold mb-0">{projectsCount}</h3>
+          </div>
+        </div>
+      </div>
       
       {/* Total Tasks */}
-      <div className="col-md-3 col-sm-6">
+      <div className="col">
         <div className="stat-card d-flex align-items-center bg-white p-4 shadow-sm rounded-4">
-          <div className="icon-box rounded-circle d-flex align-items-center justify-content-center bg-primary-subtle" style={{ width: '60px', height: '60px' }}>
-            <i className="bi bi-clipboard-data fs-3 text-primary"></i>
+          <div className="icon-box rounded-circle d-flex align-items-center justify-content-center bg-primary-subtle" style={{ width: '50px', height: '50px' }}>
+            <i className="bi bi-clipboard-data fs-4 text-primary"></i>
           </div>
           <div className="ms-3">
             <p className="text-uppercase small fw-semibold text-muted mb-0">Total Tasks</p>
-            <h3 className="fs-3 fw-bold mb-0">{myTodayTasks.length}</h3>
+            <h3 className="fs-4 fw-bold mb-0">{myTodayTasks.length}</h3>
           </div>
         </div>
       </div>
 
       {/* Completed Tasks */}
-      <div className="col-md-3 col-sm-6">
+      <div className="col">
         <div className="stat-card d-flex align-items-center bg-white p-4 shadow-sm rounded-4">
-          <div className="icon-box rounded-circle d-flex align-items-center justify-content-center bg-success-subtle" style={{ width: '60px', height: '60px' }}>
-            <i className="bi bi-check2-circle fs-3 text-success"></i>
+          <div className="icon-box rounded-circle d-flex align-items-center justify-content-center bg-success-subtle" style={{ width: '50px', height: '50px' }}>
+            <i className="bi bi-check2-circle fs-4 text-success"></i>
           </div>
           <div className="ms-3">
             <p className="text-uppercase small fw-semibold text-muted mb-0">Completed Tasks</p>
-            <h3 className="fs-3 fw-bold mb-0">{todayCompleted.length}</h3>
+            <h3 className="fs-4 fw-bold mb-0">{todayCompleted.length}</h3>
           </div>
         </div>
       </div>
 
       {/* In Progress */}
-      <div className="col-md-3 col-sm-6">
+      <div className="col">
         <div className="stat-card d-flex align-items-center bg-white p-4 shadow-sm rounded-4">
-          <div className="icon-box rounded-circle d-flex align-items-center justify-content-center bg-warning-subtle" style={{ width: '60px', height: '60px' }}>
-            <i className="bi bi-three-dots fs-3 text-warning"></i>
+          <div className="icon-box rounded-circle d-flex align-items-center justify-content-center bg-warning-subtle" style={{ width: '50px', height: '50px' }}>
+            <i className="bi bi-three-dots fs-4 text-warning"></i>
           </div>
           <div className="ms-3">
             <p className="text-uppercase small fw-semibold text-muted mb-0">In Progress</p>
-            <h3 className="fs-3 fw-bold mb-0">{todayInprog.length}</h3>
+            <h3 className="fs-4 fw-bold mb-0">{todayInprog.length}</h3>
           </div>
         </div>
       </div>
 
       {/* Not Started */}
-      <div className="col-md-3 col-sm-6">
+      <div className="col">
         <div className="stat-card d-flex align-items-center bg-white p-4 shadow-sm rounded-4">
-          <div className="icon-box rounded-circle d-flex align-items-center justify-content-center bg-info-subtle" style={{ width: '60px', height: '60px' }}>
-            <i className="bi bi-hourglass fs-3 text-info"></i>
+          <div className="icon-box rounded-circle d-flex align-items-center justify-content-center bg-info-subtle" style={{ width: '50px', height: '50px' }}>
+            <i className="bi bi-hourglass fs-4 text-info"></i>
           </div>
           <div className="ms-3">
             <p className="text-uppercase small fw-semibold text-muted mb-0">Not Started</p>
-            <h3 className="fs-3 fw-bold mb-0">{todayNotStarted.length}</h3>
+            <h3 className="fs-4 fw-bold mb-0">{todayNotStarted.length}</h3>
           </div>
         </div>
       </div>
@@ -246,15 +368,15 @@ const Home = () => {
 
 
 
-<div className='row g-4 '>
+<div className='row g-2'>
 
-        <div className="col-12">
-            <div className="card border-0 rounded-4 shadow-sm overflow-hidden biometric-card ">
+        <div className="col-5 mb-1" style={{height:"300px"}}>
+            <div className="card border-0 rounded-4 shadow-sm overflow-hidden biometric-card homecards h-100">
 
               
-              <div className="card-body scroll-karo p-4">
+              <div className="card-body scroll-karo p-4 py-3">
 
-                <span className=" fw-medium mb-3 " style={{fontSize:"20px",color:"#8593e8"}}>Today's Biometric Data 
+                <span className=" fw-medium mb-3 " style={{fontSize:"18px",color:"#8593e8"}}>Today's Biometric Data 
                    {!remainingMinutes && <i
                       onClick={!loading && !isCooldownActive ? handleRefresh : undefined}
                       className={`bi bi-arrow-clockwise cursor-pointer ms-3 ${
@@ -274,18 +396,32 @@ const Home = () => {
             </div>
         </div>
 
-        {/* <WorkdayTracker/> */}
+        <div className="col-4" style={{height:"300px"}}>
 
-        {/* <div className="col-6">
-          <WorkdayTracker/>
-        </div> */}
+            {/* <Timesheet/> */}
 
-        <div className="col-6">
-            <div className="card border-0 rounded-4 shadow-sm" style={{height: "500px"}}>
-              <span className=' ms-3 mt-2 cardsHeader'>My Overdue Tasks - {overDueTasks.length}</span>
+            <TodayTimesheet />
+
+        </div>
+
+        <div className="col-3" style={{height:"300px"}}>
+
+          <Announcements/>
+          
+        </div>
+
+
+        <div className="col-4" style={{height: "400px"}}>
+            <div className="card border-0 rounded-4 shadow-sm overflow-hidden homecards h-100">
+              {/* <div className='card-header'>My Overdue Tasks - {overDueTasks.length}</div> */}
+              <div className="card-header bg-white border-0 pb-1">        
+                <span className="ms-1 fw-medium" style={{fontSize:"18px",color:"#ff8595"}}> 
+                  <i className="bi bi-clipboard-x me-2"></i>My Overdue Tasks - {overDueTasks.length} </span>
+              </div>
+
               <div className="card-body scroll-karo" >
                 
-                {overDueTasks.map((e,i) => {
+                {/* {overDueTasks.map((e,i) => {
                       return(
                         <div key={i} className={`tasklist card mb-3 border-0 rounded-3 shadow-sm  ${getPriorityBorder(e.Task_Priority)}`}>
                          
@@ -301,39 +437,95 @@ const Home = () => {
                          
                         </div>
                       )
-                  })}
+                  })} */}
+                  {overDueTasks.map((e,i) => {
+                      return(
+                        <div key={i} className={`tasklist mb-1`}>
+                         
+                            <div className="row p-2">
+                              <div className="col-1 py-2">
+                                
+                                <TaskBadge status={e.Task_Status} />
+                              </div>
+                                <div className='col-8 ps-3'>
+                                  <p onClick={() => handleSelectTask(e.ID)} className='d-block cursor-pointer'>{e.Task_Name}</p>
+                                  <small className='text-muted text-uppercase' style={{fontSize:"12px"}}>{e.Project_Name?.Project_Name || "No Project"}</small>
+                                </div>
+                                <div className='col-3 text-center h-100 align-items-center'>
+                                  <span className={`bg-status ${getPriorityBorder(e.Task_Priority)}`}>{e.Task_Priority || ""}</span>
+                                </div>
+                            </div>
+                         
+                        </div>
+                      )
+                  })}  
+
+                  {overDueTasks.length === 0 && (
+                    <div className="h-100 text-center align-items-center  opacity-50 my-5">
+                                    <img src="https://cdn-icons-png.flaticon.com/128/2839/2839016.png" width="120px" alt="" />
+                                    <br /><br />
+                                    <small className="text-center text-muted mt-4">No Overdue tasks</small>
+                                </div>
+                  )}
               </div>
             </div>
         </div>
 
 
 
-        <div className="col-6">
-            <div className="card border-0 rounded-4 shadow-sm" style={{height: "500px"}}>
-              <span className='cardsHeader ms-3 mt-2 '>Today's Tasks - {myTodayTasks.length}</span>
+        <div className="col-4 mb-1" style={{height: "400px"}}>
+            <div className="card border-0 rounded-4 shadow-sm overflow-hidden homecards h-100" >
+              <div className="card-header bg-white border-0 pb-1">        
+                <span className="ms-1 fw-medium" style={{fontSize:"18px",color:"#8593e8"}}> 
+                  <i className="bi bi-clipboard-data me-2"> </i>Today's Tasks - {myTodayTasks.length} </span>
+              </div>
               <div className="card-body scroll-karo" >
                 
-                    {myTodayTasks.map(e => {
+                    {myTodayTasks.map((e,i) => {
                       
                       return(
-                        <div key={e.ID} className={`tasklist card mb-3 border-0 rounded-3 shadow-sm  ${getPriorityBorder(e.Task_Priority)}`}>
+                        <div key={i} className={`tasklist mb-1`}>
                          
-                            <div className="row p-3 py-2">
-                                <div className='col-9'>
+                            <div className="row p-2">
+                              <div className="col-1 py-2">
+                                
+                                <TaskBadge status={e.Task_Status} />
+                              </div>
+                                <div className='col-8 ps-3'>
                                   <p onClick={() => handleSelectTask(e.ID)} className='d-block cursor-pointer'>{e.Task_Name}</p>
                                   <small className='text-muted text-uppercase' style={{fontSize:"12px"}}>{e.Project_Name?.Project_Name || "No Project"}</small>
                                 </div>
-                                <div className='col-3 '>
-                                  <span className={`bg-status ${e.Task_Status.toLowerCase().replace(" ", "-") || "not-started"}`}>{e.Task_Status || "Not Started"}</span>
+                                <div className='col-3 text-center h-100 align-items-center'>
+                                  {/* <span className={`bg-status ${e.Task_Status.toLowerCase().replace(" ", "-") || "not-started"}`}>{e.Task_Status || "Not Started"}</span> */}
+                                  <span className={`bg-status ${getPriorityBorder(e.Task_Priority)}`}>{e.Task_Priority || ""}</span>
                                 </div>
                             </div>
                          
                         </div>
-                      ) 
+                      )
                     })}
+                    {/* https://cdn-icons-png.flaticon.com/128/3281/3281289.png */}
+
+                    {myTodayTasks.length === 0 && (
+                                <div className="h-100 text-center align-items-center my-5">
+                                    <img className='opacity-25' src="https://cdn-icons-png.flaticon.com/128/3281/3281289.png" width="80px" alt="" />
+                                    <br />
+                                    <small className="text-center text-muted opacity-50">Today's Task is Empty</small>
+                                </div>
+                  )}
                 
               </div>
             </div>
+        </div>
+
+        <div className="col-4" style={{height:"295px"}}>
+
+            <Timesheet/>
+
+            <div>
+              <UpcomingHolidays/>
+            </div>
+
         </div>
 
         
@@ -341,7 +533,7 @@ const Home = () => {
 
         {ORG === "NMG" && (
           <div className="col-6">
-            <div className="card border-0 rounded-4 shadow-sm" style={{height: "500px"}}>
+            <div className="card border-0 rounded-4 shadow-sm homecards" style={{height: "500px"}}>
               <span className='cardsHeader ms-3 mt-2'>BTR Events - {myTodayTasks.filter(e => e["Project_Name.Project_Group1"]?.Project_Group === "Business Tax Filing").length}</span>
               <div className="card-body scroll-karo" >
                 
@@ -372,7 +564,7 @@ const Home = () => {
         {ORG === "NMG" && (
 
           <div className="col-6">
-            <div className="card border-0 rounded-4 shadow-sm" style={{height: "500px"}}>
+            <div className="card border-0 rounded-4 shadow-sm homecards" style={{height: "500px"}}>
               <span className='cardsHeader ms-3 mt-2'>ITR Events - {myTodayTasks.filter(e => e["Project_Name.Project_Group1"]?.Project_Group === "Individual Tax Filing").length}</span>
               <div className="card-body scroll-karo" >
                 
@@ -408,7 +600,6 @@ const Home = () => {
 </div>
 
 <br /><br />
-
 
 
 

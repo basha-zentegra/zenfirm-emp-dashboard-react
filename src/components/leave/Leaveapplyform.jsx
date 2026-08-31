@@ -13,6 +13,14 @@ const today = new Date();
 const fmt = (d) => d.toISOString().split("T")[0];
 const todayStr = fmt(today);
 
+const fifteenDaysAgo = new Date(today);
+fifteenDaysAgo.setDate(today.getDate() - 15);
+const fifteenDaysAgoStr = fmt(fifteenDaysAgo);
+
+const sixtyDaysLaterStr = fmt(
+  new Date(new Date().setDate(new Date().getDate() + 40))
+);
+
 let domain = 'https://creatorapp.zoho.in/zentegraindia/zenfirm/';
 
 // function getDatesInRange(from, to) {
@@ -30,6 +38,8 @@ let domain = 'https://creatorapp.zoho.in/zentegraindia/zenfirm/';
 //   return dates;
 // }
 
+
+
 function getDatesInRange(from, to, holidays = []) {
   if (!from || !to) return [];
 
@@ -42,7 +52,10 @@ function getDatesInRange(from, to, holidays = []) {
     const day = cur.getDay();
     const dateStr = fmt(cur);
 
-    const isWeekend = day === 0 || day === 6;
+    const dayName = new Intl.DateTimeFormat("en-US", {weekday: "short",timeZone: "Asia/Kolkata",}).format(cur);
+
+    // const isWeekend = day === 0 || day === 6;
+    const isWeekend = dayName === "Sat" || dayName === "Sun";
     const isHoliday = holidaySet.has(dateStr);
 
     if (!isWeekend && !isHoliday) {
@@ -92,14 +105,14 @@ const parseDate = (dateStr) => {
   return new Date(year, month - 1, day);
 };
 
-export default function LeaveApplyForm() {
+export default function LeaveApplyForm({longLeaveDates}) {
 
     const {userEmail, USERID} = useUser();
 
-    const [fromDate, setFromDate] = useState();
-    const [toDate, setToDate] = useState();
+    const [fromDate, setFromDate] = useState(MMDDYYYY_TO_YYYYMMDD(longLeaveDates.start) || "");
+    const [toDate, setToDate] = useState(MMDDYYYY_TO_YYYYMMDD(longLeaveDates.end) || "");
     const [rows, setRows] = useState([{ date: "", leaveType: "", session: ""}]);
-    const [reason, setReason] = useState("");
+    const [reason, setReason] = useState(longLeaveDates.reason || "");
     const [errors, setErrors] = useState({});
     const [submitted, setSubmitted] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -147,7 +160,6 @@ export default function LeaveApplyForm() {
       },[userEmail])
 
     function fetchLeaveHistory(){
-
         const config2 = {
                 report_name: "Leave_History_Report",
                 criteria: `Leave_Balance_Form.Employee==${USERID} && Month_field == '${startOfMonth()}'`
@@ -272,6 +284,23 @@ const syncRows = useCallback((from, to, existingRows) => {
   return result;
 }, [holidays]);
 
+const removeRow = (i) => {
+  setRows((prev) => {
+    const target = prev[i];
+    // A working day must keep at least one entry — don't allow deleting the last row for a date
+    const countForDate = prev.filter((r) => r.date === target.date).length;
+    if (countForDate <= 1) return prev;
+    return prev.filter((_, idx) => idx !== i);
+  });
+  // indices shift after delete, so clear stale row errors
+  setErrors((e) => {
+    const next = { ...e };
+    Object.keys(next).forEach((k) => { if (k.startsWith("row_")) delete next[k]; });
+    return next;
+  });
+};
+//ONAM ASHAM-SHAGAL
+
   useEffect(() => {
     if (fromDate && toDate && toDate >= fromDate) {
       setRows((prev) => syncRows(fromDate, toDate, prev));
@@ -316,10 +345,13 @@ const syncRows = useCallback((from, to, existingRows) => {
       // } 
 
       if (val === "First Half" ) {
-        const isLastDate = !next.some((r, idx) => idx !== i && r.date > date);
-        if (!hasSibling && !isLastDate) {
-          const complement = val === "First Half" ? "Second Half" : "First Half";
-          next.splice(i + 1, 0, { date, leaveType: "", session: complement });
+        // const isLastDate = !next.some((r, idx) => idx !== i && r.date > date);
+        // if (!hasSibling && !isLastDate) {
+        //   const complement = val === "First Half" ? "Second Half" : "First Half";
+        //   next.splice(i + 1, 0, { date, leaveType: "", session: complement });
+        // }
+        if (!hasSibling) {
+          next.splice(i + 1, 0, { date, leaveType: "", session: "Second Half" });
         }
       } else {
         // Switched back to Full Day or blank — remove sibling for same date
@@ -358,6 +390,28 @@ const syncRows = useCallback((from, to, existingRows) => {
         }
       }
     });
+
+    //NEWLY ADDED
+    // per-date session consistency
+const groups = {};
+rows.forEach((r, i) => {
+  (groups[r.date] = groups[r.date] || []).push({ ...r, i });
+});
+
+Object.values(groups).forEach((group) => {
+  const fulls   = group.filter((r) => r.session === "Full Day");
+  const firsts  = group.filter((r) => r.session === "First Half");
+  const seconds = group.filter((r) => r.session === "Second Half");
+
+  if (fulls.length > 0 && group.length > 1) {
+    group.forEach((r) => {
+      errs[`row_${r.i}_session`] = "Full Day can't be combined with other sessions on the same date.";
+    });
+  }
+  if (fulls.length > 1)   fulls.forEach((r)   => (errs[`row_${r.i}_session`] = "Duplicate Full Day for this date."));
+  if (firsts.length > 1)  firsts.forEach((r)  => (errs[`row_${r.i}_session`] = "Duplicate First Half for this date."));
+  if (seconds.length > 1) seconds.forEach((r) => (errs[`row_${r.i}_session`] = "Duplicate Second Half for this date."));
+});
 
     Object.keys(leaveBalance).forEach((lt) => {
       if (leaveBalance[lt].remaining < 0) {
@@ -406,6 +460,7 @@ const handleSubmit = async () => {
                 Leave_Type: returnLeaveTypeID(r.leaveType),
                 br: r.session,
             })),
+            Approval_status: longLeaveDates?.status || "Pending"
             // Casual_Taken : leaveBalance?.Casual?.taken || 0,
             // Sick_Taken : leaveBalance?.Sick?.taken || 0,
             // LOP: leaveBalance?.Unpaid?.taken || 0,
@@ -490,8 +545,8 @@ const handleSubmit = async () => {
         </div>
 
 <section className="text-end long-leave-section">
-  <a className="text-decoration-none text-dark bg-warning-subtle px-2 rounded-3 py-1 border border-warning" href={`${domain}#Form:Long_Leave`} target="_blank" >Click me to Apply Planned Leave </a>
-   <img className="car-image ms-3" src="https://cdn-icons-png.flaticon.com/128/2832/2832064.png" width="40px" alt="" />
+  <a className="text-decoration-none  action-btn btn-brown btn-sm" href={`${domain}#Form:Long_Leave`} target="_blank" >Click me to Apply Planned Leave </a>
+   <img className="car-image ms-2" src="https://cdn-icons-png.flaticon.com/128/2832/2832064.png" width="40px" alt="" />
 </section>
 <div className="card-glass">
 
@@ -515,7 +570,8 @@ const handleSubmit = async () => {
                       type="date"
                       className={`form-control-custom ${errors.fromDate ? "is-error" : ""}`}
                       value={fromDate}
-                      min={todayStr}
+                      min={fifteenDaysAgoStr}
+                      max={sixtyDaysLaterStr}
                       onChange={(e) => handleFromDate(e.target.value)}
                     />
                     {errors.fromDate && <div className="error-msg">⚠ {errors.fromDate}</div>}
@@ -527,6 +583,7 @@ const handleSubmit = async () => {
                       className={`form-control-custom ${errors.toDate ? "is-error" : ""}`}
                       value={toDate}
                       min={fromDate || todayStr}
+                      max={sixtyDaysLaterStr}
                       onChange={(e) => handleToDate(e.target.value)}
                     />
                     {errors.toDate && <div className="error-msg">⚠ {errors.toDate}</div>}
@@ -700,6 +757,19 @@ const handleSubmit = async () => {
                               <div className="error-msg">⚠ {errors[`row_${i}_session`]}</div>
                             )}
                           </td>
+
+<td>
+  {rows.filter((r) => r.date === row.date).length > 1 && (
+    <button
+      type="button"
+      className="row-remove-btn"
+      onClick={() => removeRow(i)}
+      title="Remove this session"
+    >
+      ✕
+    </button>
+  )}
+</td>
 
                         </tr>
                       );

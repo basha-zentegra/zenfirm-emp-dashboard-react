@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo, use } from "react";
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -9,12 +9,15 @@ import { enUS } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 
-import { APP_NAME } from "../../config";
+import { APP_NAME, formattedDate, SUPER_ADMIN } from "../../config";
 import OffcanvasTaskDetails from "./OffcanvasTaskDetails";
 import AddTaskOffcanvas from "./AddTaskOffcanvas";
 import UnScheduledTasks from "./UnScheduledTasks";
 
 import { useUser } from "../../context/UserContext";
+import { taskDuration } from "../../utils/taskUtils";
+import ToastContainer from "../ui/ToastContainer";
+import { objectToMM_DD_YYYY } from "../../utils/dateUtils";
 
 const locales = { "en-US": enUS };
 const localizer = dateFnsLocalizer({
@@ -28,7 +31,7 @@ const DnDCalendar = withDragAndDrop(Calendar);
 
 const AdminBigCalendar = () => {
 
-    const {orgEmp, USERID,userEmail,AllEmployees} = useUser();
+    const {orgEmp, USERID,userEmail,AllEmployees, projects} = useUser();
 
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [events, setEvents] = useState([]);
@@ -44,15 +47,27 @@ const AdminBigCalendar = () => {
 
   const [selectedResourceID, setSelectedResourceID] = useState(null);
 
+  const [toasts, setToasts] = useState([]);
 
-    useEffect(() => {
-        if (!USERID) return
-        if (!formatDateToMMDDYYYY(currentDate)) return
-    
+const showToast = (type, message) => {
+  const id = Date.now();
+
+  setToasts((prev) => [
+    ...prev,
+    { id, type, message },
+  ]);
+};
+
+const removeToast = (id) => {
+  setToasts((prev) => prev.filter((t) => t.id !== id));
+};
+
+  function fetchTasks(){
         const config = {
           app_name: APP_NAME,
           report_name: "Task_Report",
-          criteria: `Task_Date='${formatDateToMMDDYYYY(currentDate)}' && Start_Time!=null`,
+          // criteria: `Task_Date='${formatDateToMMDDYYYY(currentDate)}' && Start_Time!=null` && ${task_criteria},
+          criteria: task_criteria,
           max_records : 1000,
           
         }
@@ -68,7 +83,30 @@ const AdminBigCalendar = () => {
             }
             console.log("response", response)
             
-        }).catch((err) => console.error(err))
+        }).catch((err) => {
+          console.log(err)
+          setAllTask([])
+
+          // alert("Macha no task da..", allTask.length)
+          console.log(allTask.length)
+
+          showToast("warning", "No Task found in the Applied Filter!")
+        })
+
+        if(taskFilters.employee){
+          setSelectedResource(taskFilters.employee)
+        }else{
+          setSelectedResource("all")
+        }
+
+  }
+
+    useEffect(() => {
+        if (!USERID) return
+        if (!formatDateToMMDDYYYY(currentDate)) return
+    
+
+        fetchTasks()
     
     }, [USERID, currentDate])
 
@@ -79,6 +117,121 @@ const AdminBigCalendar = () => {
 
 const colors = ["#3498db", "#e74c3c", "#2ecc71", "#9b59b6", "#f39c12", "#1abc9c", "#e67e22", "#34495e"];
 const [employees, setEmployees] = useState([]);
+const [department, setDepartment] = useState([]);
+const [allOrg, setAllOrg] = useState([])
+const [allProjects, setAllProjects] = useState(projects)
+
+
+const [filters, setFilters] = useState({
+  department: "",
+  organization: "",
+  project:"",
+
+});
+
+const [taskFilters, setTaskFilters] = useState({
+  project:"",
+  employee:""
+
+});
+
+const updateFilter = (key, value) => {
+  setFilters(prev => ({
+    ...prev,
+    [key]: value,
+  }));
+};
+
+const updateTaskFilter = (key, value) => {
+  setTaskFilters(prev => ({
+    ...prev,
+    [key]: value,
+  }));
+
+  
+};
+
+const fieldMap = {
+  department: "Department",
+  organization: "Organization",
+  project:"Project_Name",
+  employee: "Assignee"
+};
+
+const criteria = Object.entries(filters)
+  .filter(([_, value]) => value) // Ignore empty filters
+  .map(([key, value]) => `${fieldMap[key]}==${value}`)
+  .join(" && ");
+
+const defaultCriteria = `Task_Date='${formatDateToMMDDYYYY(currentDate)}' && Start_Time!=null`;
+
+const dynamicCriteria = Object.entries(taskFilters)
+  .filter(([_, value]) => value)
+  .map(([key, value]) => `${fieldMap[key]}==${value}`)
+  .join(" && ");
+
+const task_criteria = dynamicCriteria ? `${defaultCriteria} && ${dynamicCriteria}` : defaultCriteria;
+
+useEffect(() => {
+      ZOHO.CREATOR.DATA.getRecords({report_name: "All_Departments"}).then((response) => {
+        console.log("departments---",response);
+
+        if (response.code === 3000) {
+          setDepartment(response.data);
+        }
+      }).catch((err) => {
+        console.error(err);
+
+      });
+},[])
+
+useEffect(() => {
+      ZOHO.CREATOR.DATA.getRecords({report_name: "All_Organizations"}).then((response) => {
+        console.log("ORGs---",response);
+
+        if (response.code === 3000) {
+          setAllOrg(response.data);
+        }
+      }).catch((err) => {
+        console.error(err);
+
+      });
+},[])
+
+
+const handleFilter = () => {
+  if(SUPER_ADMIN.includes(userEmail)){
+      ZOHO.CREATOR.DATA.getRecords({report_name: "All_Employee", criteria: criteria}).then((response) => {
+        console.log(response);
+
+        if (response.code === 3000) {
+          const teamEmp = response.data.map((emp, index) => ({
+            resourceId: emp.ID || emp.id || `emp_${index}`,
+            resourceTitle: emp.Name || emp.Name || `Employee ${index + 1}`,
+            role: emp?.Role?.Role || "NA",
+            avatar: "",
+            email: emp.Email || "",
+            color: colors[index % colors.length],
+          }));
+          setEmployees(teamEmp);
+        }
+      }).catch((err) => {
+        console.error(err);
+
+        setEmployees([
+            { resourceId: "emp1", resourceTitle: "John Doe", role: "Software Engineer", avatar: "", color: "#3498db" },
+            { resourceId: "emp2", resourceTitle: "Jane Smith", role: "UI Designer", avatar: "", color: "#e74c3c" },
+            { resourceId: "emp3", resourceTitle: "Mike Johnson", role: "Manager", avatar: "", color: "#2ecc71" },
+            { resourceId: "emp4", resourceTitle: "Sarah Williams", role: "QA Engineer", avatar: "", color: "#9b59b6" },
+          ]);
+      });
+
+  }else{
+    fetchTasks()
+    
+  }
+
+}
 
 useEffect(() => {
   if (AllEmployees?.length > 0) {
@@ -182,34 +335,47 @@ useEffect(() => {
   // STYLING
   // ─────────────────────────────────────────────
   const eventStyleGetter = (event) => {
-    let backgroundColor = "#3174ad";
+    // let backgroundColor = "#3174ad";
+    // // let borderLeft = "#E0730D 3px solid";
+    // let color = "white";
+    // let border = "black 1px solid"
 
-    switch (event.priority) {
-      case "high":
-        backgroundColor = "#e74c3c";
-        break;
-      case "medium":
-        backgroundColor = "#f39c12";
-        break;
-      case "low":
-        backgroundColor = "#2ecc71";
-        break;
-      default:
-        break;
-    }
+    // switch (event.priority) {
+    //   case "high":
+    //     backgroundColor = "#FDE2E0";
+    //     color = "#CE292E"
+    //     border = "#CE292E 1px solid"
+    //     break;
+    //   case "medium":
+    //     backgroundColor = "#FEF3C7";
+    //     color = "#d6780a"
+    //     border = "#d6780a 1px solid"
+    //     break;
+    //   case "low":
+    //     backgroundColor = "#DFFCE7";
+    //     color = "#13A448"
+    //     border = "#13A448 1px solid"
+    //     break;
+    //   default:
+    //     break;
+    // }
 
     return {
-      style: {
-        backgroundColor,
-        borderRadius: "4px",
-        color: "white",
-        border: `none`,
-        padding: "2px 6px",
-        opacity: event.taskStatus === "Completed" ? 0.5 : 0.9,
-        fontSize: "12px",
-      },
+      // style: {
+      //   backgroundColor,
+      //   borderRadius: "8px",
+      //   color,
+      //   border,
+      //   padding: "2px 6px",
+      //   opacity: event.taskStatus === "Completed" ? 0.5 : 1,
+      //   fontSize: "12px",
+      //   marginLeft:"6px"
+      // },
+      className : `rbc-task ${event.priority} ${event.taskStatus === "Completed" ? "opacity-75" : ""}`
     };
   };
+
+  
 
   // ─────────────────────────────────────────────
   // CUSTOM COMPONENTS
@@ -217,7 +383,11 @@ useEffect(() => {
   const CustomEvent = ({ event }) => {
     const resource = resources.find((r) => r.resourceId === event.resourceId);
     return (
-      <div>
+      <div className=" ms- ps- py- my-1">
+        <div className="time" style={{ fontSize: "12px" }}>
+          {format(event.start, "hh:mm a")} - {format(event.end, "hh:mm a")}
+        </div>
+
         <div className="mt-1" style={{ fontWeight: "600", fontSize: "12px" }}>
           <i
             className={`bi bi-check2 me-1 ${
@@ -229,7 +399,7 @@ useEffect(() => {
         {event.projectName && (
           <div
             className="text-uppercase mt-1 fw-medium"
-            style={{ fontSize: "10px", opacity: 0.8 }}
+            style={{ fontSize: "10px", opacity: 0.9 }}
           >
             {event.projectName}
           </div>
@@ -240,7 +410,7 @@ useEffect(() => {
             className="mt-1"
             style={{
               fontSize: "10px",
-              opacity: 0.9,
+              // opacity: 0.9,
               display: "flex",
               alignItems: "center",
               gap: "4px",
@@ -388,6 +558,7 @@ useEffect(() => {
       Start_Time: formatTimeToHHMM(start),
       End_Time: formatTimeToHHMM(end),
       Task_Date: formatDateToMMDDYYYY(start),
+      Budgeted_Time: taskDuration(start,end)
     };
 
     // If resource changed (task reassigned to different employee)
@@ -413,6 +584,113 @@ useEffect(() => {
       .catch((e) => console.log(e));
   }
 
+  const [leaves, setLeaves] = useState([]);
+
+ // "08-24-2026" -> Date at a specific hour
+// const toDateTime = (s, hour) => {
+//   const [m, d, y] = s.split("-").map(Number);
+//   return new Date(y, m - 1, d, hour, 0, 0);
+// };
+
+// // returns { start, end } based on the session/day type
+// const getSessionTimes = (dateStr, session) => {
+//   switch (session) {
+//     case "First Half":
+//       return { start: toDateTime(dateStr, 13), end: toDateTime(dateStr, 17) };
+//     case "Second Half":
+//       return { start: toDateTime(dateStr, 17), end: toDateTime(dateStr, 22) };
+//     case "Full Day":
+//       return { start: toDateTime(dateStr, 13), end: toDateTime(dateStr, 22) };
+//     default: // e.g. "Second Half" — falls through to full-day span
+//       return { start: toDateTime(dateStr, 13), end: toDateTime(dateStr, 22) };
+//   }
+// };
+
+// "08-24-2026" + "03:30:00 AM" -> Date object
+const toDateTime = (dateStr, timeStr) => {
+  const [m, d, y] = dateStr.split("-").map(Number);
+  const { h, min, s } = parseTime(timeStr);
+  return new Date(y, m - 1, d, h, min, s);
+};
+
+// "03:30:00 AM" -> { h: 3, min: 30, s: 0 } in 24-hour terms
+const parseTime = (timeStr) => {
+  const [clock, meridiem] = timeStr.trim().split(" ");
+  let [h, min, s] = clock.split(":").map(Number);
+  if (meridiem?.toUpperCase() === "PM" && h !== 12) h += 12;
+  if (meridiem?.toUpperCase() === "AM" && h === 12) h = 0;
+  return { h, min, s: s || 0 };
+};
+
+// returns { start, end } from the shift times + session
+const getSessionTimes = (dateStr, session, shiftStart, shiftEnd) => {
+  const start = toDateTime(dateStr, shiftStart);
+  const end = toDateTime(dateStr, shiftEnd);
+  const mid = new Date((start.getTime() + end.getTime()) / 2);
+
+  switch (session) {
+    case "First Half":
+      return { start, end: mid };
+    case "Second Half":
+      return { start: mid, end };
+    case "Full Day":
+      return { start, end };
+    default: // "Full Day"
+      return { start, end };
+  }
+};
+
+  useEffect(() => {
+
+      async function fetchLeaves() {
+        
+        const config = {
+          report_name: "My_Leaves",
+          criteria: `Approval_status == "Approved" From <= '${objectToMM_DD_YYYY(currentDate)}' && To >= '${objectToMM_DD_YYYY(currentDate)}'`,
+        };
+    
+        try {
+          const response = await ZOHO.CREATOR.DATA.getRecords(config);
+
+          console.log("Fetched Leaves...", response)
+    
+          if (response.code === 3000) {
+            const newLeaves = response.data.flatMap(record =>
+              record.Leave_Days_Details.map(day => {
+                const { start, end } = getSessionTimes(
+                  day.Date_field,
+                  day.br,
+                  record.Shift_Start_Time,
+                  record.Shift_End_Time
+                );
+                return {
+                  id: day.ID,
+                  date: day.Date_field,
+                  title: day.Leave_Type?.zc_display_value ?? day.Leave_Type,
+                  start,
+                  end,
+                  priority: "leave",
+                  projectName: "Leave",
+                  session: day.br,
+                  taskStatus: "Completed",
+                  resourceId: record.Employee_Name?.ID || "unassigned",
+                  assigneeName: record.Employee_Name?.Name || "",
+                };
+              })
+            );
+            setLeaves(newLeaves);
+          }
+
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      fetchLeaves()
+
+
+  },[USERID, currentDate])
+
   // ─────────────────────────────────────────────
   // DATA LOADING
   // ─────────────────────────────────────────────
@@ -433,14 +711,16 @@ useEffect(() => {
           assigneeName: eve?.Assignee?.Name || eve?.Assignee_Name || "",
         }));
 
-      setEvents(newEvents);
+      setEvents([...newEvents, ...leaves]);
 
       const newUnscheduled = allTask.filter(
         (task) => !task.Start_Time && !task.End_Time
       );
       setUnscheduledTasks(newUnscheduled);
+    }else{
+      setEvents([])
     }
-  }, [allTask]);
+  }, [allTask, leaves]);
 
   // ─────────────────────────────────────────────
   // EVENT HANDLERS
@@ -531,6 +811,8 @@ useEffect(() => {
 
   const handleSelectEvent = useCallback((event) => {
     console.log("Event clicked:", event);
+
+    if(event.priority === "leave") return;
 
     const element = document.getElementById("offcanvasRight");
     const bsOffcanvas = new window.bootstrap.Offcanvas(element);
@@ -631,12 +913,27 @@ useEffect(() => {
   }
 }, [currentDate]);
 
+const [slotHeight, setSlotHeight] = useState(60);
+const [isOpen, setIsOpen] = useState(false);
+
   return (
     <div className="me-1" style={{ marginLeft: "80px" }}>
 
         <button className="position-absolute btn btn-sm" onClick={() => setShowHeader(prev => !prev)} style={{top:"0px", left:"30%"}}>
             <i className="bi bi-eye me-1"></i> {showHeader ? 'Hide' : 'Show'} Header
         </button>
+
+{/* <button onClick={() => showToast("error", "Something went wrong.",10000)}>
+  Error
+</button> */}
+
+{/* <button onClick={() => showToast("warning", "Something went wrong.")}>
+  warning
+</button>
+
+<button onClick={() => showToast("success", "Something went wrong.")}>
+  success
+</button> */}
 
 
 
@@ -849,13 +1146,16 @@ useEffect(() => {
 
 
 
+
+
 </section>
 
       )}
    
 
       {/* ─────────── CALENDAR ─────────── */}
-      <DndProvider backend={HTML5Backend}>
+      <div style={{ "--slot-height":`${slotHeight}px`}}>
+        <DndProvider backend={HTML5Backend}>
         <DnDCalendar
           localizer={localizer}
           events={
@@ -882,6 +1182,9 @@ useEffect(() => {
           onEventDrop={handleEventDrop}
           onEventResize={handleEventResize}
           eventPropGetter={eventStyleGetter}
+          formats={{
+            eventTimeRangeFormat: () => "",
+          }}
           components={{
             event: CustomEvent,
             ...(showResources && {
@@ -898,6 +1201,7 @@ useEffect(() => {
           dayLayoutAlgorithm="no-overlap"
         />
       </DndProvider>
+      </div>
 
       {/* ─────────── OFFCANVAS COMPONENTS ─────────── */}
       <OffcanvasTaskDetails selectedEvent={selectedEvent} admin={true} />
@@ -913,24 +1217,166 @@ useEffect(() => {
         resources={resources} 
       /> */}
 
-      <div className="d-flex" style={{position: "fixed", right:"25%", top:"-3px", zIndex:"200"}}>
+
+      <div className="d-flex" style={{position: "fixed", right:"2%", top:"-2px", zIndex:"200"}}>
 
             {open && (
                 <div className="border-secondary-subtle border rounded-bottom-4 bg-whit p-2 text-muted" style={{background:"#fcf8ff"}}>
                     
-                    <button className="d-non btn text-muted fw-semibold" onClick={handle24HrsView} ><i class="bi bi-clock-history me-2"></i> 24Hrs View</button> <br />
+                     
+                    <button className="btn text-muted fw-semibold" onClick={() => {setSlotHeight(40); setOpen(!open)}}><i class="bi bi-zoom-out me-2"></i> Small</button> <br />
+                    <button className="btn text-muted fw-semibold" onClick={() => {setSlotHeight(60); setOpen(!open)}}><i class="bi bi-zoom-in me-2"></i> Medium</button> <br />
+                    <button className="btn text-muted fw-semibold" onClick={() => {setSlotHeight(80); setOpen(!open)}}><i class="bi bi-zoom-in me-2"></i> Zoom</button> <br />
+                    
+                    
                 </div>
             )}
 
             <div>
-                <button className="btn btn-sm btn-dark text-white rounded-3" onClick={() => setOpen(!open)}>
-                  {open ? (<i class="bi bi-chevron-double-up"></i>) : (<i class="bi bi-chevron-double-down"></i>)}
-              </button>
+                <button className="btn action-btn btn-sm btn-black rounded-0" title="Zoom" onClick={() => setOpen(!open)}>
+                  {open ? (<i class="bi bi-search-heart"></i>) : (<i class="bi bi-search-heart"></i>)}
+                </button>
+                <button className="btn action-btn btn-indigo btn-sm rounded-0" onClick={() => {handle24HrsView();  setOpen(false)}} title="24Hrs View"><i class="bi bi-clock-history"></i></button>
+                <button className="btn action-btn btn-cyan btn-sm rounded-0" onClick={() => {setIsOpen(true); setOpen(false)}} title="Filter"><i class="bi bi-funnel-fill"></i></button>
+
             </div>
 
         </div>
+
+<ToastContainer
+  toasts={toasts}
+  removeToast={removeToast}
+/>
+
+        {/* <button onClick={() => showToast("success", "Project created successfully!")}>
+          Success
+        </button> */}
+
+        {isOpen && (
+          <div style={styles.overlay} onClick={()=> setIsOpen(false)}>
+            <div style={styles.popup} onClick={(e) => e.stopPropagation()}>
+              <h4>Apply Filter</h4>
+
+
+<div className="">
+
+  {SUPER_ADMIN.includes(userEmail) && (
+
+    <>
+
+      <label className="form-label small">Organization</label>
+      <select
+        value={filters.organization}
+        onChange={(e) => updateFilter("organization", e.target.value)}
+        className="form-control mb-3 form-control-sm"
+      >
+        <option selected value="">Select ORG</option>
+        {allOrg.map(e => (<option value={e?.ID}>{e?.Organization_Name || "NA"}</option>))}
+        
+      </select>
+
+      <label className="form-label small">Department</label>
+      <select
+        value={filters.department}
+        onChange={(e) => updateFilter("department", e.target.value)}
+        className="form-control form-control-sm"
+      >
+        <option selected value="">Select Department</option>
+        {department.map(e => (<option value={e?.ID}>{e?.Department_Name || "NA"}</option>))}
+        
+      </select>
+    
+    </>
+
+  )}
+
+
+
+  <label className="form-label small">Project</label>
+  <select
+    value={taskFilters.project}
+    onChange={(e) => updateTaskFilter("project", e.target.value)}
+    className="form-control form-control-sm mb-3"
+  >
+    <option selected value="">Select Project</option>
+    {allProjects.map(e => (<option value={e?.ID}>{e?.Project_Name || "NA"}</option>))}
+    
+  </select>
+
+  <label className="form-label small">Employee</label>
+  <select
+    value={taskFilters.employee}
+    onChange={(e) => updateTaskFilter("employee", e.target.value)}
+    // onChange={(e) => setSelectedResource(e.target.value)}
+    className="form-control form-control-sm"
+  >
+    <option selected value="">Select Employee</option>
+    {resources.map((r) => (
+      <option key={r.resourceId} value={r.resourceId}>{r.resourceTitle}</option>
+    ))}
+    
+  </select>
+
+</div>
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: "10px",
+                  marginTop: "20px",
+                }}
+              >
+                <button
+                  className="action-btn btn-brown btn-sm"
+                  onClick={()=> {
+                    setFilters({department: "", organization: "",})
+                    setTaskFilters({  project:"", employee:""})
+                  }}>Reset</button>
+
+                <button
+                  className="action-btn btn-blue btn-sm"
+                  onClick={() => {
+                    handleFilter()
+                    setIsOpen(false);
+                  }}
+                >
+                  Apply
+                </button>
+                
+              </div>
+            </div>
+          </div>
+        )}
+
+
+
+
     </div>
   );
 };
 
 export default AdminBigCalendar;
+
+const styles = {
+  overlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    background: "rgba(34, 23, 75, 0.169)",
+    backdropFilter: "blur(4px) saturate(110%)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 999,
+  },
+  popup: {
+    background: "#fff",
+    padding: "20px",
+    borderRadius: "8px",
+    width: "300px",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+  },
+};

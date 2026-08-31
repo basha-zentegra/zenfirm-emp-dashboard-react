@@ -16,6 +16,7 @@ import UnScheduledTasks from "./UnScheduledTasks";
 import { useUser } from "../../context/UserContext";
 
 import { Link } from "react-router-dom";
+import { taskDuration } from "../../utils/taskUtils";
 
 const locales = { "en-US": enUS };
 const localizer = dateFnsLocalizer({ format, parse, getDay, locales,startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }),  });
@@ -24,6 +25,7 @@ const DnDCalendar = withDragAndDrop(Calendar);
 const MyBigCalendar = () => {
 
     const [selectedEvent, setSelectedEvent] = useState(null);
+    const [eventID, setEventID] = useState(null);
     const [events, setEvents] = useState([]);
     const [unscheduledTasks, setunscheduledTasks] = useState([]);
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -105,45 +107,46 @@ const MyBigCalendar = () => {
     }
 
     const eventStyleGetter = (event) => {
-        let backgroundColor = "#3174ad"; // default
+        // let backgroundColor = "#3174ad"; // default
 
-        switch (event.priority) {
-            case "high":
-            backgroundColor = "#e74c3c"; // red
-            break;
-            case "medium":
-            backgroundColor = "#f39c12"; // orange
-            break;
-            case "low":
-            backgroundColor = "#2ecc71"; //#b5e0e6
-            // backgroundColor = "#d1f5ea";
-            // backgroundColor = "#b5e0e6"; 
+        // switch (event.priority) {
+        //     case "high":
+        //     backgroundColor = "#e74c3c"; // red
+        //     break;
+        //     case "medium":
+        //     backgroundColor = "#f39c12"; // orange
+        //     break;
+        //     case "low":
+        //     backgroundColor = "#2ecc71"; //#b5e0e6
+        //     // backgroundColor = "#d1f5ea";
+        //     // backgroundColor = "#b5e0e6"; 
 
-            break;
-            default:
-            break;
-    }
+        //     break;
+        //     default:
+        //     break;
+        // }
         return {
-            style: {
-            backgroundColor,
-            borderRadius: "6px",
-            color: "white",
-            border: "none",
-            padding: "2px 6px",
-            opacity: event.taskStatus === "Completed" ? 0.5 : 0.8,
+            // style: {
+            // backgroundColor,
+            // borderRadius: "6px",
+            // color: "white",
+            // border: "none",
+            // padding: "2px 6px",
+            // opacity: event.taskStatus === "Completed" ? 0.5 : 0.8,
             
-            },
+            // },
+            className : `rbc-task ${event.priority} ${event.taskStatus === "Completed" ? "opacity-75" : ""}`
         };
     };
 
     const CustomEvent = ({ event }) => {
         return (
-            <div>
-            <div className="mt-1" style={{ fontWeight: "600" }}>
-                <i className={`bi bi-check2 me-1 ${event.taskStatus === "Completed" ? ' ' : 'd-none'}`} ></i>{event.title}</div>
-            <div className="text-uppercase mt-2 fw-medium" style={{ fontSize: "12px", opacity: 0.8 }}>
-                {event.projectName}
-            </div>
+            <div className="">
+                <div className="mt-1" style={{ fontWeight: "600" }}>
+                    <i className={`bi bi-check2 me-1 ${event.taskStatus === "Completed" ? ' ' : 'd-none'}`} ></i>{event.title}</div>
+                <div className="text-uppercase mt-2 fw-medium" style={{ fontSize: "12px", opacity: 0.8 }}>
+                    {event.projectName}
+                </div>
             </div>
         );
     };
@@ -169,24 +172,50 @@ const MyBigCalendar = () => {
 
 
     function updateEvent(event, start,end){
-        var config = {
-            app_name: APP_NAME,
-            report_name: "Task_Report",
-            id: event.id,
-            payload: {
-                data: {
-                    Start_Time: formatTimeToHHMM(start),
-                    End_Time: formatTimeToHHMM(end),
-                    Task_Date: formatDateToMMDDYYYY(start) 
-            } }
-        };
-        ZOHO.CREATOR.DATA.updateRecordById(config).then(function (response) {
-            if (response.code == 3000) {
-                console.log(response);
-            }else{
-                console.log(response)
-            }
-        }).catch(e => console.log(e))
+
+        if(event.taskId){
+            console.log("Task ID", event.id)
+            var config = {
+                report_name: "All_Multiple_Tasks",
+                id: event.id,
+                payload: {
+                    data: {
+                        Start_Time: formatTimeToHHMM(start),
+                        End_Time: formatTimeToHHMM(end),
+                        Task_Date: formatDateToMMDDYYYY(start),
+                } }
+            };
+            ZOHO.CREATOR.DATA.updateRecordById(config).then(function (response) {
+                if (response.code == 3000) {
+                    console.log(response);
+                }else{
+                    console.log(response)
+                }
+            }).catch(e => console.log(e))
+        }else{
+            console.log("This is regular task", event)
+            var config = {
+                report_name: "Task_Report",
+                id: event.id,
+                payload: {
+                    data: {
+                        Start_Time: formatTimeToHHMM(start),
+                        End_Time: formatTimeToHHMM(end),
+                        Task_Date: formatDateToMMDDYYYY(start),
+                        Budgeted_Time: taskDuration(start,end)
+
+                } }
+            };
+            ZOHO.CREATOR.DATA.updateRecordById(config).then(function (response) {
+                if (response.code == 3000) {
+                    console.log(response);
+                }else{
+                    console.log(response)
+                }
+            }).catch(e => console.log(e))
+        }
+
+
     }
 
     useEffect(() => {
@@ -202,11 +231,20 @@ const MyBigCalendar = () => {
                 taskStatus: eve?.Task_Status
             }));
 
-            setEvents(newEvents); 
+            const multipleEvents = allTask.flatMap(eve => (eve?.Multiple_Tasks || []).map(task => ({
+                    id: task.ID,
+                    title: eve.Task_Name,
+                    start: parseEventDate(task.Task_Date, task.Start_Time),
+                    end: parseEventDate(task.Task_Date, task.End_Time),
+                    priority: "multiple",
+                    projectName: eve?.Project_Name?.Project_Name,
+                    taskStatus: eve?.Task_Status,
+                    multipleTask: true,
+                    taskId: eve.ID
+                }))
+            );
 
-            // console.log(newEvents)
-
-
+            setEvents([...newEvents, ...multipleEvents]);
 
             const newUnscheduled = allTask.filter(task => !task.Start_Time && !task.End_Time);
             setunscheduledTasks(newUnscheduled)
@@ -285,24 +323,26 @@ const MyBigCalendar = () => {
     };
 
     const handleSelectEvent = (event) => {
-        // console.log("Event clicked:", event);
-        // document.getElementById("taskOffcanvas").click()
+        
         const element = document.getElementById("offcanvasRight");
         const bsOffcanvas = new window.bootstrap.Offcanvas(element);
         bsOffcanvas.show();
-
-
-        // setSelectedEvent(event)
+  
+        if(event?.taskId){
+            setEventID(event || null)
+        }else{
+            setEventID(null)
+        }
 
         var config = {
-            app_name: APP_NAME,
             report_name: "Task_Report",
-            id : event.id
+            id : event?.taskId ? event?.taskId : event.id
         };
         ZOHO.CREATOR.DATA.getRecordById(config).then(function (response) {
             // console.log(response,config);
             if(response.code === 3000){
             setSelectedEvent(response.data)
+            
             }
             // 
         }).catch(e => console.log(e))
@@ -336,11 +376,12 @@ const MyBigCalendar = () => {
     }
 
      const [open, setOpen] = useState(false);
+     const [slotHeight, setSlotHeight] = useState(60);
     
 
   return (
     
-    <div className="me-1" style={{marginLeft:"80px"}}>
+    <div className="me-1" style={{marginLeft:"80px", "--slot-height":`${slotHeight}px`}}>
         <DndProvider backend={HTML5Backend}>
             <DnDCalendar
                 localizer={localizer}
@@ -368,31 +409,34 @@ const MyBigCalendar = () => {
         </DndProvider>
 
 
-        <OffcanvasTaskDetails selectedEvent={selectedEvent} setSelectedEvent={setSelectedEvent} setEvents={setEvents}/>
+        <OffcanvasTaskDetails selectedEvent={selectedEvent} setSelectedEvent={setSelectedEvent} setEvents={setEvents} eventID={eventID}/>
 
         <AddTaskOffcanvas startEnd={startEnd} setEvents={setEvents} fetchTasks={fetchTasks}/>
 
-        <div className="d-flex" style={{position: "fixed", right:"25%", top:"-3px", zIndex:"200"}}>
+        <div className="d-flex" style={{position: "fixed", right:"25%", top:"-2px", zIndex:"200"}}>
 
             {open && (
                 <div className="border-secondary-subtle border rounded-bottom-4 bg-whit p-2 text-muted" style={{background:"#fcf8ff"}}>
 
-                {isManager && (
-                    <>
-                        <Link  to="admincalendar"><button className="btn text-muted fw-semibold"><i class="bi bi-people-fill me-2"></i> Team Calendar</button></Link> <br />
-                    </>
-                )}
-                    
-                    <button className="d-non btn text-muted fw-semibold" onClick={handleUnScheduled}><i class="bi bi-hourglass-top me-2"></i> Unscheduled</button> <br />
-                    
-                    <button className="d-non btn text-muted fw-semibold" onClick={handle24HrsView} ><i class="bi bi-clock-history me-2"></i> 24Hrs View</button> <br />
+                    <button className="btn text-muted fw-semibold" onClick={() => {setSlotHeight(40); setOpen(false)}}><i class="bi bi-zoom-out me-2"></i> Small</button> <br />
+                    <button className="btn text-muted fw-semibold" onClick={() => {setSlotHeight(60); setOpen(false)}}><i class="bi bi-zoom-in me-2"></i> Medium</button> <br />
+                    <button className="btn text-muted fw-semibold" onClick={() => {setSlotHeight(80); setOpen(false)}}><i class="bi bi-zoom-in me-2"></i> Zoom</button> <br />
                 </div>
             )}
 
             <div>
-                <button className="btn btn-sm btn-dark text-white rounded-2" onClick={() => setOpen(!open)}>
-                {open ? (<i class="bi bi-chevron-double-up"></i>) : (<i class="bi bi-chevron-double-down"></i>)}
-            </button>
+                {isManager && (
+                    <>
+                        <Link  to="admincalendar" className="btn action-btn  btn-sm text-white rounded-0" title="Team Calendar"> <i class="bi bi-people-fill"></i></Link> 
+                    </>
+                )}
+                <button className="btn action-btn btn-black btn-sm rounded-0" title="Zoom" onClick={() => setOpen(!open)}>
+                    {open ? (<i class="bi bi-search"></i>) : (<i class="bi bi-zoom-in"></i>)}
+                
+                </button>
+                
+                <button className="btn action-btn btn-blue btn-sm rounded-0" onClick={()=> {handle24HrsView(); setOpen(false) }} title="24Hrs View"><i class="bi bi-clock-history"></i></button>
+                <button className="btn action-btn btn-gold btn-sm rounded-0" onClick={()=> {handleUnScheduled(); setOpen(false)}} title="Unscheduled Tasks"><i class="bi bi-hourglass-top"></i></button>
             </div>
 
         </div>

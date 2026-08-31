@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { APP_NAME } from "../config";
+import { startOfMonth, endOfMonth } from "../utils/dateUtils";
 
 const UserContext = createContext(null);
 
@@ -117,7 +118,7 @@ export const UserProvider = ({ children }) => {
   
     }, [])
 
-    const allowedUsers = ["basha@zentegra.com", "roy@zentegra.com"];
+    const allowedUsers = ["basha@zentegra.com", "roy@zentegra.com", "abdul@zenfirm.app"];
 
     useEffect(() => {
       
@@ -145,8 +146,33 @@ export const UserProvider = ({ children }) => {
   
     }, [userEmail])
 
+    const [thisMonthLongLeave, setThisMonthLongLeave] = useState([])
+
+      useEffect(() => {
+        if (!USERID) return
+
+        const config = {
+    
+          report_name: "Long_Leave_Report",
+          criteria: `From >= '${startOfMonth()}' && From <= '${endOfMonth()}' && Approval_Status == "Approved" && Employee==${USERID}`
+          //&& Employee==${USERID}
+        }
+
+    
+        ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
+              console.log("LONG leave report:;;;;;;;", response)
+    
+            if(response.code === 3000){
+              setThisMonthLongLeave(response.data)
+
+            }
+            
+          })
+          .catch((err) => console.error(err))
+      },[USERID])
+
   return (
-    <UserContext.Provider value={{ userEmail, USERID, projects, orgEmp, ORG, nmgEmp, empName, AllEmployees, isManager,isHR, Work_Shift,USEROBJ}}>
+    <UserContext.Provider value={{ userEmail, USERID, projects, orgEmp, ORG, nmgEmp, empName, AllEmployees, isManager,isHR, Work_Shift,USEROBJ, thisMonthLongLeave, setThisMonthLongLeave}}>
       {children}
     </UserContext.Provider>
   );

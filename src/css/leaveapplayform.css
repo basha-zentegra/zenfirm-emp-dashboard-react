@@ -419,3 +419,19 @@
     opacity: 0;
   }
 }
+
+.row-remove-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+.row-remove-btn:hover {
+  background: #fdeaea;
+  color: #c0392b;
+}

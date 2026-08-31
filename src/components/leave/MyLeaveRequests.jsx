@@ -2,23 +2,7 @@ import {useState, useEffect} from 'react'
 import { useUser } from '../../context/UserContext';
 import { isFutureDate } from '../../utils/dateUtils';
 import { formattedDate } from '../../config';
-
-
-
-  const getStatusBadge = (status) => {
-    const base = "badge px-3 py-2 fw-medium";
-
-    switch (status) {
-      case "Approved":
-        return <span className={`${base} bg-approved text-success`}>● Approved</span>;
-      case "Rejected":
-        return <span className={`${base} bg-danger-subtle text-danger`}>● Declined</span>;
-      case "Revoked":
-        return <span className={`${base} bg-primary-subtle text-primary`}>● Revoked</span>;
-      default:
-        return <span className={`${base} bg-warning-subtle text-warning`}>● Pending</span>;
-    }
-  };
+import { getStatusBadge } from '../../utils/uiUtils';
 
 const MyLeaveRequests = () => {
 
@@ -51,7 +35,7 @@ const MyLeaveRequests = () => {
     useEffect(() => {
     const fetchLongLeaves = async () => {
       try {
-        const res = await ZOHO.CREATOR.DATA.getRecords({report_name: "Long_Leave_Report", criteria: `Employee.ID ==${USERID} && From > '${formattedDate}'`})
+        const res = await ZOHO.CREATOR.DATA.getRecords({report_name: "Long_Leave_Report", criteria: `Employee.ID ==${USERID} && Approval_Status != "Converted" && From > '${formattedDate}'`})
 
         console.log("Long Leave",res)
 
@@ -82,7 +66,7 @@ const MyLeaveRequests = () => {
         ZOHO.CREATOR.DATA.updateRecordById(config).then(function (response) {
           console.log(response);
           if (response.code == 3000) {
-              setLeaves((prev) => prev.map((leave) => leave.ID === id ? { ...leave, Approval_status: "Revoked"} : leave));
+              setLeaves((prev) => prev.map((leave) => leave.ID === id ? { ...leave, Approval_status: action} : leave));
           } 
         }).catch(e => console.warn(e))
 
@@ -92,7 +76,7 @@ const MyLeaveRequests = () => {
 
   return (
     <div className="container mt-3">
-      <div className="card shadow-sm border-0">
+      <div className="card shadow-sm border-0 rounded-4">
         <div className="card-body">
           <h5 className="mb-4 fw-semibold">My Requests</h5>
 
@@ -122,9 +106,7 @@ const MyLeaveRequests = () => {
                     <td className="">{getStatusBadge(leave?.Approval_Status)}</td>
                     <td>{leave?.Reason}</td>
                     <td>{leave?.Approved_by?.Name || ""}</td>
-                    
                     <td></td>
-                    
                   </tr>
 
                 )) }
@@ -142,7 +124,7 @@ const MyLeaveRequests = () => {
                     <td className="text-end">
                       
 
-                      {leave?.Approval_status === "Approved" && isFutureDate(leave?.From) && (
+                      {leave?.Approval_status === "Approved" || leave?.Approval_status === "Pending" && isFutureDate(leave?.From) && (
                         <div className="dropdown">
                           <button
                             className="btn btn-sm btn-light"
@@ -159,8 +141,20 @@ const MyLeaveRequests = () => {
                                 className="dropdown-item text-danger"
                                 onClick={() => handleAction(leave.ID, "Revoked")}
                                 style={{opacity: leave?.Approval_status !== "Approved" ? '0.5' : '1'}}
+                                disabled={leave?.Approval_status !== "Approved"}
                               >
                                 <i class="bi bi-backspace-reverse"></i> Revoke
+                              </button>
+                            </li>
+
+                            <li>
+                              <button
+                                className="dropdown-item text-danger"
+                                onClick={() => handleAction(leave.ID, "Cancelled")}
+                                style={{opacity: leave?.Approval_status !== "Pending" ? '0.5' : '1'}}
+                                disabled={leave?.Approval_status !== "Pending"}
+                              >
+                                <i class="bi bi-ban"></i> Cancel
                               </button>
                             </li>
                             

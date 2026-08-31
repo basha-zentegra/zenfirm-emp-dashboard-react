@@ -1,0 +1,402 @@
+.timesheet-card {
+  width: 100%;
+  /* max-width: 1000px; */
+  min-height: 300px;
+
+  background: #ffffff;
+  border: 1px solid #e7ebf0;
+  border-radius: 10px;
+
+  overflow: hidden;
+
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+}
+
+/* =========================
+   Header
+========================= */
+
+.timesheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 34px 29px 0;
+}
+
+.timesheet-header h2 {
+  margin: 0;
+
+  color: #171c26;
+
+  font-size: 31px;
+  line-height: 1.2;
+  font-weight: 600;
+
+  letter-spacing: -0.7px;
+}
+
+.timesheet-period {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 0;
+
+  border: none;
+  background: transparent;
+
+  color: #303744;
+
+  font-family: inherit;
+  font-size: 23px;
+  font-weight: 500;
+
+  cursor: pointer;
+}
+
+.timesheet-period svg {
+  color: #202733;
+}
+
+/* =========================
+   Summary
+========================= */
+
+.timesheet-summary {
+  padding: 3px 9px 0;
+}
+
+.total-hours {
+  color: #111722;
+
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 400;
+
+  letter-spacing: -1.3px;
+}
+
+.logged-label {
+  margin-top: 12px;
+
+  color: #303744;
+
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 500;
+}
+
+/* =========================
+   Chart
+========================= */
+
+.chart-wrapper {
+  margin-top: 42px;
+  padding: 0 4px;
+}
+
+.chart-area {
+  position: relative;
+
+  height: 205px;
+
+  padding-right: 69px;
+}
+
+/* =========================
+   Grid Lines
+========================= */
+
+.grid-line {
+  position: absolute;
+  left: 0;
+  right: 69px;
+
+  border-top: 1px solid #e9edf1;
+
+  height: 1px;
+}
+
+.grid-line span {
+  position: absolute;
+  left: calc(100% + 17px);
+  top: -13px;
+
+  white-space: nowrap;
+
+  color: #454c57;
+
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 400;
+}
+
+.line-10 {
+  top: 0;
+}
+
+.line-5 {
+  top: 40%;
+}
+
+.line-0 {
+  top: 100%;
+}
+
+/* =========================
+   Bars
+========================= */
+
+.bars {
+  position: absolute;
+  inset: 0 69px 0 0;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+
+  padding: 0 20px;
+}
+
+.bar-column {
+  width: 68px;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.bar-container {
+  position: relative;
+
+  width: 45px;
+  height: calc(100% - 39px);
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.time-bar {
+  width: 25px;
+
+  min-height: 3px;
+
+  border-radius: 12px;
+
+  transition:
+    height 0.35s ease,
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+/* Logged hours */
+.time-bar.logged {
+  background: linear-gradient(
+    to bottom,
+    #92eed1 0%,
+    #55cca6 100%
+  );
+}
+
+/* Future / non-logged hours */
+.time-bar.upcoming {
+  background: #d1d5da;
+}
+
+/* Hover effect */
+.bar-column:hover .time-bar {
+  transform: translateY(-3px);
+  opacity: 0.88;
+}
+
+.day-label {
+  display: block;
+
+  margin-top: 15px;
+
+  color: #252b35;
+
+  font-size: 14px;
+  line-height: 24px;
+  font-weight: 400;
+}
+
+/* =========================
+   Footer
+========================= */
+
+.timesheet-footer {
+  margin-top: 64px;
+
+  padding: 25px 30px 28px;
+
+  border-top: 1px solid #edf0f3;
+}
+
+.log-time-btn {
+  padding: 0;
+
+  border: none;
+  background: transparent;
+
+  color: #347fe0;
+
+  font-family: inherit;
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition: color 0.2s ease;
+}
+
+.log-time-btn:hover {
+  color: #216ac8;
+}
+
+/* =========================
+   Responsive
+========================= */
+
+@media (max-width: 768px) {
+  .timesheet-card {
+    min-height: auto;
+  }
+
+  .timesheet-header {
+    padding: 25px 20px 0;
+  }
+
+  .timesheet-header h2 {
+    font-size: 24px;
+  }
+
+  .timesheet-period {
+    font-size: 17px;
+    gap: 7px;
+  }
+
+  .timesheet-summary {
+    padding: 30px 20px 0;
+  }
+
+  .total-hours {
+    font-size: 36px;
+  }
+
+  .logged-label {
+    font-size: 18px;
+  }
+
+  .chart-wrapper {
+    padding: 0 20px;
+    margin-top: 45px;
+  }
+
+  .chart-area {
+    height: 210px;
+    padding-right: 48px;
+  }
+
+  .grid-line {
+    right: 48px;
+  }
+
+  .grid-line span {
+    left: calc(100% + 10px);
+    font-size: 15px;
+  }
+
+  .bars {
+    right: 48px;
+    padding: 0 5px;
+  }
+
+  .bar-column {
+    width: 42px;
+  }
+
+  .bar-container {
+    width: 30px;
+  }
+
+  .time-bar {
+    width: 30px;
+    border-radius: 4px 4px 2px 2px;
+  }
+
+  .day-label {
+    font-size: 15px;
+  }
+
+  .timesheet-footer {
+    margin-top: 50px;
+    padding: 20px;
+  }
+
+  .log-time-btn {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .timesheet-header {
+    align-items: flex-start;
+  }
+
+  .timesheet-header h2 {
+    font-size: 21px;
+  }
+
+  .timesheet-period {
+    font-size: 14px;
+  }
+
+  .total-hours {
+    font-size: 32px;
+  }
+
+  .chart-wrapper {
+    padding: 0 12px;
+  }
+
+  .chart-area {
+    padding-right: 38px;
+  }
+
+  .grid-line {
+    right: 38px;
+  }
+
+  .bars {
+    right: 38px;
+  }
+
+  .bar-column {
+    width: 35px;
+  }
+
+  .bar-container {
+    width: 24px;
+  }
+
+  .time-bar {
+    width: 24px;
+  }
+
+  .day-label {
+    font-size: 12px;
+  }
+}

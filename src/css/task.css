@@ -18,3 +18,24 @@
 .list-group-item:hover .checklistTrash{
     display: block;
 }
+
+.complete-task-banner {
+  animation: completeTaskIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes completeTaskIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  60% {
+    opacity: 1;
+    transform: translateY(3px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

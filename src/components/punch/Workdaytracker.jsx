@@ -5,6 +5,14 @@ const WORK_MINUTES = 8 * 60;
 const BREAK_ALLOWANCE_MINUTES = 60;
 const OFFICE_END_HOUR = 22; // 10 PM
 
+function getIndianTime() {
+  return new Date(
+    new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Kolkata",
+    })
+  );
+}
+
 function fmt(mins) {
   mins = Math.max(0, Math.floor(mins));
   const h = Math.floor(mins / 60);
@@ -27,7 +35,7 @@ function parseTimeTaken(str) {
 export default function WorkdayTracker({ input }) {
   const { USEROBJ } = useUser();
 
-  const [now, setNow] = useState(new Date());
+  const [now, setNow] = useState(getIndianTime());
   const [timeTaken, setTimeTaken] = useState("");
   const [officeStart, setOfficeStart] = useState(null);
 
@@ -49,7 +57,7 @@ useEffect(() => {
 //     // hasInitialized.current = true;
 //   }
   handleGateChange(input);
-  setNow(new Date())
+  setNow(getIndianTime())
 
 }, [input]);
 
@@ -93,6 +101,7 @@ useEffect(() => {
   let percent = 0;
 
   let status = {color: "#8593EA"};
+  let bg = { backgroundColor: "#E8EBFC" };
 
   if (takenMinutes !== null) {
     const workRemainingMinutes = Math.max(0, WORK_MINUTES - takenMinutes);
@@ -109,14 +118,19 @@ useEffect(() => {
 
     if (breakTakenMinutes > 60) {
       status = { color: "#EF4444" };
+      bg = { backgroundColor: "#FEE2E2" };
     } else if (breakTakenMinutes > 40) {
       status = { color: "#F59E0B" };
+      bg = { backgroundColor: "#FEF3C7" };
     } else if (breakTakenMinutes > 30) {
       status = { color: "rgb(239, 191, 68)" };
+      bg = { backgroundColor: "#FEF9C3" };
     } else if (breakTakenMinutes > 10) {
-        status = { color: "#22C55E" };
+        status = { color: "#55CCA6" };
+        bg = { backgroundColor: "#DDF7EE" };
     } else {
       status = { color: "#8593EA" };
+      bg = { backgroundColor: "#E8EBFC" };
     }
 
   } else if (isInvalid) {
@@ -128,17 +142,19 @@ useEffect(() => {
   }
 
 
-  console.log("breakTakenMinutes BETA", breakTakenMinutes, "now", now, "officeStart", officeStart)
+  // console.log("breakTakenMinutes BETA", breakTakenMinutes, "now", now, "officeStart", officeStart)
 
 
   return (
-    <div>
-      <div>
-        <small className="text-mute fw-semibold" style={status}>
-          Break Taken: {fmt(breakTakenMinutes)} - (beta)
+    <div className="d-flex justify-content-center mt-2">
+      <div className="card w-50  border-0 rounded-4 py-1" style={bg}>
+        <small className="fw-semibold" style={status}>
+          <span className=""><i className="bi bi-cup-hot-fill me-2"></i> </span> Break Taken: {fmt(breakTakenMinutes)}
 
         </small>
       </div>
+
+
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { useUser } from '../context/UserContext';
 
 const Sidebar = ({userEmail}) => {
 
-  const {USERID} = useUser();
+  const {USERID, thisMonthLongLeave=[]} = useUser();
 
   //266830000001230027
 
@@ -45,11 +45,22 @@ const Sidebar = ({userEmail}) => {
     };
   }, []); // 👈 run only once
 
+  const [showBadge, setShowBadge] = useState(false)
+
+
+  // useEffect(() => {
+  //   if(sessionStorage.getItem("leavetracker")){
+  //     setShowBadge(true)
+  //   }else{
+  //     setShowBadge(false)
+  //   }
+  // },[])
+
 
   return (
     <>
     
-<div className="d-flex flex-column flex-shrink-0 p-3  vh-100 sidebar ">
+<div className="d-flex flex-column flex-shrink-0 p-3  vh-100 sidebar bg-white shadow-sm homecards">
   {/* <span
     
     className="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none"
@@ -84,9 +95,15 @@ const Sidebar = ({userEmail}) => {
     </li>
 
     <li>
-      <Link  to="/attendance" onClick={() => handleClick(5)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="ZenLeave">
+      <Link  to="/attendance" onClick={() => handleClick(5)} className="nav-link link-dark px-2 mb-3 position-relative" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="ZenLeave">
 
         <i className={`sidebar-icon bi-cloud-moon-fill fs-5 ${activeId === 5 ? "text-zen" : "text-secondary"}`} ></i>
+
+        {thisMonthLongLeave.length > 0 && (
+          <i class="bi bi-exclamation-triangle-fill position-absolute text-warning" 
+                    style={{ fontSize: "10px", top: "2px", right: "4px" }}></i>
+        )}
+        
           
       </Link>
     </li>

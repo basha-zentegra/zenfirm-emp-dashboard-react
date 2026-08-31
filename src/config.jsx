@@ -14,4 +14,9 @@ export const CURRENTDATETIME = new Date().toLocaleString('en-US', {
 }).replace(',', '').replace(/\//g, "-")
 
 
-export const TESTING_USERS = ["basha@zenfirm.app","manikandan@zenfirm.app", "faiyas@zenfirm.app", "mani@zenfirm.app", "akash@zenfirm.app", "sanket@zenfirm.app", "ajay@zenfirm.app", "bhagyaraj@zenfirm.app", "abdul@zenfirm.app", "srinivasa@zenfirm.app","nithish@zenfirm.app","rudresh@zenfirm.app"];
+export const TESTING_USERS = ["basha@zenfirm.app","manikandan@zenfirm.app", "faiyas@zenfirm.app", "mani@zenfirm.app", "akash@zenfirm.app", "abdul@zenfirm.app", ];
+
+export const SUPER_ADMIN = ["basha@zentegra.com", "roy@zentegra.com", "abdul@zenfirm.app"];
+
+
+// "sanket@zenfirm.app", "ajay@zenfirm.app", "bhagyaraj@zenfirm.app", "abdul@zenfirm.app", "srinivasa@zenfirm.app","nithish@zenfirm.app","rudresh@zenfirm.app", "poorvi@zenfirm.app", "abhinand@zenfirm.app", "disha@zenfirm.app"

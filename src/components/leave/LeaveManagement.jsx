@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useUser } from "../../context/UserContext";
 import { startOfMonth,getDayName } from "../../utils/dateUtils";
+import { getStatusBadge } from '../../utils/uiUtils';
+
+
+const STATUS_OPTIONS = ["All", "Pending", "Approved", "Rejected", "Revoked", "Cancelled"];
 
 const LeaveManagement = () => {
   
@@ -41,8 +45,15 @@ const LeaveManagement = () => {
         const res = await ZOHO.CREATOR.DATA.getRecords(config)
 
         if(res.code == 3000){
-            setLeaves(res.data);
-            console.log("res",res)
+            // setLeaves(res.data);
+            // console.log("res",res)
+            const sortedLeaves = [...res.data].sort((a, b) => {
+              if (a.Approval_status === "Pending") return -1;
+              if (b.Approval_status === "Pending") return 1;
+              return 0;
+            });
+
+            setLeaves(sortedLeaves);
         }
 
       } catch (err) {
@@ -61,6 +72,11 @@ const LeaveManagement = () => {
           console.log("Long Leave",res)
   
           if(res.code == 3000){
+            const sortedLeaves = [...res.data].sort((a, b) => {
+              if (a.Approval_Status === "Pending") return -1;
+              if (b.Approval_Status === "Pending") return 1;
+              return 0;
+            });
               setLongLeaves(res.data);
           }
   
@@ -184,20 +200,7 @@ const getLeaveType = (sick, casual) => {
   }
 };
 
-  const getStatusBadge = (status) => {
-    const base = "badge px-3 py-2 fw-medium";
 
-    switch (status) {
-      case "Approved":
-        return <span className={`${base} bg-approved text-success`}>● Approved</span>;
-      case "Rejected":
-        return <span className={`${base} bg-danger-subtle text-danger`}>● Declined</span>;
-      case "Revoked":
-        return <span className={`${base} bg-primary-subtle text-primary`}>● Revoked</span>;
-      default:
-        return <span className={`${base} bg-warning-subtle text-warning`}>● Pending</span>;
-    }
-  };
 
 
 
@@ -228,11 +231,51 @@ const [rejectReason, setRejectReason] = useState("");
 
 const lastItem = history?.[history.length - 1];
 
+const [activeFilters, setActiveFilters] = useState([]); // empty = "All"
+
+const toggleFilter = (status) => {
+  if (status === "All") {
+    setActiveFilters([]); // reset to All
+    return;
+  }
+  setActiveFilters((prev) =>
+    prev.includes(status)
+      ? prev.filter((s) => s !== status) // clicking again removes it
+      : [...prev, status]                // add to selection
+  );
+};
+
+const isActive = (status) =>
+  status === "All" ? activeFilters.length === 0 : activeFilters.includes(status);
+
+const matchesFilter = (status) =>
+  activeFilters.length === 0 || activeFilters.includes(status);
+
+// note the different field names in your two datasets
+const filteredLongLeaves = longLeaves.filter((l) => matchesFilter(l?.Approval_Status));
+const filteredLeaves = leaves.filter((l) => matchesFilter(l?.Approval_status));
+
   return (
     <div className="container mt-3">
-      <div className="card shadow-sm border-0">
+      <div className="card shadow-sm border-0 rounded-4">
         <div className="card-body">
-          <h5 className="mb-4 fw-semibold">Leave Approvals</h5>
+          {/* <h5 className="mb-4 fw-semibold">Leave Approvals</h5> */}
+<div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+  <h5 className="mb-0 fw-semibold">Leave Approvals</h5>
+
+  <div className="status-filter">
+    {STATUS_OPTIONS.map((status) => (
+      <button
+        key={status}
+        type="button"
+        className={`status-chip ${status.toLowerCase()} ${isActive(status) ? "active" : ""}`}
+        onClick={() => toggleFilter(status)}
+      >
+        {status}
+      </button>
+    ))}
+  </div>
+</div>
 
 
           <div className="table-responsive">
@@ -250,7 +293,15 @@ const lastItem = history?.[history.length - 1];
 
               <tbody>
 
-                {longLeaves.map(leave => (
+                {filteredLongLeaves.length === 0 && filteredLeaves.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="text-center text-muted py-4">
+                      No leaves match the selected filter.
+                    </td>
+                  </tr>
+                )}
+
+                {filteredLongLeaves.map(leave => (
 
                   <tr key={leave.ID} className="tr-hight">
                     <td className="fw-medium">{leave?.Employee?.Name || "Name"}</td>
@@ -273,7 +324,7 @@ const lastItem = history?.[history.length - 1];
 
                 )) }
 
-                {leaves.map((leave) => (
+                {filteredLeaves.map((leave) => (
                   <tr key={leave.ID} className="tr-hight">
                     <td className="fw-medium">{leave?.Employee_Name?.Name || "Name"}</td>
                     <td>{leave?.Leave_Type1 || "-"}</td>
@@ -285,7 +336,6 @@ const lastItem = history?.[history.length - 1];
                         <button
                           className="btn btn-sm btn-light"
                           onClick={() => openPopup(leave)}
-
                         >
                           ⋮
                         </button>
@@ -617,7 +667,7 @@ const lastItem = history?.[history.length - 1];
           handleAction(selectedLeave.ID, "Approved");
           closePopup();
         }}
-        disabled={selectedLeave?.Approval_status !== ""}
+        disabled={selectedLeave?.Approval_status !== "Pending"}
       >
         Approve
       </button>
@@ -625,7 +675,7 @@ const lastItem = history?.[history.length - 1];
       <button
         className="btn btn-danger"
         onClick={() => setRejectMode(true)}
-        disabled={selectedLeave?.Approval_status !== ""}
+        disabled={selectedLeave?.Approval_status !== "Pending"}
       >
         Reject
       </button>

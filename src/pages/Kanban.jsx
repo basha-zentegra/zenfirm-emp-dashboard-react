@@ -332,6 +332,7 @@ const handleDragEnd = (result) => {
                         {task?.Edited && (
                           <small className='small text-muted d-block edited-text'>Edited: {task?.Edited}</small>
                         )}
+                        <small className='text-muted'><i class="bi bi-chat me-1"></i>{task?.Notes?.length || 0}</small>
                       </div>
                     </div>
                   )}

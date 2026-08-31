@@ -83,3 +83,41 @@ table.table.table-hover > tbody > tr:hover > * {
     transform: scale(1);
   }
 }
+
+.status-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.status-chip {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #6b7280;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 6px 15px;
+  border-radius: 999px;
+  cursor: pointer;
+  line-height: 1;
+  transition: all 0.15s ease;
+}
+
+.status-chip:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.status-chip.active {
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+/* accent color per status when active */
+.status-chip.active.all       { background: #4f46e5; }
+.status-chip.active.pending   { background: #f59e0b; }
+.status-chip.active.approved  { background: #16a34a; }
+.status-chip.active.rejected  { background: #dc2626; }
+.status-chip.active.revoked   { background: #7c3aed; }
+.status-chip.active.cancelled { background: #6b7280; }

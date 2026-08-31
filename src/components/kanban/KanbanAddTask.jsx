@@ -36,7 +36,8 @@ const KanbanAddTask = ({list,selectedBoard,setKanbanTasks, boardMembers = []}) =
       Zenboards: selectedBoard?.ID,
       Due_Date: "",
       URL:"",
-      Other_Assignees: []
+      Other_Assignees: [],
+      Notes:[]
     });
 
     useEffect(()=>{
@@ -142,7 +143,8 @@ const validateURL = (value) => {
                   ID: response.data.ID,
                   Task_Name:taskData.Task_Name,
                   Task_Description:taskData.Task_Description,
-                  Kanban_Status:taskData.Kanban_Status
+                  Kanban_Status:taskData.Kanban_Status,
+                  Notes:[]
                 };
                 // setKanbanTasks(prev => [...prev, newEvent]);
                 setKanbanTasks(prev => [newEvent, ...prev]);
@@ -230,7 +232,7 @@ border:"rgba(255, 255, 255, 0.14)"
       </div>
 
       <div className="py-2 mb-2">
-        <h5 className="text-primary">Add Task Details</h5>
+        <h5 className="text-zen-gradient">Add Task Details</h5>
       </div>
   
       <table className="table table-borderless" style={{ tableLayout: "fixed" }}>
@@ -539,13 +541,15 @@ border:"rgba(255, 255, 255, 0.14)"
   
         </tbody>
       </table>
+
+      
+      <button className='action-btn btn-purple ms-3 mt-3' disabled={isSubmitting} onClick={handleSubmit}>
+        {isSubmitting ? "Saving..." : "Submit"}
+      </button>
     </div>
   </div>
 
-  <button className='btn glass text-primary mt-3 ' disabled={isSubmitting} onClick={handleSubmit}>
-     <span className='text-primary py-2  px-4'>{isSubmitting ? "Saving..." : "Submit"}</span>
-    
-    </button>
+  
 
   {/* <button className='btn glass text-primary mt-3' disabled={isSubmitting} onClick={handleSubmit}>
   <span className='text-primary py-2  px-4'>{isSubmitting ? "Saving..." : "Submit"}</span>
