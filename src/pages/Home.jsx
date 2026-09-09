@@ -1,4 +1,4 @@
-import { useState,useEffect } from 'react'
+import { useState,useEffect,useMemo } from 'react'
 import { useUser } from '../context/UserContext'
 import { APP_NAME } from '../config'
 import { formattedDate } from '../config'
@@ -23,6 +23,39 @@ export const getPriorityBorder = (priority) => {
     default:
       return "border-dar bg-secondary-subtl";
   }
+};
+
+// KPI DATE FILTER OPTIONS
+export const KPI_FILTERS = [
+  { value: "today", label: "Today" },
+  { value: "week", label: "This Week" },
+  { value: "month", label: "This Month" },
+];
+
+// BUILDS THE Task_Date CRITERIA FOR THE SELECTED RANGE — API EXPECTS "MM-DD-YYYY"
+export const getDateCriteria = (filter) => {
+  const pad = (n) => String(n).padStart(2, "0");
+  const fmt = (d) => `${pad(d.getMonth() + 1)}-${pad(d.getDate())}-${d.getFullYear()}`;
+
+  const today = new Date();
+
+  if (filter === "week") {
+    // WEEK RUNS MONDAY -> SUNDAY
+    const day = today.getDay(); // 0 = Sunday
+    const start = new Date(today);
+    start.setDate(today.getDate() + (day === 0 ? -6 : 1 - day));
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    return `Task_Date >= "${fmt(start)}" && Task_Date <= "${fmt(end)}"`;
+  }
+
+  if (filter === "month") {
+    const start = new Date(today.getFullYear(), today.getMonth(), 1);
+    const end = new Date(today.getFullYear(), today.getMonth() + 1, 0); // LAST DAY OF MONTH
+    return `Task_Date >= "${fmt(start)}" && Task_Date <= "${fmt(end)}"`;
+  }
+
+  return `Task_Date == "${fmt(today)}"`;
 };
 
 const Home = () => {
@@ -98,28 +131,109 @@ const Home = () => {
 
   }, [UID])
 
+      // KPI CARD DATE FILTER
+      const [kpiFilter, setKpiFilter] = useState("today");
+      const dateCriteria = useMemo(() => getDateCriteria(kpiFilter), [kpiFilter]);
+
       // FETCHING PROJECTS COUNT
       const [projectsCount, setProjectsCount] = useState("0");
+      const [taskCount, setTaskCount] = useState("0");
+      const [completedTaskCount, setCompletedTaskCount] = useState("0");
+      const [inprogressTaskCount, setInprogressTaskCount] = useState("0");
+      const [notstartedTaskCount, setNotstartedTaskCount] = useState("0");
+
   useEffect(() => {
     if (!UID) return
 
+    const config = {report_name: "My_Team_Projects",}
+
+    ZOHO.CREATOR.DATA.getRecordCount(config).then((response) => {
+      if(response.code === 3000){setProjectsCount(response.result.records_count)}
+    }).catch((err) => console.error(err))
+
+  }, [UID])
+
+
+useEffect(() => {
+    if (!UID) return
+
     const config = {
-      report_name: "My_Team_Projects",
+      report_name: "My_Team_Tasks",
+      criteria: `Assignee.ID==${UID} && ${dateCriteria} && Task_Status == "Completed"`
     }
 
     ZOHO.CREATOR.DATA.getRecordCount(config).then((response) => {
-      console.log("MY PROJECTS COUNT:", response)
 
-      if(response.code === 3000){
-
-        setProjectsCount(response.result.records_count)
-        
-      }
+        if(response.code === 3000){
+          setCompletedTaskCount(response.result.records_count)
+        }
         
       })
       .catch((err) => console.error(err))
 
-  }, [UID])
+  }, [UID, dateCriteria])
+
+// FETCHING TODAY'S TOTAL TASKS COUNT
+useEffect(() => {
+    if (!UID) return
+
+    const config = {
+      report_name: "My_Team_Tasks",
+      criteria: `Assignee.ID==${UID} && ${dateCriteria}`
+    }
+
+    ZOHO.CREATOR.DATA.getRecordCount(config).then((response) => {
+
+        if(response.code === 3000){
+          setTaskCount(response.result.records_count)
+        }
+
+      })
+      .catch((err) => console.error(err))
+
+  }, [UID, dateCriteria])
+
+
+// FETCHING TODAY'S IN PROGRESS TASKS COUNT
+useEffect(() => {
+    if (!UID) return
+
+    const config = {
+      report_name: "My_Team_Tasks",
+      criteria: `Assignee.ID==${UID} && ${dateCriteria} && Task_Status == "In Progress"`
+    }
+
+    ZOHO.CREATOR.DATA.getRecordCount(config).then((response) => {
+
+        if(response.code === 3000){
+          setInprogressTaskCount(response.result.records_count)
+        }
+
+      })
+      .catch((err) => console.error(err))
+
+  }, [UID, dateCriteria])
+
+
+// FETCHING TODAY'S NOT STARTED TASKS COUNT
+useEffect(() => {
+    if (!UID) return
+
+    const config = {
+      report_name: "My_Team_Tasks",
+      criteria: `Assignee.ID==${UID} && ${dateCriteria} && Task_Status == "Not Started"`
+    }
+
+    ZOHO.CREATOR.DATA.getRecordCount(config).then((response) => {
+
+        if(response.code === 3000){
+          setNotstartedTaskCount(response.result.records_count)
+        }
+
+      })
+      .catch((err) => console.error(err))
+
+  }, [UID, dateCriteria])
 
 
 
@@ -267,15 +381,7 @@ const TaskBadge = ({ status }) => {
 
 
   return (
-    <div className=' pt-4 px-4' style={{ marginLeft: "70px", backgroundColor:"#FCF8FF" }} >
-
-      {/* <button onClick={() => showToast("success", "Project created successfully!", 10000)}>
-          Success
-        </button>
-
-        <button onClick={() => showToast("info", "Project created successfully!")}>
-          warning
-        </button> */}
+    <div className=' pt-2 px-4' style={{ marginLeft: "70px", backgroundColor:"#FCF8FF" }} >
 
 
       <ToastContainer
@@ -289,6 +395,20 @@ const TaskBadge = ({ status }) => {
 
 <section className="app-stats pb-2 ">
   <div className="">
+
+    {/* KPI DATE FILTER */}
+    <div className="d-flex justify-content-end align-items-center mb-2">
+      <select
+        className="form-select form-select-sm w-auto rounded-3 shadow-sm border-0"
+        value={kpiFilter}
+        onChange={(e) => setKpiFilter(e.target.value)}
+      >
+        {KPI_FILTERS.map((f) => (
+          <option key={f.value} value={f.value}>{f.label}</option>
+        ))}
+      </select>
+    </div>
+
     <div className="row row-cols-1 row-cols-md-2 row-cols-lg-5 g-2">
 
       {/* Total Tasks */}
@@ -312,7 +432,7 @@ const TaskBadge = ({ status }) => {
           </div>
           <div className="ms-3">
             <p className="text-uppercase small fw-semibold text-muted mb-0">Total Tasks</p>
-            <h3 className="fs-4 fw-bold mb-0">{myTodayTasks.length}</h3>
+            <h3 className="fs-4 fw-bold mb-0">{taskCount}</h3>
           </div>
         </div>
       </div>
@@ -325,7 +445,7 @@ const TaskBadge = ({ status }) => {
           </div>
           <div className="ms-3">
             <p className="text-uppercase small fw-semibold text-muted mb-0">Completed Tasks</p>
-            <h3 className="fs-4 fw-bold mb-0">{todayCompleted.length}</h3>
+            <h3 className="fs-4 fw-bold mb-0">{completedTaskCount}</h3>
           </div>
         </div>
       </div>
@@ -338,7 +458,7 @@ const TaskBadge = ({ status }) => {
           </div>
           <div className="ms-3">
             <p className="text-uppercase small fw-semibold text-muted mb-0">In Progress</p>
-            <h3 className="fs-4 fw-bold mb-0">{todayInprog.length}</h3>
+            <h3 className="fs-4 fw-bold mb-0">{inprogressTaskCount}</h3>
           </div>
         </div>
       </div>
@@ -351,7 +471,7 @@ const TaskBadge = ({ status }) => {
           </div>
           <div className="ms-3">
             <p className="text-uppercase small fw-semibold text-muted mb-0">Not Started</p>
-            <h3 className="fs-4 fw-bold mb-0">{todayNotStarted.length}</h3>
+            <h3 className="fs-4 fw-bold mb-0">{notstartedTaskCount}</h3>
           </div>
         </div>
       </div>
