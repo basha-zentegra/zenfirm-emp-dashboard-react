@@ -90,7 +90,7 @@ const getLocation = () => {
 
         <main className='' style={{overflow: "hidden"}}>
 
-        <aside style={{ position: "fixed", width: "70px" }}>
+        <aside style={{ position: "fixed", width: "var(--zen-rail-width)" }}>
 
           <Sidebar userEmail={userEmail}/>
 

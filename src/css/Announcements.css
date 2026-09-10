@@ -229,3 +229,109 @@
   cursor: pointer;
   transition: 0.2s ease-in-out, transform 0.2s ease-in-out;
 } */
+/* =========================
+   New / Unseen Announcements
+========================= */
+
+.announcement-item {
+  position: relative;
+  border-radius: 6px;
+}
+
+/* SOFT TINT + LEFT ACCENT BAR THAT PERSISTS, PLUS A ONE-SHOT SLIDE/FLASH ON ARRIVAL */
+.announcement-item.is-new {
+  background: #f6f2ff;
+  box-shadow: inset 3px 0 0 #7c63ff;
+  animation: announce-flash 2.4s ease-out 1;
+}
+
+.announcement-item.is-new:hover {
+  background: #efe9ff;
+}
+
+@keyframes announce-flash {
+  0% {
+    background: #e0d4ff;
+    transform: translateX(-8px);
+    opacity: 0;
+  }
+  15% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    background: #f6f2ff;
+  }
+}
+
+/* "NEW" PILL — GENTLE OUTWARD PULSE TO CATCH THE EYE WITHOUT SHOUTING */
+.new-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 17px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: #7c63ff;
+  color: #ffffff;
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  animation: announce-pulse 1.9s ease-in-out infinite;
+}
+
+@keyframes announce-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(124, 99, 255, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(124, 99, 255, 0);
+  }
+}
+
+/* HEADER COUNT — DOUBLES AS A "MARK ALL READ" BUTTON */
+.announce-count-pill {
+  border: 0;
+  background: #7c63ff;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  animation: announce-pulse 1.9s ease-in-out infinite;
+}
+
+.announce-count-pill:hover {
+  background: #6349e8;
+}
+
+/* MEGAPHONE GIVES A SHORT RING WHEN SOMETHING IS UNREAD, THEN STOPS */
+.announce-bell-ring {
+  display: inline-block;
+  transform-origin: 50% 10%;
+  animation: announce-bell 1.7s ease-in-out 3;
+}
+
+@keyframes announce-bell {
+  0%, 55%, 100% { transform: rotate(0deg); }
+  60% { transform: rotate(13deg); }
+  66% { transform: rotate(-11deg); }
+  72% { transform: rotate(8deg); }
+  78% { transform: rotate(-5deg); }
+  84% { transform: rotate(2deg); }
+}
+
+/* RESPECT USERS WHO ASK THE OS FOR LESS MOTION — TINT AND BADGES STILL DO THE JOB */
+@media (prefers-reduced-motion: reduce) {
+  .announcement-item.is-new,
+  .new-flag,
+  .announce-count-pill,
+  .announce-bell-ring {
+    animation: none !important;
+  }
+}

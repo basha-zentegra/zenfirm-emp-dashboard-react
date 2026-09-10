@@ -3,6 +3,7 @@ import '../../css/leaveapplayform.css'
 import { inputToMMDDYYYY, MMDDYYYY_TO_YYYYMMDD } from "../../utils/dateUtils";
 
 import { useUser } from "../../context/UserContext";
+import { formattedDate } from "../../config";
 import { startOfMonth,getMonthStartDate,endOfMonth } from "../../utils/dateUtils";
 
 const LEAVE_TYPES = ["Sick", "Casual", "Unpaid"];
@@ -122,7 +123,6 @@ export default function LeaveApplyForm({longLeaveDates}) {
     const [loading, setLoading] = useState(false);
     const [apiError, setApiError] = useState("");
 
-    const [allowApply, setAllowApply] = useState(false);
 
 
 
@@ -183,30 +183,71 @@ export default function LeaveApplyForm({longLeaveDates}) {
         }).catch((err) => console.error(err))
     }
 
+    // ── BLOCK NEW APPLICATIONS WHILE AN EARLIER REQUEST IS STILL AWAITING APPROVAL ──
+    const [pendingLeaves, setPendingLeaves] = useState([]);
+    const [pendingChecked, setPendingChecked] = useState(false);
+    const [pendingRefresh, setPendingRefresh] = useState(0);
+
     useEffect(() => {
+
+      if(!USERID) return;
 
       const config = {
         report_name : "My_Leaves",
-        criteria: `Employee_Name.ID==${USERID} && Approval_status=="Approved" && From > '${endOfMonth()}' || To > '${endOfMonth()}'>`
-      } 
+        // "To >=" RATHER THAN "From >=" SO A LEAVE ALREADY UNDERWAY STILL COUNTS
+        criteria: `Employee_Name.ID==${USERID} && Approval_status=="Pending" && To >= '${formattedDate}'`
+      }
 
       ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
 
-        console.log("future approved leave response", response)
+        console.log("Future pending leave response", response)
 
-        if(response.code === 3000){
+        // 3000 = RECORDS FOUND. ANYTHING ELSE (9280 = NO RECORDS) MEANS NOTHING PENDING
+        setPendingLeaves(response.code === 3000 ? (response.data || []) : [])
 
-          setAllowApply(true)
+      }).catch((err) => {
+        console.error(err)
+        // A FAILED CHECK MUST NOT LOCK SOMEONE OUT OF APPLYING
+        setPendingLeaves([])
+      }).finally(() => setPendingChecked(true))
 
-          console.log("Button disabling....")
+    },[USERID, pendingRefresh])
 
-        }
+    const hasPendingLeave = pendingLeaves.length > 0;
 
+    // ── BLOCK NEW APPLICATIONS WHEN AN APPROVED LEAVE ALREADY SITS BEYOND THIS MONTH ──
+    // A LEAVE APPROVED FOR A LATER MONTH HAS ALREADY BEEN DEDUCTED FROM THAT MONTH'S
+    // BALANCE, SO APPLYING NOW WOULD DOUBLE-COUNT AGAINST IT
+    const [futureApprovedLeaves, setFutureApprovedLeaves] = useState([]);
 
-      }).catch((err) => console.error(err))
+    useEffect(() => {
 
+      if(!USERID) return;
 
-    },[USERID])
+      const config = {
+        report_name : "My_Leaves",
+        // THE OR MUST STAY BRACKETED — UNBRACKETED IT ESCAPES THE EMPLOYEE AND
+        // STATUS FILTERS, SO ANY OTHER EMPLOYEE'S LEAVE WOULD BLOCK THIS USER
+        criteria: `Employee_Name.ID==${USERID} && Approval_status=="Approved" && (From > '${endOfMonth()}' || To > '${endOfMonth()}')`
+      }
+
+      ZOHO.CREATOR.DATA.getRecords(config).then((response) => {
+
+        console.log("Future approved leave response", response)
+
+        setFutureApprovedLeaves(response.code === 3000 ? (response.data || []) : [])
+
+      }).catch((err) => {
+        console.error(err)
+        // A FAILED CHECK MUST NOT LOCK SOMEONE OUT OF APPLYING
+        setFutureApprovedLeaves([])
+      })
+
+    },[USERID, pendingRefresh])
+
+    const hasFutureApprovedLeave = futureApprovedLeaves.length > 0;
+
+    const isApplyBlocked = hasPendingLeave || hasFutureApprovedLeave;
 
 
     useEffect(()=>{
@@ -437,6 +478,18 @@ const handleSubmit = async () => {
   setSubmitted(true);
   setApiError("");
 
+  // RE-CHECKED HERE AND NOT ONLY ON THE BUTTON, SO A STALE OR RACED
+  // RENDER CANNOT SLIP A SECOND REQUEST THROUGH
+  if (hasPendingLeave) {
+    setApiError("You already have a leave request awaiting approval. Please wait until it is approved before applying again.");
+    return;
+  }
+
+  if (hasFutureApprovedLeave) {
+    setApiError("You have an approved leave in a later month. Please cancel it before applying for a new leave.");
+    return;
+  }
+
   const errs = validate();
   setErrors(errs);
 
@@ -479,6 +532,7 @@ const handleSubmit = async () => {
     console.log(response)
     if (response.code === 3000) {
       setSuccess(true);
+      setPendingRefresh((p) => p + 1);
 
       setTimeout(() => handleReset(), 1500);
     } else {
@@ -551,9 +605,50 @@ const handleSubmit = async () => {
 <div className="card-glass">
 
 
-{allowApply && (
+{hasPendingLeave && (
+  <div className="alert-custom alert-warning m-2">
+    <i className="bi bi-hourglass-split pending-alert__icon"></i>
+
+    <div>
+      <div className="pending-alert__title">Your previous leave request is still awaiting approval</div>
+
+      <ul className="pending-alert__list">
+        {pendingLeaves.map((leave) => (
+          <li key={leave.ID}>
+            {leave.From}{leave.To !== leave.From ? ` to ${leave.To}` : ""}
+            {leave.No_Of_Days_Leave ? ` · ${leave.No_Of_Days_Leave} day(s)` : ""}
+          </li>
+        ))}
+      </ul>
+
+      <div className="pending-alert__hint">
+        You can apply for a new leave once this request has been approved.
+      </div>
+    </div>
+  </div>
+)}
+
+{hasFutureApprovedLeave && (
   <div className="alert-custom alert-danger m-2">
-    You have an approved leave scheduled in the future. Please cancel it before applying for a new leave.
+    <i className="bi bi-calendar-check pending-alert__icon"></i>
+
+    <div>
+      <div className="pending-alert__title">You already have an approved leave in a later month</div>
+
+      <ul className="pending-alert__list">
+        {futureApprovedLeaves.map((leave) => (
+          <li key={leave.ID}>
+            {leave.From}{leave.To !== leave.From ? ` to ${leave.To}` : ""}
+            {leave.No_Of_Days_Leave ? ` · ${leave.No_Of_Days_Leave} day(s)` : ""}
+          </li>
+        ))}
+      </ul>
+
+      <div className="pending-alert__hint">
+        That leave is already deducted from a later month's balance, so a new application now
+        would conflict with it. Please cancel it first if you need to change your plans.
+      </div>
+    </div>
   </div>
 )}
 
@@ -850,10 +945,10 @@ const handleSubmit = async () => {
             <button
                   className="btn-primary-custom"
                   onClick={handleSubmit}
-                  disabled={allowApply || rows.length === 0 || rangeError || loading}
+                  disabled={isApplyBlocked || rows.length === 0 || rangeError || loading}
                   style={{
-                      opacity: allowApply || rows.length === 0 || rangeError || loading ? 0.5 : 1,
-                      cursor: allowApply || rows.length === 0 || rangeError || loading ? "not-allowed" : "pointer"
+                      opacity: isApplyBlocked || rows.length === 0 || rangeError || loading ? 0.5 : 1,
+                      cursor: isApplyBlocked || rows.length === 0 || rangeError || loading ? "not-allowed" : "pointer"
                   }}
             >
                   {loading ? "Submitting..." : "Submit Leave Application →"}

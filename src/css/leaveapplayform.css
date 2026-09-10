@@ -377,6 +377,39 @@
           color: var(--danger);
         }
 
+        /* PENDING APPROVAL — A HOLD, NOT AN ERROR, SO AMBER RATHER THAN RED */
+        .alert-warning {
+          background: #fffaf0;
+          border-color: #f0b429;
+          color: #8a5a00;
+        }
+
+        .pending-alert__icon {
+          font-size: 1rem;
+          line-height: 1.4;
+          flex-shrink: 0;
+        }
+
+        .pending-alert__title {
+          font-weight: 700;
+          margin-bottom: 0.35rem;
+        }
+
+        .pending-alert__list {
+          margin: 0 0 0.4rem;
+          padding-left: 1.1rem;
+          font-weight: 500;
+        }
+
+        .pending-alert__list li {
+          margin-bottom: 0.15rem;
+        }
+
+        .pending-alert__hint {
+          font-weight: 400;
+          opacity: 0.85;
+        }
+
         @media (max-width: 768px) {
           .card-section { padding: 1.25rem 1rem; }
           .summary-bar { gap: 0.75rem; }

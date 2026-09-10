@@ -24,9 +24,8 @@
 }
 
 .sidebar{
-  /* box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px; */
-  /* background-color: #fafafa; */
   background-color: white;
+  width: var(--zen-rail-width);
 }
 
 .scroll-karo {
@@ -177,13 +176,7 @@
   /* margin-left: 30px; */
 }
 
-.sidebar-icon {
-  transition: transform 0.3s ease;
-}
 
-.sidebar-icon:hover{
-  transform: rotate(20deg);
-}
 
 
 
@@ -204,4 +197,225 @@
 .very-small{
   font-size: 10px;
   margin-bottom: auto;
+}
+/* ===== KPI DATE FILTER — SEGMENTED CONTROL ===== */
+.kpi-filter {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  background-color: #efe9ff;
+  border-radius: 999px;
+}
+
+.kpi-filter__btn {
+  border: 0;
+  background: transparent;
+  color: #6b6b7b;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 16px;
+  border-radius: 999px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+}
+
+.kpi-filter__btn:hover {
+  color: #4a3f8f;
+}
+
+.kpi-filter__btn.is-active {
+  background-color: #fff;
+  color: #5b4bd6;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(91, 75, 214, 0.18);
+}
+
+/* ===== PAGE HEADER ===== */
+.page-greeting {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2f2f3a;
+  margin-bottom: 0;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: #8b8b9a;
+  margin-bottom: 0;
+}
+
+/* OVERDUE CARD ACCENT */
+.bg-overdue-subtle {
+  background-color: #ffe2e2 !important;
+}
+
+.text-overdue {
+  color: #e5484d !important;
+}
+
+/* KPI CARD LABEL — KEEP ON ONE LINE SO CARD HEIGHTS STAY EQUAL */
+.stat-card__label {
+  color: #7c7c8c;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+/* ICON MUST NOT SHRINK WHEN THE ROW GETS TIGHT */
+.stat-card .icon-box {
+  flex-shrink: 0;
+}
+
+/* ===== CARD HEADER COUNT BADGE ===== */
+.count-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 8px;
+  margin-left: 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.2px;
+  vertical-align: 2px;
+}
+
+/* OVERDUE WITH WORK PENDING — NEEDS TO READ AS A WARNING */
+.count-pill--danger {
+  background: #ffe4e8;
+  color: #e5484d;
+}
+
+/* ZERO OVERDUE IS GOOD NEWS, SO DON'T PAINT IT RED */
+.count-pill--ok {
+  background: #e4f7ea;
+  color: #38a660;
+}
+
+.count-pill--violet {
+  background: #e9ecfb;
+  color: #5b6ad6;
+}
+
+.count-pill--muted {
+  background: #f0f0f4;
+  color: #8b8b9a;
+}
+
+/* =========================================
+   SIDEBAR RAIL
+========================================= */
+
+.sidebar-brand {
+  font-size: 11px;
+  line-height: 1;
+  text-align: center;
+  letter-spacing: -0.2px;
+}
+
+.sidebar-divider {
+  width: 26px;
+  margin: 14px auto 18px;
+  border: 0;
+  border-top: 1px solid #ebe7f7;
+  opacity: 1;
+}
+
+/* NAV ITEM — 42px TARGET CENTRED IN THE 70px RAIL */
+.sidebar-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 8px;
+  border-radius: 12px;
+  color: #a0a0b0;
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+/* A LIFT + TINT READS AS POLISHED WHERE THE OLD 20deg TILT READ AS WOBBLY */
+.sidebar-link:hover {
+  background-color: #f4f0ff;
+  color: #754ffe;
+  transform: translateY(-2px);
+}
+
+.sidebar-link.is-active {
+  background-color: #ebe3ff;
+  color: #754ffe;
+}
+
+/* ACCENT BAR PINNED TO THE RAIL EDGE — THE "YOU ARE HERE" AT A GLANCE */
+.sidebar-link.is-active::before {
+  content: "";
+  position: absolute;
+  left: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  border-radius: 0 3px 3px 0;
+  background-color: #754ffe;
+}
+
+.sidebar-link:focus-visible {
+  outline: 2px solid #754ffe;
+  outline-offset: 2px;
+}
+
+/* UNREAD-STYLE DOT, REPLACES THE MIS-PLACED WARNING TRIANGLE */
+.sidebar-dot {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ffb020;
+  border: 2px solid #ffffff;
+}
+
+/* ---- FOOTER / PROFILE ---- */
+
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.sidebar-avatar {
+  width: 34px;
+  height: 34px;
+  margin: 0 auto;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #8b6dff, #5b3fd6);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: default;
+  user-select: none;
+  box-shadow: 0 2px 6px rgba(117, 79, 254, 0.28);
+}
+
+.sidebar-version {
+  margin: 8px 0 0;
+  font-size: 9px;
+  color: #bcbcc9;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-link,
+  .sidebar-link:hover {
+    transform: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
 }

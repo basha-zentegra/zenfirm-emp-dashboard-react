@@ -60,7 +60,7 @@ export const getDateCriteria = (filter) => {
 
 const Home = () => {
 
-  const { USERID, ORG } = useUser();
+  const { USERID, ORG, empName } = useUser();
 
   const [UID, setUID] = useState(USERID);
 
@@ -130,6 +130,18 @@ const Home = () => {
       .catch((err) => console.error(err))
 
   }, [UID])
+
+      // PAGE HEADER GREETING
+      const greeting = useMemo(() => {
+        const hr = new Date().getHours();
+        if (hr < 12) return "Good morning";
+        if (hr < 17) return "Good afternoon";
+        return "Good evening";
+      }, []);
+
+      const longToday = new Date().toLocaleDateString("en-US", {
+        weekday: "long", day: "numeric", month: "long", year: "numeric"
+      });
 
       // KPI CARD DATE FILTER
       const [kpiFilter, setKpiFilter] = useState("today");
@@ -381,7 +393,7 @@ const TaskBadge = ({ status }) => {
 
 
   return (
-    <div className=' pt-2 px-4' style={{ marginLeft: "70px", backgroundColor:"#FCF8FF" }} >
+    <div className=' pt-2 px-4' style={{ marginLeft: "var(--zen-rail-width)", backgroundColor:"#FCF8FF" }} >
 
 
       <ToastContainer
@@ -396,55 +408,78 @@ const TaskBadge = ({ status }) => {
 <section className="app-stats pb-2 ">
   <div className="">
 
-    {/* KPI DATE FILTER */}
-    <div className="d-flex justify-content-end align-items-center mb-2">
-      <select
-        className="form-select form-select-sm w-auto rounded-3 shadow-sm border-0"
-        value={kpiFilter}
-        onChange={(e) => setKpiFilter(e.target.value)}
-      >
+    {/* PAGE HEADER + KPI DATE FILTER */}
+    <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <div>
+        <p className="page-greeting">{greeting}{empName ? `, ${empName.split(" ")[0]}` : ""}</p>
+        <p className="page-subtitle">{longToday}</p>
+      </div>
+
+      <div className="kpi-filter" role="group" aria-label="Task date range">
         {KPI_FILTERS.map((f) => (
-          <option key={f.value} value={f.value}>{f.label}</option>
+          <button
+            key={f.value}
+            type="button"
+            className={`kpi-filter__btn ${kpiFilter === f.value ? "is-active" : ""}`}
+            onClick={() => setKpiFilter(f.value)}
+          >
+            {f.label}
+          </button>
         ))}
-      </select>
+      </div>
     </div>
 
-    <div className="row row-cols-1 row-cols-md-2 row-cols-lg-5 g-2">
+    <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xxl-6 g-2">
 
-      {/* Total Tasks */}
+      {/* Projects */}
       <div className="col">
-        <div className="stat-card d-flex align-items-center bg-white p-4  shadow-sm rounded-4">
+        <div className="stat-card h-100 d-flex align-items-center bg-white p-3 shadow-sm rounded-4">
           <div className="icon-box rounded-circle d-flex align-items-center justify-content-center bg-pink-subtle" style={{ width: '50px', height: '50px' }}>
             <i className="bi bi-card-heading fs-4 text-pink"></i>
           </div>
           <div className="ms-3">
-            <p className="text-uppercase small fw-semibold text-muted mb-0" >Projects</p>
+            <p className="text-uppercase small fw-semibold stat-card__label mb-0" >Projects</p>
             <h3 className="fs-4 fw-bold mb-0">{projectsCount}</h3>
           </div>
         </div>
       </div>
       
+
+
       {/* Total Tasks */}
       <div className="col">
-        <div className="stat-card d-flex align-items-center bg-white p-4 shadow-sm rounded-4">
+        <div className="stat-card h-100 d-flex align-items-center bg-white p-3 shadow-sm rounded-4">
           <div className="icon-box rounded-circle d-flex align-items-center justify-content-center bg-primary-subtle" style={{ width: '50px', height: '50px' }}>
             <i className="bi bi-clipboard-data fs-4 text-primary"></i>
           </div>
           <div className="ms-3">
-            <p className="text-uppercase small fw-semibold text-muted mb-0">Total Tasks</p>
+            <p className="text-uppercase small fw-semibold stat-card__label mb-0">Total Tasks</p>
             <h3 className="fs-4 fw-bold mb-0">{taskCount}</h3>
+          </div>
+        </div>
+      </div>
+
+      {/* Overdue Tasks */}
+      <div className="col">
+        <div className="stat-card h-100 d-flex align-items-center bg-white p-3 shadow-sm rounded-4">
+          <div className="icon-box rounded-circle d-flex align-items-center justify-content-center bg-overdue-subtle" style={{ width: '50px', height: '50px' }}>
+            <i className="bi bi-exclamation-triangle fs-4 text-overdue"></i>
+          </div>
+          <div className="ms-3">
+            <p className="text-uppercase small fw-semibold stat-card__label mb-0">Overdue</p>
+            <h3 className="fs-4 fw-bold mb-0">{overDueTasks.length}</h3>
           </div>
         </div>
       </div>
 
       {/* Completed Tasks */}
       <div className="col">
-        <div className="stat-card d-flex align-items-center bg-white p-4 shadow-sm rounded-4">
+        <div className="stat-card h-100 d-flex align-items-center bg-white p-3 shadow-sm rounded-4">
           <div className="icon-box rounded-circle d-flex align-items-center justify-content-center bg-success-subtle" style={{ width: '50px', height: '50px' }}>
             <i className="bi bi-check2-circle fs-4 text-success"></i>
           </div>
           <div className="ms-3">
-            <p className="text-uppercase small fw-semibold text-muted mb-0">Completed Tasks</p>
+            <p className="text-uppercase small fw-semibold stat-card__label mb-0">Completed</p>
             <h3 className="fs-4 fw-bold mb-0">{completedTaskCount}</h3>
           </div>
         </div>
@@ -452,12 +487,12 @@ const TaskBadge = ({ status }) => {
 
       {/* In Progress */}
       <div className="col">
-        <div className="stat-card d-flex align-items-center bg-white p-4 shadow-sm rounded-4">
+        <div className="stat-card h-100 d-flex align-items-center bg-white p-3 shadow-sm rounded-4">
           <div className="icon-box rounded-circle d-flex align-items-center justify-content-center bg-warning-subtle" style={{ width: '50px', height: '50px' }}>
             <i className="bi bi-three-dots fs-4 text-warning"></i>
           </div>
           <div className="ms-3">
-            <p className="text-uppercase small fw-semibold text-muted mb-0">In Progress</p>
+            <p className="text-uppercase small fw-semibold stat-card__label mb-0">In Progress</p>
             <h3 className="fs-4 fw-bold mb-0">{inprogressTaskCount}</h3>
           </div>
         </div>
@@ -465,12 +500,12 @@ const TaskBadge = ({ status }) => {
 
       {/* Not Started */}
       <div className="col">
-        <div className="stat-card d-flex align-items-center bg-white p-4 shadow-sm rounded-4">
+        <div className="stat-card h-100 d-flex align-items-center bg-white p-3 shadow-sm rounded-4">
           <div className="icon-box rounded-circle d-flex align-items-center justify-content-center bg-info-subtle" style={{ width: '50px', height: '50px' }}>
             <i className="bi bi-hourglass fs-4 text-info"></i>
           </div>
           <div className="ms-3">
-            <p className="text-uppercase small fw-semibold text-muted mb-0">Not Started</p>
+            <p className="text-uppercase small fw-semibold stat-card__label mb-0">Not Started</p>
             <h3 className="fs-4 fw-bold mb-0">{notstartedTaskCount}</h3>
           </div>
         </div>
@@ -536,7 +571,11 @@ const TaskBadge = ({ status }) => {
               {/* <div className='card-header'>My Overdue Tasks - {overDueTasks.length}</div> */}
               <div className="card-header bg-white border-0 pb-1">        
                 <span className="ms-1 fw-medium" style={{fontSize:"18px",color:"#ff8595"}}> 
-                  <i className="bi bi-clipboard-x me-2"></i>My Overdue Tasks - {overDueTasks.length} </span>
+                  <i className="bi bi-clipboard-x me-2"></i>My Overdue Tasks
+                  <span className={`count-pill ${overDueTasks.length ? "count-pill--danger" : "count-pill--ok"}`}>
+                    {overDueTasks.length}
+                  </span>
+                </span>
               </div>
 
               <div className="card-body scroll-karo" >
@@ -597,7 +636,11 @@ const TaskBadge = ({ status }) => {
             <div className="card border-0 rounded-4 shadow-sm overflow-hidden homecards h-100" >
               <div className="card-header bg-white border-0 pb-1">        
                 <span className="ms-1 fw-medium" style={{fontSize:"18px",color:"#8593e8"}}> 
-                  <i className="bi bi-clipboard-data me-2"> </i>Today's Tasks - {myTodayTasks.length} </span>
+                  <i className="bi bi-clipboard-data me-2"> </i>Today's Tasks
+                  <span className={`count-pill ${myTodayTasks.length ? "count-pill--violet" : "count-pill--muted"}`}>
+                    {myTodayTasks.length}
+                  </span>
+                </span>
               </div>
               <div className="card-body scroll-karo" >
                 

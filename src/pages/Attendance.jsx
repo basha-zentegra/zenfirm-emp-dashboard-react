@@ -29,7 +29,7 @@ const Attendance = () => {
 
 
   return (
-    <div className='leaveapplyformbody'  style={{ marginLeft: "70px"}}>
+    <div className='leaveapplyformbody'  style={{ marginLeft: "var(--zen-rail-width)"}}>
 
       <div className='container pt-2'>
 

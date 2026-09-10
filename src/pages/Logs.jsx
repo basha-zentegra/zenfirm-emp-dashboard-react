@@ -13,7 +13,7 @@ const Logs = () => {
     });
 
   return (
-    <div style={{ marginLeft: "70px" }}>
+    <div style={{ marginLeft: "var(--zen-rail-width)" }}>
       <h3>Logs</h3>
 
       <div className="text-end">

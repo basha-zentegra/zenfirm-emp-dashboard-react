@@ -1,187 +1,93 @@
 
-import { useState,useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect } from 'react'
+import { NavLink } from 'react-router-dom'
 import { useUser } from '../context/UserContext';
 
-const Sidebar = ({userEmail}) => {
+const SUPER_USERS = ["roy@zentegra.com","praveen@zenfirm.app","basha@zentegra.com","abdul@zentegra.com","abdul@zenfirm.app",];
 
-  const {USERID, thisMonthLongLeave=[]} = useUser();
+// ONE PLACE TO ADD / REORDER / RE-ICON A RAIL ITEM
+const NAV_ITEMS = [
+  { to: "/",            icon: "bi-house-door-fill",  label: "Home",        end: true },
+  { to: "/calendar",    icon: "bi-calendar-week",     label: "ZenCalendar" },
+  { to: "/attendance",  icon: "bi-airplane-fill",     label: "ZenLeave",    badge: "longLeave" },
+  { to: "/kanban",      icon: "bi-kanban-fill",       label: "ZenBoards" },
+  { to: "/superadmin",  icon: "bi-shield-lock-fill",  label: "Super Admin", superOnly: true },
+];
 
-  //266830000001230027
 
-  const [activeId, setActiveId] = useState(1);
-  const [superUser, setSuperUser] = useState(false);
-  const [manager, setManager] = useState(false);
+const getInitials = (name = "") => name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase() || "?";
 
-  const handleClick = (id) =>{
-    setActiveId(id);
-  }
+const Sidebar = ({ userEmail }) => {
 
+  const { empName, thisMonthLongLeave = [] } = useUser();
+
+  const superUser = SUPER_USERS.includes(userEmail);
+
+  const items = NAV_ITEMS.filter((item) => !item.superOnly || superUser);
+
+  // RE-RUNS WHEN superUser FLIPS, OTHERWISE THE ADMIN ICON RENDERS
+  // AFTER THIS HAS ALREADY SCANNED THE DOM AND NEVER GETS A TOOLTIP
   useEffect(() => {
+    const Tooltip = window.bootstrap?.Tooltip;
+    if (!Tooltip) return;
 
-    if(!USERID) return
+    const tooltipList = [...document.querySelectorAll('[data-bs-toggle="tooltip"]')]
+      .map((el) => Tooltip.getOrCreateInstance(el));
 
-    if( userEmail === "roy@zentegra.com" || userEmail === "praveen@zenfirm.app" || userEmail === "basha@zentegra.com" || userEmail === "abdul@zentegra.com" || userEmail === "abdul@zenfirm.app"){
-      setSuperUser(true);
-    }
-
-  }, [USERID])
-
-  // const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-  // const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
-
-  useEffect(() => {
-    const tooltipTriggerList = document.querySelectorAll(
-      '[data-bs-toggle="tooltip"]'
-    );
-
-    const tooltipList = [...tooltipTriggerList].map(
-      (el) => new bootstrap.Tooltip(el)
-    );
-
-    // ✅ cleanup on unmount
-    return () => {
-      tooltipList.forEach((tooltip) => tooltip.dispose());
-    };
-  }, []); // 👈 run only once
-
-  const [showBadge, setShowBadge] = useState(false)
-
-
-  // useEffect(() => {
-  //   if(sessionStorage.getItem("leavetracker")){
-  //     setShowBadge(true)
-  //   }else{
-  //     setShowBadge(false)
-  //   }
-  // },[])
-
+    return () => tooltipList.forEach((t) => t.dispose());
+  }, [superUser, empName]);
 
   return (
-    <>
-    
-<div className="d-flex flex-column flex-shrink-0 p-3  vh-100 sidebar bg-white shadow-sm homecards">
-  {/* <span
-    
-    className="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none"
-  >
-    
+    <div className="d-flex flex-column flex-shrink-0 py-3 vh-100 sidebar bg-white shadow-sm">
 
-    <img style={{width:"50px"}} src="https://blogger.googleusercontent.com/img/a/AVvXsEhSNlyKoRigIvA0SewRbl6twztGq-Z1e-pYyb1NN8e4X47M-Qv2pf2ZPHELxIYBlQgrun3bIlRVdpRYhc3ymIhPHuuDdZNGXyGI-uwgYU7VUUra5NCybVlaBHKyJImCkDIgLGcx3LkYd-4VCcR_KnF5gEDcHTrW7wxEQ2skRrHsRqZodKLKVbBtrbucwvE" alt="" />
-  </span> */}
+      <div className="sidebar-brand">
+        <span>Zen</span><span className="text-zen fw-semibold">Firm</span>
+      </div>
 
-<div className='' style={{position:"absolute", left:"5px"}}>
-    <span className='small'>Zen</span><span className='small text-zen fw-semibold'>Firm</span>
-</div>
+      <hr className="sidebar-divider" />
 
-  <hr  className='mt-4'/>
+      <ul className="nav flex-column mb-auto w-100">
+        {items.map((item) => (
+          <li className="nav-item" key={item.to}>
+            <NavLink
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) => `sidebar-link ${isActive ? "is-active" : ""}`}
+              data-bs-toggle="tooltip"
+              data-bs-placement="right"
+              data-bs-title={item.label}
+            >
+              <i className={`bi ${item.icon} fs-5`}></i>
 
-  <ul className="nav nav-pills flex-column mb-auto">
-    <li className="nav-item">
-      <Link to="/" onClick={() => handleClick(1)} className="nav-link px-2 mb-3" aria-current="page" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Home">
-        <i className={`sidebar-icon bi bi-house-fill fs-5 ${activeId === 1 ? "text-zen" : "text-secondary"}`} ></i>
-          
-      </Link>
-    </li>
+              {item.badge === "longLeave" && thisMonthLongLeave.length > 0 && (
+                <span className="sidebar-dot" aria-label="Long leave this month"></span>
+              )}
+            </NavLink>
+          </li>
+        ))}
+      </ul>
 
+      {/* PROFILE — FILLS WHAT WAS AN EMPTY BOTTOM HALF */}
+      <div className="sidebar-footer">
+        <div
+          className="sidebar-avatar"
+          data-bs-toggle="tooltip"
+          data-bs-placement="right"
+          data-bs-title={empName ? `${empName} · ${userEmail}` : userEmail}
+        >
+          {getInitials(empName)}
+        </div>
 
+        {/* <p className="sidebar-version">v{APP_VERSION}</p> */}
+      </div>
 
-    <li>
-      <Link  to="/calendar" onClick={() => handleClick(2)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="ZenCalendar">
-        {/* <i className="bi bi-journal-bookmark fs-5"></i> */}
-        <i className={`sidebar-icon bi bi-calendar-week fs-5 ${activeId === 2 ? "text-zen" : "text-secondary"}`} ></i>
-          
-      </Link>
-    </li>
-
-    <li>
-      <Link  to="/attendance" onClick={() => handleClick(5)} className="nav-link link-dark px-2 mb-3 position-relative" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="ZenLeave">
-
-        <i className={`sidebar-icon bi-cloud-moon-fill fs-5 ${activeId === 5 ? "text-zen" : "text-secondary"}`} ></i>
-
-        {thisMonthLongLeave.length > 0 && (
-          <i class="bi bi-exclamation-triangle-fill position-absolute text-warning" 
-                    style={{ fontSize: "10px", top: "2px", right: "4px" }}></i>
-        )}
-        
-          
-      </Link>
-    </li>
-
-    {/* <li>
-      <Link  to="/logs" onClick={() => handleClick(6)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Timesheet">
-
-        <i className={`sidebar-icon bi-stopwatch-fill fs-5 ${activeId === 6 ? "text-zen" : "text-secondary"}`} ></i>
-          
-      </Link>
-    </li> */}
-
-    <li>
-      <Link  to="/kanban" onClick={() => handleClick(3)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="ZenBoards">
-
-        <i className={`sidebar-icon bi bi-kanban fs-5 ${activeId === 3 ? "text-zen" : "text-secondary"}`} ></i>
-          
-      </Link>
-    </li>
-
-    {/* <li>
-      <Link  to="/allLeaveBalance" onClick={() => handleClick(6)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Emp Leave Balance">
-
-        <i className={`sidebar-icon bi bi-layout-wtf fs-5 ${activeId === 6 ? "text-zen" : "text-secondary"}`} ></i>
-          
-      </Link>
-    </li> */}
-
-
-
-{superUser && (
-    <li>
-      <Link  to="/superadmin" onClick={() => handleClick(4)} className="nav-link link-dark px-2 mb-3" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Super Admin">
-
-        <i className={`sidebar-icon bi bi-shield-lock fs-5 ${activeId === 4 ? "text-zen" : "text-secondary"}`} ></i>
-
-          
-      </Link>
-    </li>
-)}
-
-    
-
-    
-  </ul>
-
-  <hr />
-
-    <p>V 1.2.1</p>
-
-  {/* <div className="dropdown">
-    <a
-      href="#"
-      className="d-flex align-items-center link-dark text-decoration-none dropdown-toggle text-center"
-      id="dropdownUser2"
-      data-bs-toggle="dropdown"
-      aria-expanded="false"
-    >
-
-      <i className="bi bi-person-circle fs-5"></i>
-    </a>
-
-    <ul
-      className="dropdown-menu text-small shadow"
-      aria-labelledby="dropdownUser2"
-    >
-      <li><a className="dropdown-item" href="#">Profile 1</a></li>
-      <li><a className="dropdown-item" href="#">Profile 2</a></li>
-      <li><a className="dropdown-item" href="#">Profile 3</a></li>
-      <li><hr className="dropdown-divider" /></li>
-      <li><a className="dropdown-item" href="#">Current</a></li>
-    </ul>
-  </div> */}
-</div>
-
-    
-    
-    </>
+    </div>
   )
 }
 

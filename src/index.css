@@ -9,6 +9,11 @@ p{
     padding: 0px !important;
 }
 
+:root {
+    /* SIDEBAR RAIL WIDTH — PAGES OFFSET THEIR CONTENT BY THIS */
+    --zen-rail-width: 70px;
+}
+
 .text-zen{
     color: #754ffe;
 }

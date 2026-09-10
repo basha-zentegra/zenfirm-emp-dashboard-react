@@ -46,7 +46,7 @@ const AllEmpLeaveBalance = () => {
 
       if (response.code === 3000) {
         const leaveRes = [...response.data].sort((a, b) =>
-          a?.["Leave_Balance_Form.Employee"]?.Name.localeCompare(
+          a?.["Leave_Balance_Form.Employee"]?.Name?.localeCompare(
             b?.["Leave_Balance_Form.Employee"]?.Name
           )
         );
