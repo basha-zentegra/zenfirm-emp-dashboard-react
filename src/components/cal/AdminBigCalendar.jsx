@@ -34,6 +34,8 @@ const AdminBigCalendar = () => {
     const {orgEmp, USERID,userEmail,AllEmployees, projects} = useUser();
 
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [eventID, setEventID] = useState(null);
+  const [multipleTasks, setMultipleTasks] = useState([]); 
   const [events, setEvents] = useState([]);
   const [unscheduledTasks, setUnscheduledTasks] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -101,12 +103,74 @@ const removeToast = (id) => {
 
   }
 
+  // Multiple_Tasks is its own form with a `Task` lookup back to the parent, so the
+  // slots are read from their own report — they are not a field on Task_Report.
+  //
+  // The slots are fetched for the date being viewed, then their parent tasks are
+  // fetched by ID. The parents can't come from allTask: that is filtered to tasks
+  // whose OWN Task_Date is the viewed date, while a slot's parent is usually dated
+  // some other day.
+  async function fetchMultipleTasks(){
+
+        try {
+          const slotRes = await ZOHO.CREATOR.DATA.getRecords({
+            app_name: APP_NAME,
+            report_name: "All_Multiple_Tasks",
+            criteria: `Task_Date='${formatDateToMMDDYYYY(currentDate)}'`,
+            max_records: 1000,
+          });
+
+          console.log("Multiple task slots:", slotRes);
+
+          const slots = slotRes?.code === 3000 ? slotRes.data : [];
+
+          const parentIds = [...new Set(
+            slots.map((slot) => slot?.Task?.ID ?? slot?.Task).filter(Boolean).map(String)
+          )];
+
+          if (!parentIds.length) {
+            setMultipleTasks([]);
+            return;
+          }
+
+          // Same employee/department/project filters as the board, minus the date
+          const parentCriteria = `(${parentIds.map((id) => `ID==${id}`).join(" || ")})`
+            + (dynamicCriteria ? ` && ${dynamicCriteria}` : "");
+
+          const parentRes = await ZOHO.CREATOR.DATA.getRecords({
+            app_name: APP_NAME,
+            report_name: "Task_Report",
+            criteria: parentCriteria,
+            max_records: 1000,
+          });
+
+          console.log("Multiple task parents:", parentRes);
+
+          const parents = parentRes?.code === 3000 ? parentRes.data : [];
+          const parentById = new Map(parents.map((task) => [String(task.ID), task]));
+
+          setMultipleTasks(
+            slots
+              .map((slot) => ({
+                slot,
+                parent: parentById.get(String(slot?.Task?.ID ?? slot?.Task ?? "")),
+              }))
+              .filter((pair) => pair.parent)
+          );
+
+        } catch (err) {
+          console.log(err);
+          setMultipleTasks([]);
+        }
+  }
+
     useEffect(() => {
         if (!USERID) return
         if (!formatDateToMMDDYYYY(currentDate)) return
     
 
         fetchTasks()
+        fetchMultipleTasks()
     
     }, [USERID, currentDate])
 
@@ -487,6 +551,51 @@ useEffect(() => {
   }
 
   function updateEvent(event, start, end, resourceId) {
+
+    const reassigned = resourceId && resourceId !== event.resourceId;
+
+    // A Multiple_Tasks slot lives in its own report — only its times move. The
+    // assignee belongs to the parent task, so a reassignment is written there
+    // (which moves the parent and all of its other slots with it).
+    if (event.taskId) {
+
+      var config = {
+        app_name: APP_NAME,
+        report_name: "All_Multiple_Tasks",
+        id: event.id,
+        payload: {
+          data: {
+            Start_Time: formatTimeToHHMM(start),
+            End_Time: formatTimeToHHMM(end),
+            Task_Date: formatDateToMMDDYYYY(start),
+          },
+        },
+      };
+
+      ZOHO.CREATOR.DATA.updateRecordById(config)
+        .then(function (response) {
+          if (response.code == 3000) {
+            console.log("Multiple task slot updated:", response);
+          } else {
+            console.log("Update error:", response);
+          }
+        })
+        .catch((e) => console.log(e));
+
+      if (reassigned) {
+        ZOHO.CREATOR.DATA.updateRecordById({
+          app_name: APP_NAME,
+          report_name: "Task_Report",
+          id: event.taskId,
+          payload: { data: { Assignee: resourceId } },
+        })
+          .then((response) => console.log("Parent task reassigned:", response))
+          .catch((e) => console.log(e));
+      }
+
+      return;
+    }
+
     const payload = {
       Start_Time: formatTimeToHHMM(start),
       End_Time: formatTimeToHHMM(end),
@@ -495,7 +604,7 @@ useEffect(() => {
     };
 
     // If resource changed (task reassigned to different employee)
-    if (resourceId && resourceId !== event.resourceId) {
+    if (reassigned) {
       payload.Assignee = resourceId;
     }
 
@@ -609,32 +718,46 @@ const getSessionTimes = (dateStr, session, shiftStart, shiftEnd) => {
   // DATA LOADING
   // ─────────────────────────────────────────────
   useEffect(() => {
-    if (allTask.length > 0) {
-      const newEvents = allTask
-        .filter((eve) => eve?.Task_Date && eve?.Start_Time)
-        .map((eve) => ({
-          id: eve.ID,
-          title: eve.Task_Name,
-          start: parseEventDate(eve.Task_Date, eve.Start_Time),
-          end: parseEventDate(eve.Task_Date, eve.End_Time),
-          priority: eve.Task_Priority?.toLowerCase(),
-          projectName: eve?.Project_Name?.Project_Name,
-          taskStatus: eve?.Task_Status,
-          // Map the assignee to resourceId
-          resourceId: eve?.Assignee?.ID || eve?.Assignee || "unassigned",
-          assigneeName: eve?.Assignee?.Name || eve?.Assignee_Name || "",
-        }));
+    const newEvents = allTask
+      .filter((eve) => eve?.Task_Date && eve?.Start_Time)
+      .map((eve) => ({
+        id: eve.ID,
+        title: eve.Task_Name,
+        start: parseEventDate(eve.Task_Date, eve.Start_Time),
+        end: parseEventDate(eve.Task_Date, eve.End_Time),
+        priority: eve.Task_Priority?.toLowerCase(),
+        projectName: eve?.Project_Name?.Project_Name,
+        taskStatus: eve?.Task_Status,
+        // Map the assignee to resourceId
+        resourceId: eve?.Assignee?.ID || eve?.Assignee || "unassigned",
+        assigneeName: eve?.Assignee?.Name || eve?.Assignee_Name || "",
+      }));
 
-      setEvents([...newEvents, ...leaves]);
+    // Each Multiple_Tasks record is an extra slot for a parent task: the parent's
+    // title/project/assignee, but the slot's own date, time and record ID — so
+    // dragging one moves only that slot.
+    const multipleEvents = multipleTasks
+      .filter(({ slot }) => slot?.Task_Date && slot?.Start_Time)
+      .map(({ slot, parent }) => ({
+        id: slot.ID,
+        title: parent.Task_Name,
+        start: parseEventDate(slot.Task_Date, slot.Start_Time),
+        end: parseEventDate(slot.Task_Date, slot.End_Time),
+        priority: "multiple",
+        projectName: parent?.Project_Name?.Project_Name,
+        taskStatus: parent?.Task_Status,
+        multipleTask: true,
+        taskId: parent.ID,
+        resourceId: parent?.Assignee?.ID || parent?.Assignee || "unassigned",
+        assigneeName: parent?.Assignee?.Name || parent?.Assignee_Name || "",
+      }));
 
-      const newUnscheduled = allTask.filter(
-        (task) => !task.Start_Time && !task.End_Time
-      );
-      setUnscheduledTasks(newUnscheduled);
-    }else{
-      setEvents([])
-    }
-  }, [allTask, leaves]);
+    setEvents([...newEvents, ...multipleEvents, ...leaves]);
+
+    setUnscheduledTasks(
+      allTask.filter((task) => !task.Start_Time && !task.End_Time)
+    );
+  }, [allTask, leaves, multipleTasks]);
 
   // ─────────────────────────────────────────────
   // EVENT HANDLERS
@@ -732,10 +855,14 @@ const getSessionTimes = (dateStr, session, shiftStart, shiftEnd) => {
     const bsOffcanvas = new window.bootstrap.Offcanvas(element);
     bsOffcanvas.show();
 
+    // Remember which Multiple_Tasks slot was clicked so the panel shows that
+    // slot's date and time rather than the parent task's
+    setEventID(event?.taskId ? event : null);
+
     var config = {
       app_name: APP_NAME,
       report_name: "Task_Report",
-      id: event.id,
+      id: event?.taskId ? event.taskId : event.id,
     };
 
     ZOHO.CREATOR.DATA.getRecordById(config)
@@ -1031,7 +1158,7 @@ const [isOpen, setIsOpen] = useState(false);
       </div>
 
       {/* ─────────── OFFCANVAS COMPONENTS ─────────── */}
-      <OffcanvasTaskDetails selectedEvent={selectedEvent} admin={true} />
+      <OffcanvasTaskDetails selectedEvent={selectedEvent} setSelectedEvent={setSelectedEvent} setEvents={setEvents} eventID={eventID} admin={true} />
 
       <AddTaskOffcanvas
         startEnd={startEnd}
