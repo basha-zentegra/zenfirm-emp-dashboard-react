@@ -157,3 +157,30 @@ export function objectToMM_DD_YYYY(date) {
 
   return `${month}-${day}-${year}`;
 }
+// Whole days between an MM-DD-YYYY date and today.
+// Positive = in the past, 0 = today, negative = in the future.
+export function getDaysOld(dateString) {
+  if (!dateString) return null;
+
+  const [month, day, year] = dateString.split("-").map(Number);
+  if (!month || !day || !year) return null;
+
+  const target = new Date(year, month - 1, day);
+  target.setHours(0, 0, 0, 0);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return Math.round((today - target) / 86400000);
+}
+
+// "Today" / "1 day old" / "4 days old" / "in 3 days"
+export function formatDaysOld(dateString) {
+  const days = getDaysOld(dateString);
+  if (days === null) return "";
+
+  if (days === 0) return "Today";
+  if (days < 0) return `in ${Math.abs(days)} day${days === -1 ? "" : "s"}`;
+
+  return `${days} day${days === 1 ? "" : "s"} old`;
+}

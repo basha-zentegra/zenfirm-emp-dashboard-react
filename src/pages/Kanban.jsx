@@ -4,10 +4,13 @@ import { APP_NAME } from '../config';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import React from 'react';
 import OffcanvasTaskDetails from '../components/cal/OffcanvasTaskDetails';
+import Avatar from '../components/ui/Avatar';
 import KanbanAddTask from '../components/kanban/KanbanAddTask';
 import AddKanbanLIst from '../components/kanban/AddKanbanLIst';
 import "../css/kanban.css";
+import { formatDaysOld } from '../utils/dateUtils';
 import { useUser } from '../context/UserContext';
+import KanbanDefaultView from '../components/kanban/KanbanDefaultView';
 
 
 
@@ -37,6 +40,9 @@ const Kanban = () => {
     const [newList, setNewList] = useState("")
 
     const [boardMembers, setBoardMembers] = useState([]);
+
+    // Rolled-up counts reported by the sidebar, shown on the empty state
+    const [kanbanStats, setKanbanStats] = useState(null);
 
 
     useEffect(() => {
@@ -74,7 +80,8 @@ const Kanban = () => {
           
                   if(response.code === 3000){
                       console.log("Selected board's Tasks:", response.data)
-                      const taskRes = response.data.reverse();
+                      const taskRes = response.data
+                      //.reverse();
 
                       setKanbanTasks(taskRes)
                       
@@ -270,6 +277,9 @@ const handleDragEnd = (result) => {
       setEmpFilter(value)
     }
 
+    // Count shown on the open board in the sidebar — open tasks only, and the same
+    // employee filter the columns use
+    const selectedBoardTaskCount = kanbanTasks.filter(task => task.Task_Status !== "Completed" && (empFilter === "all" || String(task.Assignee?.ID) === empFilter)).length;
 
   return (
     <div className='d-flex ' style={{marginLeft:"72px"}}>
@@ -278,7 +288,7 @@ const handleDragEnd = (result) => {
 
         <aside className='bg-white vh-100 w-350px border border-start-0 scroll-karo'>
 
-          <KanbanSIdebar ref={sidebarRef} setSelectedBoard={setSelectedBoard}  boardMembers={boardMembers} onFilter={onFilter}/>
+          <KanbanSIdebar ref={sidebarRef} setSelectedBoard={setSelectedBoard}  boardMembers={boardMembers} onFilter={onFilter} selectedBoardTaskCount={selectedBoard ? selectedBoardTaskCount : null} onStats={setKanbanStats}/>
 
         </aside>
 
@@ -328,11 +338,21 @@ const handleDragEnd = (result) => {
                     >
                       <div onClick={() => clickTask(task.ID)}>
                         <h6>{task.Task_Name}</h6>
-                        <small className='text-muted'>{task?.Task_Description}</small>
-                        {task?.Edited && (
-                          <small className='small text-muted d-block edited-text'>Edited: {task?.Edited}</small>
-                        )}
+                        <small className='text-muted d-block'>{task?.Task_Description}</small>
+                        
                         <small className='text-muted'><i class="bi bi-chat me-1"></i>{task?.Notes?.length || 0}</small>
+                        <small className='text-muted ms-2 d-inline-flex align-items-center'>
+                          <Avatar name={task?.Assignee?.Name} size={22} className='me-1' />
+                          {task?.Assignee?.Name || "-"}
+                        </small>
+                        {task?.Edited && (
+                          <small className='small text-muted d-block edited-text mt-1'>Edited: {task?.Edited}</small>
+                        )}
+                        <small className='text-muted d-block mt-1'>
+                          <i className="bi bi-calendar3-week me-1"></i>
+                          {task?.Task_Date || "No Date"}
+                          {task?.Task_Date && <span className='ms-1'>[{formatDaysOld(task.Task_Date)}]</span>}
+                        </small>
                       </div>
                     </div>
                   )}
@@ -362,7 +382,7 @@ const handleDragEnd = (result) => {
         onChange={(e) => setNewList(e.target.value)}
         placeholder='New Kanban List..'
       />
-      <span onClick={handleAddKanbanList} className="input-group-text bg-primary text-white fw-medium cursor-pointer">+</span>
+      <span onClick={handleAddKanbanList} className="input-group-text bg-primary text-white fw-medium cursor-pointer action-btn btn-purple">+</span>
 
     </div>
   </div>
@@ -374,10 +394,7 @@ const handleDragEnd = (result) => {
 
 
 {!hideList && kanbanList.length === 0 && (
-    <div className='text-center w-100 align-content-center'>
-        <img width="70px" className='mb-4' src="https://cdn-icons-png.flaticon.com/128/17952/17952229.png" alt="" />
-        <h1 className='mb-5 lead'>Select the Board to Display the Kanban View</h1>
-    </div>
+  <KanbanDefaultView kanbanStats={kanbanStats} />
 )}
 
 {/* {hideList && (
@@ -393,7 +410,7 @@ const handleDragEnd = (result) => {
         </main>
 
 
-<OffcanvasTaskDetails selectedEvent={selectedTask} setEvents={setKanbanTasks} fetchTasks={fetchTasks} boardMembers={boardMembers}  />
+<OffcanvasTaskDetails selectedEvent={selectedTask} setSelectedEvent={setSelectedTask} setEvents={setKanbanTasks} fetchTasks={fetchTasks} boardMembers={boardMembers}  />
 
 <KanbanAddTask list={selectedList} selectedBoard={selectedBoard} setKanbanTasks={setKanbanTasks} boardMembers={boardMembers} />
 

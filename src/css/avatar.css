@@ -1,0 +1,24 @@
+.zen-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+/* Stacked group — each avatar overlaps the previous one */
+.zen-avatar-group {
+  display: inline-flex;
+  align-items: center;
+}
+
+.zen-avatar-group .zen-avatar + .zen-avatar {
+  margin-left: -8px;
+  box-shadow: 0 0 0 2px #fff;
+}

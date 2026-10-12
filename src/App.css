@@ -304,6 +304,12 @@
   color: #8b8b9a;
 }
 
+/* AWAITING SOMEONE'S ACTION */
+.count-pill--warning {
+  background: #fff2d9;
+  color: #a8620a;
+}
+
 /* =========================================
    SIDEBAR RAIL
 ========================================= */

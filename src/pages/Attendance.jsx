@@ -31,7 +31,7 @@ const Attendance = () => {
   return (
     <div className='leaveapplyformbody'  style={{ marginLeft: "var(--zen-rail-width)"}}>
 
-      <div className='container pt-2'>
+      <div className='container-fluid px-4 pt-2'>
 
 
       {error && (
@@ -49,7 +49,12 @@ const Attendance = () => {
       )}
       
 
-      <div className="d-flex justify-content-end p-2">
+      <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 p-2">
+
+        <div>
+          <p className="page-title">Leave &amp; Attendance</p>
+          <p className="page-subtitle">Apply for leave, track approvals and check your balance</p>
+        </div>
 
         <button className={`action-btn btn-sm ${showForm ? "btn-red" : "btn-blue"}`} disabled={error} onClick={() => {setShowForm(prev => !prev); setLongLeaveDates({start:"", end:"", reason:"", status:""})}}>
           

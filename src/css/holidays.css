@@ -1,0 +1,122 @@
+/* =========================================================
+   HOLIDAY TILES — A DATE-LED GRID INSTEAD OF A TWO-COLUMN TABLE
+========================================================= */
+
+.hol-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  height: 100%;
+  padding: 0.9rem 1rem;
+  background: #ffffff;
+  border: 1px solid #f0f0f7;
+  border-radius: 14px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.hol-tile:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(117, 79, 254, 0.12);
+  border-color: #e3daff;
+}
+
+/* CALENDAR-PAGE BLOCK: THE DATE IS WHAT PEOPLE SCAN FOR */
+.hol-date {
+  width: 54px;
+  height: 58px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f3f0ff;
+  color: #6340e0;
+}
+
+.hol-date__day {
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.hol-date__mon {
+  margin-top: 2px;
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+}
+
+.hol-info {
+  min-width: 0;
+}
+
+.hol-info__name {
+  font-size: 0.87rem;
+  font-weight: 600;
+  color: #2f2f3a;
+  line-height: 1.25;
+}
+
+.hol-info__meta {
+  margin-top: 3px;
+  font-size: 0.72rem;
+  color: #9a9aab;
+}
+
+/* ---- ALREADY GONE: STILL LISTED, BUT VISUALLY DEMOTED ---- */
+
+.hol-tile.is-past {
+  background: #fbfbfd;
+}
+
+.hol-tile.is-past .hol-date {
+  background: #f1f1f6;
+  color: #adadbc;
+}
+
+.hol-tile.is-past .hol-info__name {
+  color: #9a9aab;
+}
+
+/* ---- THE NEXT ONE COMING UP ---- */
+
+.hol-tile.is-next {
+  border-color: #cabaff;
+  box-shadow: 0 4px 18px rgba(117, 79, 254, 0.15);
+}
+
+.hol-tile.is-next .hol-date {
+  background: linear-gradient(135deg, #8b6dff, #5b3fd6);
+  color: #ffffff;
+}
+
+.hol-tile.is-next .hol-info__meta {
+  color: #7059d8;
+  font-weight: 600;
+}
+
+.hol-flag {
+  position: absolute;
+  top: -9px;
+  right: 12px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #754ffe;
+  color: #ffffff;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 6px rgba(117, 79, 254, 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hol-tile,
+  .hol-tile:hover {
+    transform: none;
+    transition: box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+}

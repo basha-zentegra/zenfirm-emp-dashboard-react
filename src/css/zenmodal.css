@@ -1,0 +1,216 @@
+/* =========================================================
+   ZEN MODAL — HEADER / SCROLLING BODY / PINNED FOOTER
+   The old .custom-modal was a fixed 600px box with no height
+   cap, so a tall review pushed its own action buttons off
+   screen with no way to scroll to them.
+========================================================= */
+
+.zen-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(24, 22, 44, 0.45);
+  backdrop-filter: blur(3px);
+  animation: zm-fade 0.18s ease;
+}
+
+.zen-modal {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 840px;
+  /* CAPS THE BOX SO THE BODY SCROLLS INSTEAD OF THE PAGE */
+  max-height: 90vh;
+  overflow: hidden;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  animation: zm-pop 0.22s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.zen-modal__head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-shrink: 0;
+  padding: 1.05rem 1.4rem;
+  border-bottom: 1px solid #f1f2f8;
+}
+
+.zen-modal__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2f2f3a;
+}
+
+.zen-modal__close {
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 10px;
+  background: #f4f4f9;
+  color: #7c7c8c;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.zen-modal__close:hover {
+  background: #ece7ff;
+  color: #754ffe;
+}
+
+.zen-modal__body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 1.2rem 1.4rem;
+  scrollbar-width: thin;
+  scrollbar-color: #d8d8e4 transparent;
+}
+
+.zen-modal__foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  padding: 1rem 1.4rem;
+  background: #fafaff;
+  border-top: 1px solid #f1f2f8;
+}
+
+@keyframes zm-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes zm-pop {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* =========================================================
+   SECTIONS INSIDE A MODAL
+========================================================= */
+
+.zen-section {
+  margin-bottom: 1.15rem;
+}
+
+.zen-section:last-child {
+  margin-bottom: 0;
+}
+
+.zen-section__title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.65rem;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: #9a9aab;
+}
+
+.zen-panel {
+  padding: 0.95rem 1.05rem;
+  background: #fcfcff;
+  border: 1px solid #f0f0f7;
+  border-radius: 14px;
+}
+
+/* LABEL / VALUE PAIRS — WRAPS TO ONE COLUMN ON NARROW SCREENS */
+.zen-defs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.9rem 1.25rem;
+}
+
+.zen-def__label {
+  margin-bottom: 3px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #a8a8b8;
+}
+
+.zen-def__value {
+  font-size: 0.87rem;
+  font-weight: 600;
+  color: #2f2f3a;
+  word-break: break-word;
+}
+
+/* =========================================================
+   MODAL FORM CONTROLS + ACTION BUTTONS
+========================================================= */
+
+.zen-textarea {
+  width: 100%;
+  min-height: 84px;
+  resize: vertical;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.85rem;
+  color: #3b3b47;
+  background: #ffffff;
+  border: 1px solid #e4e4ef;
+  border-radius: 12px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.zen-textarea:focus {
+  outline: 0;
+  border-color: #a894ff;
+  box-shadow: 0 0 0 3px rgba(117, 79, 254, 0.12);
+}
+
+.zen-error {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #e5484d;
+}
+
+.zen-btn--success {
+  background: #1f9d55;
+}
+
+.zen-btn--success:hover {
+  background: #18844a;
+}
+
+.zen-btn--danger {
+  background: #e5484d;
+}
+
+.zen-btn--danger:hover {
+  background: #cf3b40;
+}
+
+.zen-btn:disabled,
+.zen-btn:disabled:hover {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.zen-reject {
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zen-modal-overlay,
+  .zen-modal {
+    animation: none;
+  }
+}

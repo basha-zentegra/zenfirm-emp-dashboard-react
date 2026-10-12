@@ -159,8 +159,12 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
       }
 
 
+      // A task that lives on a ZenBoard also moves to the Completed list
+      const isBoardTask = Boolean(selectedEvent?.Zenboards?.ID || selectedEvent?.Kanban_Status);
+
       const payload = {
         Task_Status: "Completed",
+        ...(isBoardTask ? { Kanban_Status: "Completed" } : {}),
       };
   
       var config = {
@@ -173,12 +177,22 @@ const OffcanvasTaskDetails = ({selectedEvent, setSelectedEvent, setEvents, admin
           if (response.code == 3000) {
             console.log("Task Completed:", response);
             // ✅ Immediately update UI
-            setSelectedEvent(prev => ({
+            setSelectedEvent?.(prev => ({
               ...prev,
-              Task_Status: "Completed"
+              Task_Status: "Completed",
+              ...(isBoardTask ? { Kanban_Status: "Completed" } : {}),
             }));
 
-            setEvents(prev => prev.map(e => (e.id === selectedEvent.ID ? { ...e, taskStatus: "Completed" } : e)));
+            // Calendar events are keyed by `id`/`taskStatus`, kanban tasks by `ID`/`Task_Status`
+            setEvents?.(prev => prev.map(e => {
+              if (e.id === selectedEvent.ID) return { ...e, taskStatus: "Completed" };
+              if (e.ID === selectedEvent.ID) return {
+                ...e,
+                Task_Status: "Completed",
+                ...(isBoardTask ? { Kanban_Status: "Completed" } : {}),
+              };
+              return e;
+            }));
 
 
           } else {

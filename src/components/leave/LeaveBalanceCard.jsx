@@ -1,6 +1,7 @@
 import {useState,useEffect} from "react";
 import { useUser } from "../../context/UserContext";
 import { startOfMonth } from "../../utils/dateUtils";
+import "../../css/leavebalance.css";
 
 const LeaveBalanceCard = ({setError}) => {
 
@@ -44,81 +45,156 @@ const LeaveBalanceCard = ({setError}) => {
       title: "Casual Leave",
       used: currentData?.Used_Casual_Leave,
       total: currentData?.Eligible_Casual_Leave,
+      bal: currentData?.Balance_Casual_Leave,
       icon: "bi-umbrella",
-      bg: "bg-primary-subtle",
-      iconColor: "text-primary",
-      bal: currentData?.Balance_Casual_Leave
+      motion: "lb-icon--sway",
+      color: "#6366f1",
+      track: "#e9eafd",
+      soft: "#eceefc",
     },
     {
       title: "Sick Leave",
       used: currentData?.Used_Sick_Leave,
       total: currentData?.Eligible_Sick_Leave,
+      bal: currentData?.Balance_Sick_Leave,
       icon: "bi-thermometer-half",
-      bg: "bg-danger-subtle",
-      iconColor: "text-danger",
-      bal: currentData?.Balance_Sick_Leave
+      motion: "lb-icon--pulse",
+      color: "#ef4444",
+      track: "#fdeaea",
+      soft: "#fdecec",
     },
   ];
 
+  // ZOHO SENDS THESE AS STRINGS ("2.50"), AND ELIGIBLE CAN BE 0 OR MISSING —
+  // GUARDING HERE KEEPS THE RING OFF NaN, WHICH WOULD RENDER AS AN EMPTY CIRCLE
+  const toNum = (v) => {
+    const n = parseFloat(v);
+    return Number.isFinite(n) ? n : 0;
+  };
 
+  const totals = data.reduce(
+    (acc, item) => ({
+      used: acc.used + toNum(item.used),
+      eligible: acc.eligible + toNum(item.total),
+      balance: acc.balance + toNum(item.bal),
+    }),
+    { used: 0, eligible: 0, balance: 0 }
+  );
 
   return (
-    <div className="container py-2">
+    <div className="py-2">
       <div className="row g-4">
-        {data.map((item, index) => (
-          <div className="col-md-6" key={index}>
-            <div
-              className="card border-0 shadow-sm h-100 p-3"
-              style={{
-                borderRadius: "16px",
-                transition: "all 0.3s ease",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.transform = "translateY(-5px)")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.transform = "translateY(0)")
-              }
-            >
-              <div className="d-flex align-items-center mb-3">
-                <div
-                  className={`d-flex align-items-center justify-content-center rounded-circle ${item.bg}`}
-                  style={{ width: "50px", height: "50px" }}
-                >
-                  <i
-                    className={`bi ${item.icon} fs-4 ${item.iconColor}`}
-                  ></i>
+        {data.map((item, index) => {
+
+          const used = toNum(item.used);
+          const total = toNum(item.total);
+          const bal = toNum(item.bal);
+
+          const remainingPct = total > 0
+            ? Math.min(100, Math.max(0, (bal / total) * 100))
+            : 0;
+
+          return (
+            <div className="col-md-6 col-xl-4" key={index}>
+              <div className="lb-card">
+
+                <div className="lb-card__body">
+                  <div className="lb-card__head">
+                    <span
+                      className="lb-card__icon"
+                      style={{ background: item.soft, color: item.color }}
+                    >
+                      <i className={`bi ${item.icon} ${item.motion}`}></i>
+                    </span>
+                    <span className="lb-card__title">{item.title}</span>
+                  </div>
+
+                  <div className="lb-card__figures">
+                    <span className="lb-card__used">{used.toFixed(2)}</span>
+                    <span className="lb-card__total">used of {total.toFixed(2)} days</span>
+                  </div>
+
+                  <span
+                    className="lb-chip"
+                    style={{ background: item.soft, color: item.color }}
+                  >
+                    {Math.round(remainingPct)}% remaining
+                  </span>
                 </div>
-              </div>
 
-              <div className="d-flex align-items-center">
-                <h6 className="text-muted text-uppercase fw-semibold mb-2">
-                    {item.title} - 
-                </h6>
-                <h4 className="fs-4 ms-2 fw-bold">{item.bal || 0}</h4>
-              </div>
-
-              <div className="d-flex align-items-end mt-2">
-                <h5 className="fw-bold mb-0 me-2">{item.used}</h5>
-                <span className="text-muted">/ {item.total} Days</span>
-              </div>
-
-              {/* Progress Bar */}
-              <div className="progress mt-3" style={{ height: "6px" }}>
+                {/* PROPORTION OF THE ENTITLEMENT STILL AVAILABLE */}
                 <div
-                  className={`progress-bar ${item.iconColor.replace(
-                    "text",
-                    "bg"
-                  )}`}
-                  role="progressbar"
+                  className="lb-donut"
                   style={{
-                    width: `${(item.used / item.total) * 100}%`,
+                    "--lb-target": remainingPct,
+                    "--lb-color": item.color,
+                    "--lb-track": item.track,
                   }}
-                ></div>
+                  role="img"
+                  aria-label={`${bal} of ${total} ${item.title} days remaining`}
+                >
+                  <span className="lb-donut__value">
+                    <span className="lb-donut__num">{bal.toFixed(2)}</span>
+                    <span className="lb-donut__label">days left</span>
+                  </span>
+                </div>
+
               </div>
             </div>
+          );
+        })}
+
+        {/* COMBINED VIEW ACROSS BOTH TYPES — FILLS THE ROW AND ANSWERS
+            "HOW MUCH HAVE I GOT ALTOGETHER" WITHOUT A SECOND API CALL */}
+        <div className="col-md-12 col-xl-4">
+          <div className="lb-card lb-card--total">
+            <div className="lb-card__body">
+
+              <div className="lb-card__head">
+                <span
+                  className="lb-card__icon"
+                  style={{ background: "#e8f7ee", color: "#28a05c" }}
+                >
+                  <i className="bi bi-calendar2-check lb-icon--float"></i>
+                </span>
+                <span className="lb-card__title">Total Balance</span>
+              </div>
+
+              <div className="lb-card__figures">
+                <span className="lb-card__used">{totals.balance.toFixed(2)}</span>
+                <span className="lb-card__total">
+                  days available of {totals.eligible.toFixed(2)}
+                </span>
+              </div>
+
+              <div className="lb-stack">
+                {data.map((item) => {
+                  const used = toNum(item.used);
+                  const width = totals.eligible > 0 ? (used / totals.eligible) * 100 : 0;
+                  if (width <= 0) return null;
+                  return (
+                    <div
+                      key={item.title}
+                      className="lb-stack__seg"
+                      style={{ width: `${width}%`, background: item.color }}
+                      title={`${item.title}: ${used.toFixed(2)} days used`}
+                    ></div>
+                  );
+                })}
+              </div>
+
+              <div className="lb-legend">
+                {data.map((item) => (
+                  <span className="lb-legend__item" key={item.title}>
+                    <span className="lb-legend__dot" style={{ background: item.color }}></span>
+                    {item.title} · {toNum(item.used).toFixed(2)} used
+                  </span>
+                ))}
+              </div>
+
+            </div>
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );

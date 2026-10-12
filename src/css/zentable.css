@@ -1,0 +1,518 @@
+/* =========================================================
+   ZEN TABLE — SHARES THE RADIUS, SHADOW, TYPE SCALE AND
+   CHIP LANGUAGE OF THE LEAVE BALANCE CARDS
+========================================================= */
+
+.zen-card {
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  padding: 1.4rem 1.5rem;
+}
+
+.zen-card__head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.15rem;
+}
+
+.zen-card__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2f2f3a;
+}
+
+/* ---- TABLE SHELL ---- */
+
+.zen-table-scroll {
+  overflow-x: auto;
+  /* THIN SCROLLBAR SO A WIDE TABLE DOESN'T ADD A HEAVY GREY BAR */
+  scrollbar-width: thin;
+  scrollbar-color: #d8d8e4 transparent;
+}
+
+.zen-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.zen-table thead th {
+  padding: 0 1rem 0.75rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: #9a9aab;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid #eceef5;
+}
+
+.zen-table tbody td {
+  padding: 0.9rem 1rem;
+  font-size: 0.85rem;
+  color: #3b3b47;
+  vertical-align: middle;
+  border-bottom: 1px solid #f5f6fa;
+  transition: background-color 0.18s ease;
+}
+
+.zen-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.zen-table tbody tr:hover td {
+  background-color: #f8f6ff;
+}
+
+/* ROUNDS THE HOVER HIGHLIGHT INTO A PILL RATHER THAN A FULL-BLEED BAND */
+.zen-table tbody tr:hover td:first-child {
+  border-radius: 10px 0 0 10px;
+}
+
+.zen-table tbody tr:hover td:last-child {
+  border-radius: 0 10px 10px 0;
+}
+
+/* ---- EMPLOYEE CELL ---- */
+
+.zen-user {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.zen-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #8b6dff, #5b3fd6);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.zen-user__name {
+  font-weight: 600;
+  color: #2f2f3a;
+  white-space: nowrap;
+}
+
+/* ---- LEAVE TYPE CHIP ---- */
+
+.zen-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ---- DATES / DURATION ---- */
+
+.zen-dates {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: #6b6b7b;
+  white-space: nowrap;
+  /* KEEPS DIGITS COLUMN-ALIGNED DOWN THE ROWS */
+  font-variant-numeric: tabular-nums;
+}
+
+.zen-dates__arrow {
+  color: #c6c6d4;
+}
+
+.zen-duration {
+  font-weight: 700;
+  color: #2f2f3a;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.zen-duration small {
+  margin-left: 3px;
+  font-weight: 500;
+  color: #9a9aab;
+}
+
+.zen-msg {
+  display: block;
+  max-width: 220px;
+  color: #6b6b7b;
+}
+
+.zen-muted {
+  color: #b8b8c6;
+}
+
+/* STATUS PILLS COME FROM getStatusBadge — ROUND THEM TO MATCH THE CHIPS */
+.zen-table .badge {
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.38rem 0.7rem !important;
+  white-space: nowrap;
+}
+
+/* ---- ROW ACTION ---- */
+
+.zen-kebab {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #9a9aab;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.zen-kebab:hover,
+.zen-kebab:focus-visible {
+  background-color: #ece7ff;
+  color: #754ffe;
+}
+
+.zen-menu {
+  border: 0;
+  border-radius: 12px;
+  padding: 0.35rem;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+}
+
+.zen-menu .dropdown-item {
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ---- EMPTY STATE ---- */
+
+.zen-empty {
+  padding: 2.8rem 1rem;
+  text-align: center;
+  color: #9a9aab;
+  font-size: 0.85rem;
+}
+
+.zen-empty__icon {
+  display: block;
+  margin-bottom: 0.6rem;
+  font-size: 2rem;
+  color: #dcd8ee;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zen-table tbody td,
+  .zen-kebab {
+    transition: none;
+  }
+}
+
+/* =========================================================
+   TOOLBAR — DATE RANGE / ACTION CONTROLS ABOVE A TABLE
+========================================================= */
+
+.zen-toolbar {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  margin-bottom: 1.1rem;
+  background: #fafaff;
+  border: 1px solid #f0f0f7;
+  border-radius: 14px;
+}
+
+.zen-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.zen-field__label {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #9a9aab;
+}
+
+.zen-input {
+  height: 36px;
+  padding: 0 0.7rem;
+  font-size: 0.82rem;
+  color: #3b3b47;
+  background: #ffffff;
+  border: 1px solid #e4e4ef;
+  border-radius: 10px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.zen-input:focus {
+  outline: 0;
+  border-color: #a894ff;
+  box-shadow: 0 0 0 3px rgba(117, 79, 254, 0.12);
+}
+
+.zen-btn {
+  height: 36px;
+  padding: 0 1.1rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: #754ffe;
+  color: #ffffff;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.zen-btn:hover {
+  background: #6340e0;
+}
+
+.zen-btn--ghost {
+  background: #ffffff;
+  border-color: #e4e4ef;
+  color: #6b6b7b;
+}
+
+.zen-btn--ghost:hover {
+  background: #f4f0ff;
+  border-color: #d9cfff;
+  color: #754ffe;
+}
+
+/* PUSHES THE BUTTON GROUP AWAY FROM THE FIELDS ON WIDE TOOLBARS */
+.zen-toolbar__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* A CLICKABLE ROW NEEDS TO LOOK CLICKABLE */
+.zen-table tbody tr.is-clickable {
+  cursor: pointer;
+}
+
+/* =========================================================
+   NUMERIC / MATRIX TABLE — GROUPED HEADER, ALIGNED FIGURES
+========================================================= */
+
+/* UPPER TIER OF A TWO-ROW HEADER: "Eligible" / "Used" / "Balance" */
+.zen-table thead tr.zen-group th {
+  padding: 0 1rem 0.35rem;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #b6b6c4;
+  border-bottom: 0;
+  text-align: center;
+}
+
+.zen-num {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* HAIRLINE BETWEEN COLUMN GROUPS SO PAIRS READ AS PAIRS */
+.zen-div {
+  border-left: 1px solid #f2f3f9;
+}
+
+.zen-sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.zen-index {
+  color: #bcbcc9;
+  font-variant-numeric: tabular-nums;
+}
+
+.zen-month {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 600;
+  color: #2f2f3a;
+  white-space: nowrap;
+}
+
+/* ---- CURRENT MONTH ---- */
+
+.zen-table tbody tr.is-current td {
+  background-color: #f1fbf5;
+  font-weight: 700;
+  color: #1d7a45;
+}
+
+.zen-table tbody tr.is-current:hover td {
+  background-color: #e7f8ee;
+}
+
+.zen-table tbody tr.is-current td:first-child {
+  box-shadow: inset 3px 0 0 #34c77b;
+  border-radius: 10px 0 0 10px;
+}
+
+.zen-table tbody tr.is-current td:last-child {
+  border-radius: 0 10px 10px 0;
+}
+
+.zen-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.zen-tag--now {
+  background-color: #d6f5e2;
+  color: #1d7a45;
+}
+
+/* EXHAUSTED BALANCE / LOP INCURRED — THE TWO NUMBERS THAT NEED ATTENTION */
+.zen-alert {
+  color: #e5484d !important;
+  font-weight: 700;
+}
+
+/* ---- INLINE LEGEND (HEADER + COLUMN SUB-LABELS) ---- */
+
+.zen-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.zen-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #8b8b9a;
+}
+
+.zen-legend__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* =========================================================
+   SEARCH FIELD
+========================================================= */
+
+.zen-search {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-width: 240px;
+}
+
+.zen-search__icon {
+  position: absolute;
+  left: 11px;
+  color: #b4b4c2;
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.zen-search .zen-input {
+  width: 100%;
+  padding-left: 2.05rem;
+  padding-right: 2rem;
+}
+
+/* CLEARS THE FIELD — ONLY RENDERED WHEN THERE IS SOMETHING TO CLEAR */
+.zen-search__clear {
+  position: absolute;
+  right: 7px;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 50%;
+  background: #efeff5;
+  color: #7c7c8c;
+  font-size: 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.zen-search__clear:hover {
+  background: #e2dbff;
+  color: #5b4bd6;
+}
+
+/* =========================================================
+   FOOTER TOTALS
+========================================================= */
+
+.zen-table tfoot td {
+  padding: 0.85rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #2f2f3a;
+  background: #fafaff;
+  border-top: 1px solid #eceef5;
+}
+
+.zen-table tfoot td:first-child {
+  border-radius: 0 0 10px 0;
+}
+
+.zen-total-label {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #9a9aab;
+}
+
+/* A COLUMN THAT MATTERS MORE THAN ITS NEIGHBOURS */
+.zen-emphasis {
+  background-color: #f6f4ff;
+}
+
+.zen-table tbody tr:hover td.zen-emphasis {
+  background-color: #efeaff;
+}
+
+/* WEEKDAY MARKER BESIDE A DATE */
+.zen-tag--day {
+  background-color: #eceefc;
+  color: #5b6ad6;
+}

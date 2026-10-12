@@ -2,16 +2,30 @@ import { useState, useEffect } from "react";
 import { useUser } from "../../context/UserContext";
 import { inputToMMDDYYYY,MMDDYYYY_TO_YYYYMMDD, startOfMonth, endOfMonth, getDayName } from "../../utils/dateUtils";
 import { getStatusBadge } from "../../utils/uiUtils";
+import "../../css/zentable.css";
 
 
+
+const STATUS_OPTIONS = ["All", "Pending", "Approved", "Rejected", "Revoked", "Cancelled"];
+
+const TYPE_STYLES = {
+  "Long Leave":   { icon: "bi-airplane-fill",    color: "#8b5cf6", bg: "#f2ebff" },
+  "Sick Leave":   { icon: "bi-thermometer-half", color: "#ef4444", bg: "#fdecec" },
+  "Casual Leave": { icon: "bi-umbrella",         color: "#6366f1", bg: "#eceefc" },
+};
+
+const FALLBACK_STYLE = { icon: "bi-calendar2-event", color: "#64748b", bg: "#f1f2f6" };
+
+const getInitials = (name = "") =>
+  name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?";
 
 const AllLeaves = () => {
   const { USERID } = useUser();
 
   const [allLeaves, setAllLeaves] = useState([]);
   const [leaves, setLeaves] = useState([]);
-  const [fromDate, setFromDate] = useState(startOfMonth());
-  const [toDate, setToDate] = useState(endOfMonth());
+  const [fromDate, setFromDate] = useState(MMDDYYYY_TO_YYYYMMDD(startOfMonth()));
+  const [toDate, setToDate] = useState(MMDDYYYY_TO_YYYYMMDD(endOfMonth()));
   const [status, setStatus] = useState("All");
 
   const [selectedLeave, setSelectedLeave] = useState(null);
@@ -81,125 +95,165 @@ const AllLeaves = () => {
   };
 
   return (
-    <div className="container mt-3">
-      <div className="card shadow-sm border-0 rounded-4">
-        <div className="card-body">
+    <div className="mt-3">
+      <div className="zen-card">
 
+        <div className="zen-card__head">
+          <h5 className="zen-card__title">All Leaves</h5>
 
-<div className="d-flex justify-content-between">
-  <h5 className="mb-4 fw-semibold">All Leaves</h5>
+          {leaves.length > 0 && (
+            <span className="count-pill count-pill--violet">{leaves.length}</span>
+          )}
 
-<div >
-  <select
-    className="form-control form-control-sm"
-    value={status}
-    onChange={(e) => statusFilter(e.target.value)}
-  >
-    <option value="All">All</option>
-    <option value="Approved">Approved</option>
-    <option value="Revoked">Revoked</option>
-    <option value="Rejected">Rejected</option>
-    <option value="Pending">Pending</option>
-  </select>
-  </div>
-</div>
-
-
-
-          {/* Filters */}
-          <div className="row mb-4">
-            <div className="col-md-3">
-              <label className="form-label text-muted small">From</label>
-              <input
-                type="date"
-                className="form-control form-control-sm"
-                value={fromDate}
-                onChange={(e) => setFromDate(e.target.value)}
-              />
-            </div>
-
-            <div className="col-md-3">
-              <label className="form-label text-muted small">To</label>
-              <input
-                type="date"
-                className="form-control form-control-sm"
-                value={toDate}
-                onChange={(e) => setToDate(e.target.value)}
-              />
-            </div>
-
-            <div className="col-md-2 d-flex align-items-end">
+          <div className="status-filter ms-auto">
+            {STATUS_OPTIONS.map((option) => (
               <button
-                className="btn btn-primary w-50 btn-sm"
-                onClick={handleFilter}
+                key={option}
+                type="button"
+                className={`status-chip ${option.toLowerCase()} ${status === option ? "active" : ""}`}
+                onClick={() => statusFilter(option)}
               >
-                Filter
+                {option}
               </button>
-
-              <button
-                className="btn btn-outline-secondary w-50 btn-sm ms-2"
-                onClick={() => {
-                  setFromDate(startOfMonth());
-                  setToDate(endOfMonth());
-                  fetchLeaves();
-                }}
-              >
-                Reset
-              </button>
-            </div>
-
-            <div className="col-md-2 d-flex align-items-end">
-
-              
-              
-            </div>
-          </div>
-
-          <div className="table-responsive">
-            <table className="table table-hover align-middle leave-request-table">
-              <thead className="text-muted my-thead text-uppercase">
-                <tr>
-                  <th className="fw-light text-muted">Employee</th>
-                  <th className="fw-light text-muted">Leave Type</th>
-                  <th className="fw-light text-muted">Dates Requested</th>
-                  <th className="fw-light text-muted">Duration</th>
-                  <th className="fw-light text-muted">Status</th>
-                  <th className="fw-light text-muted">Message</th>
-                  <th className="fw-light text-muted">Approved By</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {leaves.length > 0 ? (
-                  leaves.map((leave) => (
-                    <tr key={leave.ID} onClick={ () => openPopup(leave)}>
-                      <td>{leave?.Employee_Name?.Name || "-"}</td>
-                      <td>{leave?.Leave_Type1 || "-"}</td>
-                      <td>
-                        <small className="text-muted">
-                          {leave?.From} to {leave?.To}
-                        </small>
-                      </td>
-                      <td>{leave?.No_Of_Days_Leave}</td>
-                      <td>{getStatusBadge(leave?.Approval_status)}</td>
-                      <td className="" style={{width:"20%"}}>{leave?.Comments}</td>
-                      <td>{leave?.Approved_by?.Name || "-"}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="7" className="text-center py-4">
-                      No leave records found from <span className="text-primary">{inputToMMDDYYYY(fromDate)}</span> to <span className="text-primary">{inputToMMDDYYYY(toDate)}</span>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            ))}
           </div>
         </div>
+
+        {/* DATE RANGE */}
+        <div className="zen-toolbar">
+          <div className="zen-field">
+            <label className="zen-field__label" htmlFor="all-leaves-from">From</label>
+            <input
+              id="all-leaves-from"
+              type="date"
+              className="zen-input"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+            />
+          </div>
+
+          <div className="zen-field">
+            <label className="zen-field__label" htmlFor="all-leaves-to">To</label>
+            <input
+              id="all-leaves-to"
+              type="date"
+              className="zen-input"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+            />
+          </div>
+
+          <div className="zen-toolbar__actions">
+            <button className="zen-btn" onClick={handleFilter}>
+              <i className="bi bi-funnel me-1"></i> Filter
+            </button>
+
+            <button
+              className="zen-btn zen-btn--ghost"
+              onClick={() => {
+                setFromDate(MMDDYYYY_TO_YYYYMMDD(startOfMonth()));
+                setToDate(MMDDYYYY_TO_YYYYMMDD(endOfMonth()));
+                fetchLeaves();
+              }}
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <div className="zen-table-scroll">
+          <table className="zen-table">
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Leave Type</th>
+                <th>Dates Requested</th>
+                <th>Duration</th>
+                <th>Status</th>
+                <th>Message</th>
+                <th>Approved By</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {leaves.length > 0 ? (
+                leaves.map((leave) => {
+
+                  const type = leave?.Leave_Type1;
+                  const style = TYPE_STYLES[type] || FALLBACK_STYLE;
+
+                  return (
+                    <tr
+                      key={leave.ID}
+                      className="is-clickable"
+                      onClick={() => openPopup(leave)}
+                    >
+                      <td>
+                        <div className="zen-user">
+                          <span className="zen-avatar">
+                            {getInitials(leave?.Employee_Name?.Name)}
+                          </span>
+                          <span className="zen-user__name">
+                            {leave?.Employee_Name?.Name || "—"}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td>
+                        <span
+                          className="zen-type"
+                          style={{ background: style.bg, color: style.color }}
+                        >
+                          <i className={`bi ${style.icon}`}></i>
+                          {type || "Leave"}
+                        </span>
+                      </td>
+
+                      <td>
+                        <span className="zen-dates">
+                          {leave?.From}
+                          <i className="bi bi-arrow-right zen-dates__arrow"></i>
+                          {leave?.To}
+                        </span>
+                      </td>
+
+                      <td>
+                        <span className="zen-duration">
+                          {leave?.No_Of_Days_Leave}<small>days</small>
+                        </span>
+                      </td>
+
+                      <td>{getStatusBadge(leave?.Approval_status)}</td>
+
+                      <td>
+                        <span className="zen-msg">
+                          {leave?.Comments || <span className="zen-muted">—</span>}
+                        </span>
+                      </td>
+
+                      <td>
+                        {leave?.Approved_by?.Name || <span className="zen-muted">—</span>}
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="7">
+                    <div className="zen-empty">
+                      <i className="bi bi-calendar2-x zen-empty__icon"></i>
+                      No leave records between{" "}
+                      <strong>{inputToMMDDYYYY(fromDate)}</strong> and{" "}
+                      <strong>{inputToMMDDYYYY(toDate)}</strong>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
       </div>
-
-
 
 {isPopupOpen && selectedLeave && (
   <div className="custom-modal-overlay" onClick={closePopup}>
