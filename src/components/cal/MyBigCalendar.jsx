@@ -107,34 +107,9 @@ const MyBigCalendar = () => {
     }
 
     const eventStyleGetter = (event) => {
-        // let backgroundColor = "#3174ad"; // default
 
-        // switch (event.priority) {
-        //     case "high":
-        //     backgroundColor = "#e74c3c"; // red
-        //     break;
-        //     case "medium":
-        //     backgroundColor = "#f39c12"; // orange
-        //     break;
-        //     case "low":
-        //     backgroundColor = "#2ecc71"; //#b5e0e6
-        //     // backgroundColor = "#d1f5ea";
-        //     // backgroundColor = "#b5e0e6"; 
-
-        //     break;
-        //     default:
-        //     break;
-        // }
         return {
-            // style: {
-            // backgroundColor,
-            // borderRadius: "6px",
-            // color: "white",
-            // border: "none",
-            // padding: "2px 6px",
-            // opacity: event.taskStatus === "Completed" ? 0.5 : 0.8,
-            
-            // },
+
             className : `rbc-task ${event.priority} ${event.taskStatus === "Completed" ? "opacity-75" : ""}`
         };
     };

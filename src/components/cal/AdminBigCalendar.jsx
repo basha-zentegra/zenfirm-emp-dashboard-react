@@ -335,42 +335,10 @@ useEffect(() => {
   // STYLING
   // ─────────────────────────────────────────────
   const eventStyleGetter = (event) => {
-    // let backgroundColor = "#3174ad";
-    // // let borderLeft = "#E0730D 3px solid";
-    // let color = "white";
-    // let border = "black 1px solid"
 
-    // switch (event.priority) {
-    //   case "high":
-    //     backgroundColor = "#FDE2E0";
-    //     color = "#CE292E"
-    //     border = "#CE292E 1px solid"
-    //     break;
-    //   case "medium":
-    //     backgroundColor = "#FEF3C7";
-    //     color = "#d6780a"
-    //     border = "#d6780a 1px solid"
-    //     break;
-    //   case "low":
-    //     backgroundColor = "#DFFCE7";
-    //     color = "#13A448"
-    //     border = "#13A448 1px solid"
-    //     break;
-    //   default:
-    //     break;
-    // }
 
     return {
-      // style: {
-      //   backgroundColor,
-      //   borderRadius: "8px",
-      //   color,
-      //   border,
-      //   padding: "2px 6px",
-      //   opacity: event.taskStatus === "Completed" ? 0.5 : 1,
-      //   fontSize: "12px",
-      //   marginLeft:"6px"
-      // },
+
       className : `rbc-task ${event.priority} ${event.taskStatus === "Completed" ? "opacity-75" : ""}`
     };
   };
@@ -456,33 +424,7 @@ useEffect(() => {
           minWidth: "120px",
         }}
       >
-        {/* Avatar */}
-        {/* <div
-          style={{
-            width: "40px",
-            height: "40px",
-            borderRadius: "50%",
-            backgroundColor: resource.color || "#3174ad",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "white",
-            fontWeight: "bold",
-            fontSize: "14px",
-            marginBottom: "4px",
-            overflow: "hidden",
-          }}
-        >
-          {resource.avatar ? (
-            <img
-              src={resource.avatar}
-              alt={resource.resourceTitle}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-          ) : (
-            initials
-          )}
-        </div> */}
+        
 
         {/* Name */}
         <div
@@ -509,16 +451,7 @@ useEffect(() => {
           </div>
         )}
 
-        {/* Task count badge */}
-        {/* <span
-          className="badge mt-1"
-          style={{
-            // backgroundColor: resource.color,
-            fontSize: "10px",
-          }}
-        >
-          {events.filter((e) => e.resourceId === resource.resourceId).length} tasks
-        </span> */}
+
       </div>
     );
   };
@@ -586,25 +519,6 @@ useEffect(() => {
 
   const [leaves, setLeaves] = useState([]);
 
- // "08-24-2026" -> Date at a specific hour
-// const toDateTime = (s, hour) => {
-//   const [m, d, y] = s.split("-").map(Number);
-//   return new Date(y, m - 1, d, hour, 0, 0);
-// };
-
-// // returns { start, end } based on the session/day type
-// const getSessionTimes = (dateStr, session) => {
-//   switch (session) {
-//     case "First Half":
-//       return { start: toDateTime(dateStr, 13), end: toDateTime(dateStr, 17) };
-//     case "Second Half":
-//       return { start: toDateTime(dateStr, 17), end: toDateTime(dateStr, 22) };
-//     case "Full Day":
-//       return { start: toDateTime(dateStr, 13), end: toDateTime(dateStr, 22) };
-//     default: // e.g. "Second Half" — falls through to full-day span
-//       return { start: toDateTime(dateStr, 13), end: toDateTime(dateStr, 22) };
-//   }
-// };
 
 // "08-24-2026" + "03:30:00 AM" -> Date object
 const toDateTime = (dateStr, timeStr) => {
@@ -923,17 +837,6 @@ const [isOpen, setIsOpen] = useState(false);
             <i className="bi bi-eye me-1"></i> {showHeader ? 'Hide' : 'Show'} Header
         </button>
 
-{/* <button onClick={() => showToast("error", "Something went wrong.",10000)}>
-  Error
-</button> */}
-
-{/* <button onClick={() => showToast("warning", "Something went wrong.")}>
-  warning
-</button>
-
-<button onClick={() => showToast("success", "Something went wrong.")}>
-  success
-</button> */}
 
 
 
@@ -964,28 +867,7 @@ const [isOpen, setIsOpen] = useState(false);
             <i className="bi bi-people-fill me-1"></i> Team Calendar
           </span>
 
-          {/* <div className="btn-group btn-group-sm ms-3" role="group">
-            <button
-              className={`btn ${
-                currentView === "day"
-                  ? "btn-primary"
-                  : "btn-outline-secondary"
-              }`}
-              onClick={() => setCurrentView("day")}
-            >
-              <i className="bi bi-calendar-day me-1"></i>Day
-            </button>
-            <button
-              className={`btn ${
-                currentView === "week"
-                  ? "btn-primary"
-                  : "btn-outline-secondary"
-              }`}
-              onClick={() => setCurrentView("week")}
-            >
-              <i className="bi bi-calendar-week me-1"></i>Week
-            </button>
-          </div> */}
+
         </div>
 
         {/* Center: Resource Filter */}
@@ -1011,21 +893,7 @@ const [isOpen, setIsOpen] = useState(false);
           </select>
         </div>
 
-        {/* Right: Actions */}
-        {/* <div className="d-flex align-items-center gap-2">
-          <button
-            className="btn btn-sm btn-outline-secondary"
-            onClick={handleUnScheduled}
-          >
-            <i className="bi bi-hourglass-top me-1"></i>
-            Unscheduled
-            {unscheduledTasks.length > 0 && (
-              <span className="badge bg-danger ms-1">
-                {unscheduledTasks.length}
-              </span>
-            )}
-          </button>
-        </div> */}
+
       </div>
 
 
@@ -1095,48 +963,7 @@ const [isOpen, setIsOpen] = useState(false);
                     </div>
                   </div>
 
-                  {/* <div className="d-flex justify-content-between mt-1">
-                    <span
-                      style={{ fontSize: "10px" }}
-                      className="text-muted"
-                    >
-                      <i className="bi bi-list-task me-1"></i>
-                      {stats.totalTasks} tasks
-                    </span>
-                    <span
-                      style={{ fontSize: "10px" }}
-                      className="text-muted"
-                    >
-                      <i className="bi bi-clock me-1"></i>
-                      {stats.totalHours}h
-                    </span>
-                    {stats.highPriority > 0 && (
-                      <span
-                        style={{ fontSize: "10px" }}
-                        className="text-danger"
-                      >
-                        <i className="bi bi-exclamation-triangle me-1"></i>
-                        {stats.highPriority}
-                      </span>
-                    )}
-                  </div> */}
-
-                  {/* Progress bar */}
-                  {/* <div
-                    className="progress mt-1"
-                    style={{ height: "3px" }}
-                  >
-                    <div
-                      className="progress-bar bg-success"
-                      style={{
-                        width: `${
-                          stats.totalTasks > 0
-                            ? (stats.completed / stats.totalTasks) * 100
-                            : 0
-                        }%`,
-                      }}
-                    ></div>
-                  </div> */}
+                 
                 </div>
               </div>
             );
@@ -1212,10 +1039,7 @@ const [isOpen, setIsOpen] = useState(false);
         resourceID={selectedResourceID} // Pass resources so admin can assign
       />
 
-      {/* <UnScheduledTasks
-        setEvents={setEvents}
-        resources={resources} 
-      /> */}
+
 
 
       <div className="d-flex" style={{position: "fixed", right:"2%", top:"-2px", zIndex:"200"}}>
@@ -1248,9 +1072,6 @@ const [isOpen, setIsOpen] = useState(false);
   removeToast={removeToast}
 />
 
-        {/* <button onClick={() => showToast("success", "Project created successfully!")}>
-          Success
-        </button> */}
 
         {isOpen && (
           <div style={styles.overlay} onClick={()=> setIsOpen(false)}>
