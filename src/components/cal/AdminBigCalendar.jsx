@@ -11,6 +11,7 @@ import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 
 import { APP_NAME, formattedDate, SUPER_ADMIN } from "../../config";
 import OffcanvasTaskDetails from "./OffcanvasTaskDetails";
+import LogDetailsModal from "./LogDetailsModal";
 import AddTaskOffcanvas from "./AddTaskOffcanvas";
 import UnScheduledTasks from "./UnScheduledTasks";
 
@@ -36,6 +37,9 @@ const AdminBigCalendar = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [eventID, setEventID] = useState(null);
   const [multipleTasks, setMultipleTasks] = useState([]); 
+  const [logView, setLogView] = useState(false);
+  const [selectedLog, setSelectedLog] = useState(null);
+  const [taskLogs, setTaskLogs] = useState([]);
   const [events, setEvents] = useState([]);
   const [unscheduledTasks, setUnscheduledTasks] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -164,6 +168,62 @@ const removeToast = (id) => {
         }
   }
 
+  // Log view: the work actually logged against tasks on the viewed date. Logs live
+  // in their own form with Task + Employee lookups, so the parents are fetched by ID
+  // the same way the Multiple_Tasks slots are.
+  async function fetchTaskLogs(){
+
+        try {
+          const logRes = await ZOHO.CREATOR.DATA.getRecords({
+            app_name: APP_NAME,
+            report_name: "All_Logs",
+            criteria: `Date_field=='${formatDateToMMDDYYYY(currentDate)}' && Task!=null`,
+            max_records: 1000,
+          });
+
+          console.log("Task logs:", logRes);
+
+          const logs = logRes?.code === 3000 ? logRes.data : [];
+
+          const parentIds = [...new Set(
+            logs.map((log) => log?.Task?.ID ?? log?.Task).filter(Boolean).map(String)
+          )];
+
+          if (!parentIds.length) {
+            setTaskLogs([]);
+            return;
+          }
+
+          const parentCriteria = `(${parentIds.map((id) => `ID==${id}`).join(" || ")})`
+            + (dynamicCriteria ? ` && ${dynamicCriteria}` : "");
+
+          const parentRes = await ZOHO.CREATOR.DATA.getRecords({
+            app_name: APP_NAME,
+            report_name: "Task_Report",
+            criteria: parentCriteria,
+            max_records: 1000,
+          });
+
+          console.log("Task log parents:", parentRes);
+
+          const parents = parentRes?.code === 3000 ? parentRes.data : [];
+          const parentById = new Map(parents.map((task) => [String(task.ID), task]));
+
+          setTaskLogs(
+            logs
+              .map((log) => ({
+                log,
+                parent: parentById.get(String(log?.Task?.ID ?? log?.Task ?? "")),
+              }))
+              .filter((pair) => pair.parent)
+          );
+
+        } catch (err) {
+          console.log(err);
+          setTaskLogs([]);
+        }
+  }
+
     useEffect(() => {
         if (!USERID) return
         if (!formatDateToMMDDYYYY(currentDate)) return
@@ -171,6 +231,7 @@ const removeToast = (id) => {
 
         fetchTasks()
         fetchMultipleTasks()
+        fetchTaskLogs()
     
     }, [USERID, currentDate])
 
@@ -403,7 +464,9 @@ useEffect(() => {
 
     return {
 
-      className : `rbc-task ${event.priority} ${event.taskStatus === "Completed" ? "opacity-75" : ""}`
+      // Log slots carry their approval state too, so they colour by Pending /
+      // Approved / Rejected rather than all looking alike
+      className : `rbc-task ${event.priority} ${event.logStatus ? `log-${event.logStatus.toLowerCase()}` : ""} ${event.taskStatus === "Completed" ? "opacity-75" : ""}`
     };
   };
 
@@ -434,6 +497,11 @@ useEffect(() => {
             style={{ fontSize: "10px", opacity: 0.9 }}
           >
             {event.projectName}
+          </div>
+        )}
+        {event.logEvent && event.hoursWorked && (
+          <div className="mt-1" style={{ fontSize: "10px", opacity: 0.9 }}>
+            <i className="bi bi-stopwatch me-1"></i>{event.hoursWorked}
           </div>
         )}
         {/* Show assignee name in week/day view without resources */}
@@ -752,12 +820,47 @@ const getSessionTimes = (dateStr, session, shiftStart, shiftEnd) => {
         assigneeName: parent?.Assignee?.Name || parent?.Assignee_Name || "",
       }));
 
-    setEvents([...newEvents, ...multipleEvents, ...leaves]);
+    // Log view replaces the scheduled slots with what was actually logged. `Started`
+    // and `Ended` come back as "MM-DD-YYYY hh:mm:ss AM/PM", so the time half is what
+    // parseEventDate wants. The resource is the person who logged the work, which is
+    // not necessarily the task's assignee.
+    const logEvents = taskLogs
+      .filter(({ log }) => log?.Started && log?.Ended)
+      .map(({ log, parent }) => {
+        const startTime = String(log.Started).split(" ").slice(1).join(" ");
+        const endTime = String(log.Ended).split(" ").slice(1).join(" ");
+        const logDate = log?.Date_field || String(log.Started).split(" ")[0];
+
+        return {
+          id: log.ID,
+          title: parent.Task_Name,
+          start: parseEventDate(logDate, startTime),
+          end: parseEventDate(logDate, endTime),
+          priority: "log",
+          projectName: parent?.Project_Name?.Project_Name,
+          taskStatus: parent?.Task_Status,
+          logEvent: true,
+          // An empty Status on the log means nobody has actioned it yet
+          logStatus: log?.Status || "Pending",
+          taskId: parent.ID,
+          hoursWorked: log?.Hours_Worked || "",
+          description: log?.Description || "",
+          resourceId: log?.Employee?.ID || parent?.Assignee?.ID || "unassigned",
+          assigneeName: log?.Employee?.Name || parent?.Assignee?.Name || "",
+        };
+      })
+      .filter((event) => event.start && event.end);
+
+    setEvents(
+      logView
+        ? [...logEvents, ...leaves]
+        : [...newEvents, ...multipleEvents, ...leaves]
+    );
 
     setUnscheduledTasks(
       allTask.filter((task) => !task.Start_Time && !task.End_Time)
     );
-  }, [allTask, leaves, multipleTasks]);
+  }, [allTask, leaves, multipleTasks, taskLogs, logView]);
 
   // ─────────────────────────────────────────────
   // EVENT HANDLERS
@@ -768,6 +871,7 @@ const getSessionTimes = (dateStr, session, shiftStart, shiftEnd) => {
         console.log(event, start, end, resourceId)
 
       if (event.taskStatus === "Completed") return;
+      if (event.logEvent || event.multipleTask) return;
 
       const newResourceId = resourceId || event.resourceId;
 
@@ -807,6 +911,7 @@ const getSessionTimes = (dateStr, session, shiftStart, shiftEnd) => {
   const handleEventResize = useCallback(
     ({ event, start, end }) => {
       if (event.taskStatus === "Completed") return;
+      if (event.logEvent || event.multipleTask) return;
 
       const resizedEvent = { ...event, start, end };
 
@@ -851,13 +956,46 @@ const getSessionTimes = (dateStr, session, shiftStart, shiftEnd) => {
 
     if(event.priority === "leave") return;
 
+    // A log slot shows just that log, not the whole task panel. The Logs subform
+    // comes back on the task record, so the clicked log is picked out of it by ID.
+    if (event.logEvent) {
+
+      setSelectedLog({ log: null, task: null, loading: true });
+
+      ZOHO.CREATOR.DATA.getRecordById({
+        app_name: APP_NAME,
+        report_name: "Task_Report",
+        id: event.taskId,
+      })
+        .then(function (response) {
+          if (response.code === 3000) {
+            const task = response.data;
+            const log = (task?.Logs || []).find(
+              (entry) => String(entry.ID) === String(event.id)
+            );
+
+            setSelectedLog({ log: log || null, task, loading: false });
+          } else {
+            setSelectedLog({ log: null, task: null, loading: false });
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+          setSelectedLog({ log: null, task: null, loading: false });
+        });
+
+      return;
+    }
+
     const element = document.getElementById("offcanvasRight");
     const bsOffcanvas = new window.bootstrap.Offcanvas(element);
     bsOffcanvas.show();
 
     // Remember which Multiple_Tasks slot was clicked so the panel shows that
     // slot's date and time rather than the parent task's
-    setEventID(event?.taskId ? event : null);
+    // Only a Multiple_Tasks slot belongs in eventID — it keys deletes against the
+    // All_Multiple_Tasks report, which a log record is not part of
+    setEventID(event?.multipleTask ? event : null);
 
     var config = {
       app_name: APP_NAME,
@@ -872,6 +1010,18 @@ const getSessionTimes = (dateStr, session, shiftStart, shiftEnd) => {
         }
       })
       .catch((e) => console.log(e));
+  }, []);
+
+  // Keep the approved/rejected log in sync so reopening it shows the new status
+  // without refetching the day
+  const handleLogStatusChange = useCallback((logId, status) => {
+    setTaskLogs((prev) =>
+      prev.map((pair) =>
+        String(pair.log.ID) === String(logId)
+          ? { ...pair, log: { ...pair.log, Status: status } }
+          : pair
+      )
+    );
   }, []);
 
   const handleUnScheduled = () => {
@@ -1135,6 +1285,8 @@ const [isOpen, setIsOpen] = useState(false);
           onSelectSlot={handleSelectSlot}
           onEventDrop={handleEventDrop}
           onEventResize={handleEventResize}
+          draggableAccessor={(event) => !event.logEvent && !event.multipleTask}
+          resizableAccessor={(event) => !event.logEvent && !event.multipleTask}
           eventPropGetter={eventStyleGetter}
           formats={{
             eventTimeRangeFormat: () => "",
@@ -1159,6 +1311,16 @@ const [isOpen, setIsOpen] = useState(false);
 
       {/* ─────────── OFFCANVAS COMPONENTS ─────────── */}
       <OffcanvasTaskDetails selectedEvent={selectedEvent} setSelectedEvent={setSelectedEvent} setEvents={setEvents} eventID={eventID} admin={true} />
+
+      {selectedLog && (
+        <LogDetailsModal
+          log={selectedLog.log}
+          task={selectedLog.task}
+          loading={selectedLog.loading}
+          onClose={() => setSelectedLog(null)}
+          onStatusChange={handleLogStatusChange}
+        />
+      )}
 
       <AddTaskOffcanvas
         startEnd={startEnd}
@@ -1189,6 +1351,13 @@ const [isOpen, setIsOpen] = useState(false);
                 </button>
                 <button className="btn action-btn btn-indigo btn-sm rounded-0" onClick={() => {handle24HrsView();  setOpen(false)}} title="24Hrs View"><i class="bi bi-clock-history"></i></button>
                 <button className="btn action-btn btn-cyan btn-sm rounded-0" onClick={() => {setIsOpen(true); setOpen(false)}} title="Filter"><i class="bi bi-funnel-fill"></i></button>
+                <button
+                  className={`btn action-btn btn-sm rounded-0 ${logView ? "btn-brown" : "btn-blue"}`}
+                  onClick={() => {setLogView(p => !p); setOpen(false)}}
+                  title={logView ? "Showing logged work — back to scheduled" : "Log View"}
+                >
+                  <i className={`bi ${logView ? "bi-calendar-week" : "bi-journal-text"}`}></i>
+                </button>
 
             </div>
 
