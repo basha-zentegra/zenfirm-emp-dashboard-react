@@ -1,0 +1,381 @@
+/* =========================================================
+   LOG REVIEW PANEL
+   A manager deciding whether one block of logged time is
+   legitimate. The hero is the day-span itself: the working
+   day drawn as a track, the log as the stretch it occupied,
+   coloured by its approval state. Everything else stays flat
+   and quiet — no nested cards, no stacked labels.
+========================================================= */
+
+.logrev-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1060;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(26, 21, 43, 0.5);
+  backdrop-filter: blur(3px);
+  animation: logrev-scrim-in 0.2s ease;
+}
+
+.logrev {
+  --lr-ink: #241f33;
+  --lr-muted: #7b7490;
+  --lr-line: #ebe7f5;
+  --lr-track: #f3f0fb;
+  --lr-state: #f59e0b;
+  --lr-state-text: #9a6500;
+
+  position: relative;
+  width: 100%;
+  max-width: 470px;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 2px 6px rgba(36, 31, 51, 0.08), 0 28px 60px rgba(26, 21, 43, 0.35);
+  color: var(--lr-ink);
+  animation: logrev-in 0.26s cubic-bezier(0.2, 0.85, 0.3, 1.06);
+}
+
+.logrev:focus { outline: none; }
+
+.logrev.is-approved { --lr-state: #0d9488; --lr-state-text: #0b6f68; }
+.logrev.is-rejected { --lr-state: #b91c1c; --lr-state-text: #a01818; }
+
+@keyframes logrev-scrim-in { from { opacity: 0; } }
+@keyframes logrev-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.975); }
+}
+
+/* ---------- HEAD: the task is the subject, so it is the title ---------- */
+.logrev__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  padding: 1.15rem 1.3rem 0.95rem;
+}
+
+.logrev__task {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+
+.logrev__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.3rem;
+  color: var(--lr-muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.logrev__sep {
+  width: 1px;
+  height: 11px;
+  background: #ded8ee;
+}
+
+.logrev__close {
+  flex-shrink: 0;
+  margin-left: auto;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #a39cb8;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.16s ease, color 0.16s ease;
+}
+
+.logrev__close:hover { background: #f4f1fb; color: var(--lr-ink); }
+.logrev__close:focus-visible { outline: 2px solid #754ffe; outline-offset: 2px; }
+
+/* ---------- WHO AND WHEN ---------- */
+.logrev__body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 0 1.3rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.logrev__who {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding-top: 0.15rem;
+}
+
+.logrev__name { font-size: 0.82rem; font-weight: 600; }
+
+.logrev__date {
+  margin-left: auto;
+  color: var(--lr-muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- THE DAY SPAN ---------- */
+.logrev__span { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.logrev__state {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  color: var(--lr-state-text);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* THE NUMBER THAT DECIDES THE CALL — IT SITS ON THE STATE LINE, NOT INSIDE THE
+   BAR, SO IT NEVER FIGHTS THE FILL FOR CONTRAST OR ROOM */
+.logrev__total {
+  margin-left: auto;
+  color: var(--lr-ink);
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.logrev__state::before {
+  content: "";
+  align-self: center;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--lr-state);
+}
+
+.logrev__hours {
+  position: relative;
+  height: 13px;
+  color: #aba4c0;
+  font-size: 0.625rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.logrev__hour {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.logrev__track {
+  position: relative;
+  height: 30px;
+  border-radius: 7px;
+  background: var(--lr-track);
+  overflow: hidden;
+}
+
+.logrev__tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #e5dff5;
+}
+
+.logrev__fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 4px;
+  border-radius: 6px;
+  background: var(--lr-state);
+  animation: logrev-fill 0.55s cubic-bezier(0.22, 0.78, 0.26, 1) both;
+}
+
+@keyframes logrev-fill { from { width: 0; } }
+
+.logrev__clock {
+  position: relative;
+  height: 15px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.logrev__clock span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* ---------- SECONDARY FACTS ---------- */
+.logrev__decimal {
+  margin: -0.5rem 0 0;
+  color: var(--lr-muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.logrev__note {
+  margin: 0;
+  padding-left: 0.85rem;
+  border-left: 2px solid var(--lr-line);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #3d3752;
+}
+
+.logrev__note--empty { color: #a39cb8; }
+
+.logrev__loading,
+.logrev__missing {
+  margin: 0;
+  padding: 1.6rem 0;
+  color: var(--lr-muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* ---------- DECISION ---------- */
+.logrev__foot {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.9rem 1.3rem;
+  border-top: 1px solid var(--lr-line);
+  background: #fbfaff;
+}
+
+.logrev__resolved {
+  margin: 0;
+  color: var(--lr-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+/* WHAT THE MANAGER SENT BACK, SHOWN IN THEIR OWN WORDS */
+.logrev__said {
+  margin: 0.4rem 0 0;
+  padding-left: 0.7rem;
+  border-left: 2px solid #efd9da;
+  color: #3d3752;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+/* ---------- REJECTING: THE REASON IS PART OF THE ACTION ---------- */
+.logrev__foot.is-composing {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.55rem;
+}
+
+.logrev__reason {
+  width: 100%;
+  min-height: 70px;
+  resize: vertical;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid #e0dbf0;
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--lr-ink);
+  font-family: inherit;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.logrev__reason::placeholder { color: #aba4c0; }
+
+.logrev__reason:focus {
+  outline: 0;
+  border-color: #c4b2a0;
+  box-shadow: 0 0 0 3px rgba(180, 56, 61, 0.1);
+}
+
+.logrev__reason.is-missing { border-color: #e5babc; }
+
+.logrev__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.logrev__btn--ghost {
+  margin-right: auto;
+  background: transparent;
+  color: var(--lr-muted);
+}
+.logrev__btn--ghost:hover:not([disabled]) { background: #f1eefa; color: var(--lr-ink); }
+
+.logrev__btn--danger {
+  background: #b4383d;
+  color: #ffffff;
+}
+.logrev__btn--danger:hover:not([disabled]) { background: #9c2f34; }
+
+.logrev__error {
+  margin: 0;
+  color: #c9343a;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.logrev__btn {
+  height: 34px;
+  padding: 0 1rem;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.logrev__btn:focus-visible { outline: 2px solid #754ffe; outline-offset: 2px; }
+.logrev__btn[disabled] { opacity: 0.5; cursor: progress; }
+
+/* REJECT IS THE RARER, HEAVIER CALL — IT STAYS QUIET UNTIL REACHED FOR */
+.logrev__btn--reject {
+  margin-left: auto;
+  background: transparent;
+  border-color: #efd9da;
+  color: #b4383d;
+}
+.logrev__btn--reject:hover:not([disabled]) { background: #fdf2f2; border-color: #e5babc; }
+
+.logrev__btn--approve {
+  background: #18794e;
+  color: #ffffff;
+}
+.logrev__btn--approve:hover:not([disabled]) { background: #146440; }
+
+@media (max-width: 420px) {
+  .logrev__head { padding: 1rem 1rem 0.8rem; }
+  .logrev__body { padding: 0 1rem 1rem; }
+  .logrev__foot { padding: 0.8rem 1rem; }
+  .logrev__date { font-size: 0.72rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logrev-scrim,
+  .logrev,
+  .logrev__fill { animation: none; }
+}

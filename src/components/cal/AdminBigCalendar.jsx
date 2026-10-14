@@ -1014,11 +1014,18 @@ const getSessionTimes = (dateStr, session, shiftStart, shiftEnd) => {
 
   // Keep the approved/rejected log in sync so reopening it shows the new status
   // without refetching the day
-  const handleLogStatusChange = useCallback((logId, status) => {
+  const handleLogStatusChange = useCallback((logId, status, message = "") => {
     setTaskLogs((prev) =>
       prev.map((pair) =>
         String(pair.log.ID) === String(logId)
-          ? { ...pair, log: { ...pair.log, Status: status } }
+          ? {
+              ...pair,
+              log: {
+                ...pair.log,
+                Status: status,
+                ...(status === "Rejected" ? { Rejection_Message: message } : {}),
+              },
+            }
           : pair
       )
     );

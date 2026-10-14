@@ -1,8 +1,18 @@
-import {useState, useEffect, use, useRef } from 'react'
+import {useState, useEffect, use, useRef, Fragment } from 'react'
 import { convertTo24Hour,calculateWorkedTime } from '../../utils/logsUtils';
 import { inputToMMDDYYYY,isFuture, MMDDYYYY_TO_YYYYMMDD, formatTime12 } from '../../utils/dateUtils';
 import ConfirmDialog from './ConfirmDialog';
 import { useUser } from '../../context/UserContext';
+import '../../css/zenmodal.css';
+
+// A log with no Status set has not been actioned yet
+const logStatusOf = (log) => log?.Status || "Pending";
+
+const LOG_STATUS_CHIP = {
+  Pending: "zen-chip--pending",
+  Approved: "zen-chip--done",
+  Rejected: "zen-chip--rejected",
+};
 
 const TaskLogs = ({selectedEvent, setIsLogAvailable, setSelectedEvent, mLog=null, completeTask=null}) => {
 
@@ -384,18 +394,44 @@ useEffect(() => {
                     
                     <th className='text-muted'>Description</th>
                     <th className='text-muted'>Worked</th>
+                    <th className='text-muted'>Status</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
                   {logs.map((log, index) => (
-                    <tr key={index}>
+                    <Fragment key={log.ID || index}>
+                    <tr>
                       <td>{log.Date_field}</td>
                       <td><small>{log.Started.split(" ").slice(1).join(" ") || "NA"}</small></td>
                       <td><small>{log.Ended.split(" ").slice(1).join(" ") || "NA"}</small></td>
                       <td style={{width:"25%"}} className='small text-muted'>{log.Description || ""}</td>
                       <td>{log.Hours_Worked}</td>
-                      <td><i className="bi bi-trash text-danger cursor-pointer" onClick={() => handleDeleteClick(log.ID)}></i></td>
+                      <td>
+                        <span className={`zen-chip ${LOG_STATUS_CHIP[logStatusOf(log)] || ""}`}>
+                          {logStatusOf(log)}
+                        </span>
+                      </td>
+                      <td>
+                        {/* An approved log is signed off — it can no longer be removed */}
+                        {logStatusOf(log) !== "Approved" && (
+                          <i className="bi bi-trash text-danger cursor-pointer" onClick={() => handleDeleteClick(log.ID)}></i>
+                        )}
+                      </td>
                     </tr>
+
+                    {/* Why it was sent back, so the fix is obvious */}
+                    {logStatusOf(log) === "Rejected" && log?.Rejection_Message && (
+                      <tr className="log-reject-note">
+                        <td colSpan="7">
+                          <div className="log-reject-note__body">
+                            <i className="bi bi-arrow-return-right"></i>
+                            <span>{log.Rejection_Message}</span>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    </Fragment>
                   ))}
 
                   {isAdding && (
@@ -450,7 +486,7 @@ useEffect(() => {
                             ></textarea>
                         </td>
 
-                        <td>
+                        <td colSpan="3">
                             <button className='btn btn-sm' onClick={submitManualLog}><i class="bi bi-arrow-right-circle-fill"></i></button>
                         </td>
                     </tr>
@@ -459,7 +495,7 @@ useEffect(() => {
                   {!isAdding && (
 
                     <tr>
-                        <td className='text-center' colSpan="5">
+                        <td className='text-center' colSpan="7">
                             <button className="btn btn-link text-decoration-none mt-2 btn-sm p-0" onClick={startAdding} disabled={isFutureTask} ><i className="bi bi-plus-circle me-1"></i> Add Log</button>
                         </td>
                     </tr>
