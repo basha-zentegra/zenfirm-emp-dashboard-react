@@ -265,6 +265,9 @@ useEffect(() => {
   return () => window.removeEventListener("keydown", onKey);
 }, [isPopupOpen, longLeavePopUp]);
 
+// WHICH QUEUE IS ON SCREEN — ordinary leave is the common case, so it leads
+const [view, setView] = useState("leave"); // "leave" | "long"
+
 const [activeFilters, setActiveFilters] = useState([]); // empty = "All"
 
 const toggleFilter = (status) => {
@@ -292,30 +295,41 @@ const filteredLeaves = leaves.filter((l) => matchesFilter(l?.Approval_status));
   // THE TWO REPORTS NAME THE SAME IDEAS DIFFERENTLY (Approval_Status vs
   // Approval_status, No_of_Days_Leave vs No_Of_Days_Leave) — FLATTEN ONCE
   // SO THERE IS A SINGLE SET OF ROW MARKUP
-  const rows = [
-    ...filteredLongLeaves.map((l) => ({
-      id: l.ID,
-      employee: l?.Employee?.Name,
-      type: "Long Leave",
-      from: l?.From,
-      to: l?.To,
-      days: l?.No_of_Days_Leave,
-      status: l?.Approval_Status,
-      onOpen: () => openLongLeavePopup(l),
-    })),
-    ...filteredLeaves.map((l) => ({
-      id: l.ID,
-      employee: l?.Employee_Name?.Name,
-      type: l?.Leave_Type1,
-      from: l?.From,
-      to: l?.To,
-      days: l?.No_Of_Days_Leave,
-      status: l?.Approval_status,
-      onOpen: () => openPopup(l),
-    })),
-  ];
+  const longRows = filteredLongLeaves.map((l) => ({
+    id: l.ID,
+    employee: l?.Employee?.Name,
+    type: "Long Leave",
+    from: l?.From,
+    to: l?.To,
+    days: l?.No_of_Days_Leave,
+    status: l?.Approval_Status,
+    onOpen: () => openLongLeavePopup(l),
+  }));
 
-  const pendingCount = rows.filter((r) => r.status === "Pending").length;
+  const leaveRows = filteredLeaves.map((l) => ({
+    id: l.ID,
+    employee: l?.Employee_Name?.Name,
+    type: l?.Leave_Type1,
+    from: l?.From,
+    to: l?.To,
+    days: l?.No_Of_Days_Leave,
+    status: l?.Approval_status,
+    onOpen: () => openPopup(l),
+  }));
+
+  // Waiting work first. The rank keeps the comparator antisymmetric — returning
+  // -1 whenever `a` is pending gave an inconsistent order when both were.
+  const rows = [...(view === "long" ? longRows : leaveRows)].sort(
+    (a, b) => (a.status === "Pending" ? 0 : 1) - (b.status === "Pending" ? 0 : 1)
+  );
+
+  // Counted off the full lists, not the filtered rows, so switching the status
+  // filter never changes what is actually waiting
+  const pendingLeave = leaves.filter((l) => l?.Approval_status === "Pending").length;
+  const pendingLong = longLeaves.filter((l) => l?.Approval_Status === "Pending").length;
+  const pendingCount = pendingLeave + pendingLong;
+
+  const viewLabel = view === "long" ? "long leave" : "leave";
 
   return (
     <div className="mt-3">
@@ -328,6 +342,30 @@ const filteredLeaves = leaves.filter((l) => matchesFilter(l?.Approval_status));
           {pendingCount > 0 && (
             <span className="count-pill count-pill--warning">{pendingCount} pending</span>
           )}
+
+          <div className="zen-switch" role="tablist" aria-label="Leave queue">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === "leave"}
+              className={`zen-switch__opt ${view === "leave" ? "is-on" : ""}`}
+              onClick={() => setView("leave")}
+            >
+              Leave
+              {pendingLeave > 0 && <span className="zen-switch__badge">{pendingLeave}</span>}
+            </button>
+
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === "long"}
+              className={`zen-switch__opt ${view === "long" ? "is-on" : ""}`}
+              onClick={() => setView("long")}
+            >
+              Long Leave
+              {pendingLong > 0 && <span className="zen-switch__badge">{pendingLong}</span>}
+            </button>
+          </div>
 
           <div className="status-filter ms-auto">
             {STATUS_OPTIONS.map((status) => (
@@ -377,7 +415,7 @@ const filteredLeaves = leaves.filter((l) => matchesFilter(l?.Approval_status));
                       >
                         <i className={`bi ${style.icon}`}></i>
                         {row.type || "Leave"}
-                      </span>
+                      </span> 
                     </td>
 
                     <td>
@@ -414,7 +452,9 @@ const filteredLeaves = leaves.filter((l) => matchesFilter(l?.Approval_status));
                   <td colSpan={6}>
                     <div className="zen-empty">
                       <i className="bi bi-inbox zen-empty__icon"></i>
-                      No leaves match the selected filter.
+                      {activeFilters.length
+                        ? `No ${viewLabel} requests match the selected filter.`
+                        : `No ${viewLabel} requests to review.`}
                     </div>
                   </td>
                 </tr>
